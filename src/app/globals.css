@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --app-bg: #07111f;
+  --app-panel: rgba(10, 18, 33, 0.74);
+  --app-panel-strong: rgba(12, 24, 44, 0.92);
+  --app-line: rgba(167, 190, 255, 0.12);
+  --app-glow: rgba(63, 115, 255, 0.32);
+}
+
+html,
+body,
+#__next {
+  height: 100%;
+}
+
+body {
+  @apply bg-gray-950 text-white;
+  background:
+    radial-gradient(circle at top left, rgba(81, 124, 255, 0.22), transparent 28%),
+    radial-gradient(circle at top right, rgba(17, 208, 170, 0.14), transparent 22%),
+    linear-gradient(180deg, #08101b 0%, #09111d 35%, #07111f 100%);
+}
+
+* {
+  scrollbar-color: rgba(163, 163, 188, 0.2) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(163, 163, 188, 0.18);
+  border-radius: 999px;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.glass-panel {
+  border: 1px solid var(--app-line);
+  background: linear-gradient(180deg, rgba(14, 24, 41, 0.88), rgba(7, 14, 27, 0.88));
+  backdrop-filter: blur(22px);
+  box-shadow:
+    0 20px 60px rgba(4, 8, 18, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(167, 190, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(167, 190, 255, 0.08) 1px, transparent 1px);
+  background-size: 78px 78px;
+}
+
+.spotlight-ring {
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(122, 156, 255, 0.18) 32%, transparent 58%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.panel-chip {
+  @apply inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium;
+  border-color: rgba(167, 190, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ambient-orb {
+  position: relative;
+}
+
+.ambient-orb::after {
+  content: "";
+  position: absolute;
+  right: -18%;
+  top: -26%;
+  height: 220px;
+  width: 220px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(44, 102, 255, 0.24), transparent 68%);
+  pointer-events: none;
+  filter: blur(4px);
+}

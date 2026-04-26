@@ -1,0 +1,327 @@
+# UniBoard Pro — Master Implementation Guide
+
+> **Production-grade, AI-powered, real-time university class platform.**
+> Next.js 14 · Convex · Clerk · Tailwind CSS · Google Gemini AI (free tier)
+> Built for scale. Designed to impress. Engineered to retain.
+
+---
+
+## 🗂️ Documentation Index
+
+| # | File | Purpose |
+|---|------|---------|
+| 00 | `README.md` ← you are here | Master guide, tech vision, build order |
+| 01 | `01-architecture.md` | System design, data flow, role matrix, security model |
+| 02 | `02-schema.md` | Complete Convex schema — all tables, indexes, validators |
+| 03 | `03-queries.md` | All Convex queries — typed, indexed, auth-guarded |
+| 04 | `04-mutations.md` | All Convex mutations — 40+ operations, permission-checked |
+| 05 | `05-ai-features.md` | AI layer — Gemini free API, smart summarizer, AI tutor, content mod |
+| 06 | `06-pages.md` | All Next.js pages — layouts, routes, SSR/CSR split |
+| 07 | `07-components.md` | All React components — feed, composer, teacher panel, modals |
+| 08 | `08-roles-permissions.md` | Teacher 20-feature matrix · Student 20-feature matrix · Super Admin |
+| 09 | `09-ui-system.md` | Design system — tokens, animations, Twitter-class UI patterns |
+| 10 | `10-auth.md` | Clerk + Convex bridge — middleware, webhooks, onboarding flow |
+| 11 | `11-sprint-plan.md` | 5-week sprint with day-by-day tasks |
+| 12 | `12-deployment.md` | Vercel + Convex Cloud — CI/CD, env vars, production checklist |
+
+---
+
+## 🧠 What UniBoard Pro Is
+
+UniBoard Pro is a **real-time, AI-powered university class platform** — not just a noticeboard. It is the digital classroom hub where:
+
+- Teachers **manage entire courses**: announcements, deadlines, study materials, polls, live Q&A sessions, class analytics, and student performance tracking.
+- Students **engage, collaborate, and learn**: posting notes, asking questions anonymously, commenting, upvoting, sharing resources, working on projects together, and getting AI-powered answers.
+- The **AI layer** transforms passive content into active intelligence: auto-summarizing long threads, answering questions when no one else does, detecting duplicate questions, and surfacing the most important content.
+
+**The problem it solves:** University class communication is broken. WhatsApp groups are chaos. LMS portals are dead. UniBoard Pro is the operating system for a class — organized, searchable, real-time, and intelligent.
+
+**Why users cannot stop using it:**
+- Posts appear live for everyone without refresh (Convex WebSocket subscription)
+- Anonymous posting removes social friction — more students participate
+- AI answers unanswered questions instantly — real utility
+- Deadline countdowns create daily urgency
+- Unread badges create compulsive return visits
+- Live presence ("3 classmates online") creates social accountability
+- Upvote system creates a variable reward loop
+- Teacher announcements auto-notify everyone — no one misses critical info
+
+---
+
+## 🚀 Tech Stack
+
+```
+Frontend:     Next.js 14 (App Router, TypeScript)
+Backend:      Convex (real-time DB + serverless functions)
+Auth:         Clerk (JWT-based, role-aware)
+Styling:      Tailwind CSS + custom design tokens
+UI Library:   shadcn/ui (Radix primitives)
+Icons:        Lucide React
+AI:           Google Gemini 1.5 Flash (free tier, 1M tokens/month)
+Hosting:      Vercel (frontend) + Convex Cloud (backend)
+Language:     TypeScript throughout — zero `any`
+```
+
+**Why this stack is optimal:**
+
+| Choice | Reason |
+|--------|--------|
+| Convex | Zero WebSocket code. `useQuery` auto-subscribes. `useMutation` handles optimistic updates. No REST, no Express, no infra. |
+| Clerk | Auth in 20 lines. Role metadata. JWT bridge to Convex. Webhooks for user sync. |
+| Gemini Flash | Free 1M tokens/month. Fast. Perfect for summarization + Q&A. No billing setup required. |
+| Next.js App Router | Server components for initial load speed. Nested layouts for dashboard shell. |
+
+---
+
+## 📁 Complete Project Structure
+
+```
+uniboard-pro/
+├── README.md
+├── docs/                           ← This documentation suite
+│
+├── convex/
+│   ├── schema.ts                   ← Full DB schema
+│   ├── users.ts                    ← User CRUD + presence + profile
+│   ├── rooms.ts                    ← Room management + membership
+│   ├── posts.ts                    ← Posts — create, edit, react, moderate
+│   ├── comments.ts                 ← Comment threads on posts
+│   ├── votes.ts                    ← Upvote + reactions
+│   ├── projects.ts                 ← Group project management
+│   ├── polls.ts                    ← Teacher polls + student voting
+│   ├── notifications.ts            ← Notification engine
+│   ├── ai.ts                       ← AI action wrappers (Gemini)
+│   ├── analytics.ts                ← Teacher analytics queries
+│   ├── moderation.ts               ← Content moderation log
+│   ├── _generated/                 ← Auto-generated by Convex CLI
+│   └── auth.config.ts              ← Clerk JWT bridge
+│
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx              ← Root layout (providers, fonts)
+│   │   ├── page.tsx                ← Public landing page
+│   │   ├── (auth)/
+│   │   │   ├── sign-in/page.tsx
+│   │   │   ├── sign-up/page.tsx
+│   │   │   └── onboarding/page.tsx ← Role + batch selection
+│   │   ├── (dashboard)/
+│   │   │   ├── layout.tsx          ← Dashboard shell (sidebar + header)
+│   │   │   ├── page.tsx            ← Home — rooms overview + deadlines
+│   │   │   ├── rooms/
+│   │   │   │   ├── page.tsx        ← Browse/join rooms
+│   │   │   │   └── [roomId]/
+│   │   │   │       ├── page.tsx    ← Live room feed
+│   │   │   │       ├── settings/page.tsx
+│   │   │   │       ├── analytics/page.tsx  ← Teacher only
+│   │   │   │       ├── members/page.tsx
+│   │   │   │       └── projects/page.tsx
+│   │   │   ├── notifications/page.tsx
+│   │   │   ├── search/page.tsx
+│   │   │   ├── profile/page.tsx
+│   │   │   ├── settings/page.tsx
+│   │   │   └── teacher/
+│   │   │       ├── dashboard/page.tsx  ← Teacher control center
+│   │   │       └── analytics/page.tsx
+│   │   └── api/
+│   │       ├── webhooks/clerk/route.ts
+│   │       └── ai/summarize/route.ts
+│   │
+│   ├── components/
+│   │   ├── layout/
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── Header.tsx
+│   │   │   ├── MobileNav.tsx
+│   │   │   └── CommandPalette.tsx  ← CMD+K global search
+│   │   ├── feed/
+│   │   │   ├── PostFeed.tsx
+│   │   │   ├── PostCard.tsx
+│   │   │   ├── PostComposer.tsx
+│   │   │   ├── PostTypeSelector.tsx
+│   │   │   ├── CommentThread.tsx
+│   │   │   ├── ReactionBar.tsx
+│   │   │   ├── UpvoteButton.tsx
+│   │   │   ├── DeadlineCountdown.tsx
+│   │   │   ├── PinnedBanner.tsx
+│   │   │   └── AIAnswerCard.tsx    ← AI-generated answer to questions
+│   │   ├── rooms/
+│   │   │   ├── RoomCard.tsx
+│   │   │   ├── RoomHeader.tsx
+│   │   │   ├── RoomSettings.tsx
+│   │   │   ├── CreateRoomModal.tsx
+│   │   │   ├── MemberList.tsx
+│   │   │   └── PresenceBar.tsx
+│   │   ├── teacher/
+│   │   │   ├── TeacherPanel.tsx    ← Floating moderation panel
+│   │   │   ├── AnalyticsDashboard.tsx
+│   │   │   ├── PollCreator.tsx
+│   │   │   ├── BulkActions.tsx
+│   │   │   └── ClassExport.tsx
+│   │   ├── projects/
+│   │   │   ├── ProjectBoard.tsx    ← Kanban-style project view
+│   │   │   ├── ProjectCard.tsx
+│   │   │   └── ProjectModal.tsx
+│   │   ├── ai/
+│   │   │   ├── AISummarizer.tsx    ← Summarize room content
+│   │   │   ├── AITutor.tsx         ← Ask AI a question
+│   │   │   └── SmartSearch.tsx     ← AI-enhanced search
+│   │   └── ui/                     ← shadcn/ui components
+│   │
+│   ├── hooks/
+│   │   ├── useCurrentUser.ts
+│   │   ├── useUnreadCounts.ts
+│   │   ├── usePresence.ts
+│   │   ├── useTeacherGuard.ts
+│   │   └── useAI.ts
+│   │
+│   ├── lib/
+│   │   ├── utils.ts
+│   │   ├── constants.ts
+│   │   ├── gemini.ts               ← Gemini API client
+│   │   └── permissions.ts          ← Role permission checker
+│   │
+│   └── types/
+│       └── index.ts
+│
+├── middleware.ts
+├── next.config.ts
+├── tailwind.config.ts
+├── tsconfig.json
+└── package.json
+```
+
+---
+
+## ⚡ Critical Build Order
+
+**Implement in this EXACT sequence. Each step depends on the previous.**
+
+```
+Phase 1 — Foundation (Week 1)
+  Step 1:   package.json + env + configs
+  Step 2:   Convex schema (02-schema.md)
+  Step 3:   Clerk auth bridge (10-auth.md)
+  Step 4:   User mutations + getCurrentUser
+  Step 5:   Root layout + providers
+  Step 6:   Sign-in / sign-up / onboarding pages
+
+Phase 2 — Core Features (Week 2)
+  Step 7:   Room mutations + queries
+  Step 8:   Post mutations + queries (full type system)
+  Step 9:   Dashboard layout + sidebar
+  Step 10:  Live room feed (PostFeed + PostCard)
+  Step 11:  PostComposer (all post types)
+  Step 12:  Upvote system + comment threads
+
+Phase 3 — Teacher & Student Power Features (Week 3)
+  Step 13:  Teacher panel + 20 teacher features (08-roles-permissions.md)
+  Step 14:  Student features + reactions + sharing
+  Step 15:  Polls, projects, announcements
+  Step 16:  Notification engine + bell
+
+Phase 4 — AI Layer (Week 4)
+  Step 17:  Gemini integration (05-ai-features.md)
+  Step 18:  AI summarizer per room
+  Step 19:  AI Tutor (answers unanswered questions)
+  Step 20:  Smart search + duplicate detection
+
+Phase 5 — Polish + Deploy (Week 5)
+  Step 21:  Twitter-class UI polish (09-ui-system.md)
+  Step 22:  Mobile responsive audit
+  Step 23:  Analytics dashboard
+  Step 24:  PWA + performance
+  Step 25:  Vercel + Convex Cloud deployment
+```
+
+---
+
+## 🔑 Environment Variables
+
+```bash
+# .env.local
+NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+CLERK_WEBHOOK_SECRET=whsec_...
+CLERK_JWT_ISSUER_DOMAIN=https://clerk.your-app.com
+
+# AI (Google Gemini — free tier)
+GEMINI_API_KEY=AIza...
+NEXT_PUBLIC_GEMINI_API_KEY=AIza...  # For client-side AI features
+```
+
+---
+
+## 📦 Package Installation
+
+```bash
+npx create-next-app@latest uniboard-pro --typescript --tailwind --app --src-dir
+cd uniboard-pro
+
+# Convex + Clerk
+npx convex dev --once
+npx shadcn-ui@latest init
+npm install convex @clerk/nextjs @clerk/clerk-react
+
+# UI + utilities
+npm install lucide-react date-fns clsx tailwind-merge
+npm install @radix-ui/react-dialog @radix-ui/react-dropdown-menu
+npm install @radix-ui/react-avatar @radix-ui/react-tooltip @radix-ui/react-tabs
+npm install @radix-ui/react-popover @radix-ui/react-select @radix-ui/react-switch
+
+# AI
+npm install @google/generative-ai
+
+# Webhooks + utilities
+npm install svix zod
+npm install framer-motion        # Animations
+npm install react-hot-toast      # Toast notifications
+npm install cmdk                 # CMD+K command palette
+```
+
+---
+
+## 🎯 Feature Priority Matrix
+
+| # | Feature | Who | Impact | Complexity |
+|---|---------|-----|--------|-----------|
+| 1 | Real-time post feed | All | Critical | Low |
+| 2 | Post types (note/deadline/question/resource/announcement) | All | Critical | Low |
+| 3 | Teacher class management | Teacher | Critical | Medium |
+| 4 | Anonymous posting | Student | High | Low |
+| 5 | AI Tutor (auto-answers questions) | All | High | Medium |
+| 6 | Comment threads | All | High | Medium |
+| 7 | Upvotes + emoji reactions | All | High | Low |
+| 8 | Deadline countdown tracker | All | High | Low |
+| 9 | Teacher polls | Teacher | High | Medium |
+| 10 | Group project boards | Student | High | High |
+| 11 | AI room summarizer | All | Medium | Medium |
+| 12 | Live presence indicator | All | Medium | Low |
+| 13 | Teacher analytics | Teacher | Medium | Medium |
+| 14 | Smart search (AI-enhanced) | All | Medium | Medium |
+| 15 | Post sharing / reposting | All | Medium | Low |
+| 16 | Notification engine | All | High | Medium |
+| 17 | Content moderation log | Teacher | Medium | Low |
+| 18 | Class export (PDF/CSV) | Teacher | Low | Medium |
+| 19 | PWA + offline support | All | Medium | Medium |
+| 20 | Student profile + badges | Student | Medium | Low |
+
+---
+
+## ✅ Definition of Done
+
+A feature is complete when ALL of these pass:
+
+- [ ] Convex schema supports it (typed, indexed)
+- [ ] Mutation/query written, permission-checked, error-handled
+- [ ] Component renders correctly at desktop (1280px)
+- [ ] Component renders correctly at mobile (375px)
+- [ ] Loading skeleton exists for every async state
+- [ ] Empty state exists with helpful copy
+- [ ] Error state handled with toast notification
+- [ ] TypeScript — zero `any` types
+- [ ] Role guard enforced (teacher-only features throw on student access)
+- [ ] AI feature gracefully degrades if API key missing
+
+---
+
+*Continue to `01-architecture.md` →*

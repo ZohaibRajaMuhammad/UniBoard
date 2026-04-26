@@ -1,0 +1,22 @@
+# dependencies
+/node_modules/
+
+# next.js build output
+/.next/
+/out/
+
+# local env and secrets
+.env.local
+.env
+
+# clerk configuration (can include secrets)
+/.clerk/
+
+# logs
+*.log
+
+# typescript build info
+*.tsbuildinfo
+
+# vercel local metadata
+/.vercel/
