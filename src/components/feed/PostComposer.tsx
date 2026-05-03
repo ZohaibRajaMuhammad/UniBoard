@@ -1,11 +1,12 @@
 "use client";
 
-import { KeyboardEvent, useMemo, useState } from "react";
-import { ChevronDown, Eye, EyeOff, Send } from "lucide-react";
-import { useMutation } from "convex/react";
+import { KeyboardEvent, useEffect, useMemo, useState } from "react";
+import { ChevronDown, Eye, EyeOff, Plus, Send, Sparkles, Tags } from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
-import { POST_TYPE_CONFIG, POST_TYPES } from "@/lib/constants";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { POST_TYPE_CONFIG, POST_TYPES, ROOM_MENTION_AI } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 const postTypes = POST_TYPES.map((type) => ({
@@ -15,6 +16,8 @@ const postTypes = POST_TYPES.map((type) => ({
 }));
 
 export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
+  const user = useCurrentUser();
+  const members = useQuery(api.rooms.getMembers, { roomId });
   const createPost = useMutation(api.posts.create);
   const [content, setContent] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -25,43 +28,33 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
   const [deadlineTitle, setDeadlineTitle] = useState("");
   const [resourceUrl, setResourceUrl] = useState("");
   const [resourceTitle, setResourceTitle] = useState("");
+  const [pollOptions, setPollOptions] = useState("Option 1\nOption 2");
+  const [tagInput, setTagInput] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
-  async function handleSubmit() {
-    if (!content.trim() || isSubmitting) {
-      return;
+  const canPostAnnouncement = user?.role === "teacher" || user?.role === "super_admin";
+  const availablePostTypes = useMemo(
+    () => postTypes.filter((type) => canPostAnnouncement || type.value !== "announcement"),
+    [canPostAnnouncement]
+  );
+
+  useEffect(() => {
+    if (!canPostAnnouncement && postType === "announcement") {
+      setPostType("note");
     }
+  }, [canPostAnnouncement, postType]);
 
-    setIsSubmitting(true);
-    try {
-      await createPost({
-        roomId,
-        content: content.trim(),
-        type: postType,
-        isAnonymous,
-        deadlineDate: deadlineDate ? new Date(deadlineDate).getTime() : undefined,
-        deadlineTitle: deadlineTitle || undefined,
-        resourceUrl: resourceUrl || undefined,
-        resourceTitle: resourceTitle || undefined
-      });
+  const mentionableNames = useMemo(() => {
+    const names = (members ?? [])
+      .map((member) => member.user.name)
+      .filter((name, index, array) => array.indexOf(name) === index)
+      .slice(0, 8);
 
-      setContent("");
-      setDeadlineDate("");
-      setDeadlineTitle("");
-      setResourceUrl("");
-      setResourceTitle("");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+    return [ROOM_MENTION_AI, ...names.map((name) => `@${name.replace(/\s+/g, "")}`)];
+  }, [members]);
 
-  function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-      event.preventDefault();
-      void handleSubmit();
-    }
-  }
+  const selectedType = availablePostTypes.find((type) => type.value === postType) ?? availablePostTypes[0];
 
-  const selectedType = postTypes.find((type) => type.value === postType) ?? postTypes[0];
   const helperLabel = useMemo(() => {
     if (postType === "deadline") {
       return "Use a short description and add the due date so students can act on it quickly.";
@@ -75,15 +68,100 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
       return "Announcements are pinned by default. Keep them concise and operational.";
     }
 
-    return "Keep updates direct, useful, and easy to scan on mobile.";
+    if (postType === "poll") {
+      return "Set a clear question, add options, and let the room use the vote controls to signal the winning choice.";
+    }
+
+    if (postType === "project") {
+      return "Use project posts for milestones, blockers, ownership, and demo-readiness updates.";
+    }
+
+    return `Keep updates direct, useful, and easy to scan on mobile. Mention ${ROOM_MENTION_AI} for an automated follow-up reply.`;
   }, [postType]);
+
+  function insertMention(mention: string) {
+    setContent((current) => `${current.trimEnd()}${current.trim() ? " " : ""}${mention} `);
+  }
+
+  function buildContent() {
+    if (postType !== "poll") {
+      return content.trim();
+    }
+
+    const options = pollOptions
+      .split(/\r?\n/)
+      .map((option) => option.trim())
+      .filter(Boolean)
+      .slice(0, 6);
+
+    if (options.length < 2) {
+      return content.trim();
+    }
+
+    return `${content.trim()}\n\nPoll options:\n${options.map((option) => `- ${option}`).join("\n")}`;
+  }
+
+  async function handleSubmit() {
+    if (!content.trim() || isSubmitting) {
+      return;
+    }
+
+    if (!canPostAnnouncement && postType === "announcement") {
+      setSubmitError("Only teachers and super admins can post announcements.");
+      setPostType("note");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError("");
+    try {
+      await createPost({
+        roomId,
+        content: buildContent(),
+        type: postType,
+        isAnonymous,
+        tags: tagInput
+          .split(",")
+          .map((tag) => tag.trim().toLowerCase().replace(/^#/, ""))
+          .filter(Boolean)
+          .slice(0, 8),
+        deadlineDate: deadlineDate ? new Date(deadlineDate).getTime() : undefined,
+        deadlineTitle: deadlineTitle || undefined,
+        resourceUrl: resourceUrl || undefined,
+        resourceTitle: resourceTitle || undefined
+      });
+
+      setContent("");
+      setDeadlineDate("");
+      setDeadlineTitle("");
+      setResourceUrl("");
+      setResourceTitle("");
+      setPollOptions("Option 1\nOption 2");
+      setTagInput("");
+      setIsAnonymous(false);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Unable to create post.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+      event.preventDefault();
+      void handleSubmit();
+    }
+  }
 
   return (
     <div className="mx-auto max-w-6xl p-4 sm:p-6">
       <div className="spotlight-ring glass-panel rounded-[30px] p-4 sm:p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-500">Compose update</p>
+            <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-500">
+              <Plus size={14} />
+              Compose update
+            </p>
             <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-300">{helperLabel}</p>
           </div>
 
@@ -111,8 +189,8 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
             </button>
 
             {showTypes ? (
-              <div className="absolute bottom-full left-0 z-20 mb-2 min-w-[220px] rounded-2xl border border-white/10 bg-gray-900 p-2 shadow-2xl">
-                {postTypes.map((type) => (
+              <div className="absolute left-0 top-full z-20 mt-2 max-h-72 min-w-[240px] overflow-y-auto rounded-2xl border border-white/10 bg-gray-900 p-2 shadow-2xl">
+                {availablePostTypes.map((type) => (
                   <button
                     key={type.value}
                     onClick={() => {
@@ -130,6 +208,24 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
           </div>
 
           <div className="panel-chip text-gray-300">{selectedType.label} format selected</div>
+          {canPostAnnouncement ? <div className="panel-chip text-brand-100">Announcement access enabled</div> : null}
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <div className="panel-chip rounded-2xl px-4 py-2 text-gray-300">
+            <Sparkles size={14} />
+            Mentions
+          </div>
+          {mentionableNames.map((mention) => (
+            <button
+              key={mention}
+              type="button"
+              onClick={() => insertMention(mention)}
+              className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-gray-200 transition hover:bg-white/10"
+            >
+              {mention}
+            </button>
+          ))}
         </div>
 
         {postType === "deadline" ? (
@@ -138,13 +234,13 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
               value={deadlineTitle}
               onChange={(event) => setDeadlineTitle(event.target.value)}
               placeholder="Assignment title"
-              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-brand-400"
+              className="app-input"
             />
             <input
               type="datetime-local"
               value={deadlineDate}
               onChange={(event) => setDeadlineDate(event.target.value)}
-              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-brand-400"
+              className="app-input"
             />
           </div>
         ) : null}
@@ -155,16 +251,49 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
               value={resourceUrl}
               onChange={(event) => setResourceUrl(event.target.value)}
               placeholder="https://resource-link"
-              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-brand-400"
+              className="app-input"
             />
             <input
               value={resourceTitle}
               onChange={(event) => setResourceTitle(event.target.value)}
               placeholder="Resource title"
-              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-brand-400"
+              className="app-input"
             />
           </div>
         ) : null}
+
+        {postType === "poll" ? (
+          <div className="mt-4">
+            <textarea
+              value={pollOptions}
+              onChange={(event) => setPollOptions(event.target.value)}
+              rows={4}
+              className="app-textarea"
+              placeholder={"Option 1\nOption 2\nOption 3"}
+            />
+            <p className="mt-2 text-xs text-gray-500">Each option should be on its own line. Polls use the post vote controls for room feedback.</p>
+          </div>
+        ) : null}
+
+        <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+          <div>
+            <label className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+              <Tags size={13} />
+              Tags
+            </label>
+            <input
+              value={tagInput}
+              onChange={(event) => setTagInput(event.target.value)}
+              placeholder="revision, urgent, architecture"
+              className="app-input"
+            />
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs leading-6 text-gray-400">
+            Use comma-separated tags.
+            <br />
+            Mention teammates or {ROOM_MENTION_AI} directly in the post body.
+          </div>
+        </div>
 
         <div className="mt-4 rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-1">
           <textarea
@@ -174,9 +303,11 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
             maxLength={1000}
             rows={4}
             placeholder="Share something useful with the room..."
-            className="min-h-[120px] w-full rounded-[24px] border border-transparent bg-black/15 px-5 py-4 text-sm leading-7 text-white outline-none transition focus:border-brand-400"
+            className="min-h-[140px] w-full rounded-[24px] border border-transparent bg-black/15 px-5 py-4 text-sm leading-7 text-white outline-none transition focus:border-brand-400"
           />
         </div>
+
+        {submitError ? <p className="mt-3 text-sm text-red-300">{submitError}</p> : null}
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-xs text-gray-500">{content.length}/1000 • Press Ctrl/Cmd + Enter to post</span>

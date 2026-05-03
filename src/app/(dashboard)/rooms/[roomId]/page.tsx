@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { PlusSquare } from "lucide-react";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 import { PinnedPostsBanner } from "@/components/feed/PinnedPostsBanner";
@@ -45,7 +46,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   }, [room]);
 
   if (room === undefined) {
-    return <div className="m-6 h-48 animate-pulse rounded-[28px] bg-white/5" />;
+    return <div className="m-4 h-48 animate-pulse rounded-[28px] bg-white/5 sm:m-6" />;
   }
 
   if (!room) {
@@ -54,27 +55,34 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden">
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="grid min-h-0 flex-1 grid-rows-[auto_auto_auto_auto_minmax(0,1fr)_auto] overflow-hidden">
         <RoomHeader room={room} />
         <PresenceBar roomId={roomId} />
 
-        <div className="border-b border-white/10 bg-black/10 px-4 py-4 backdrop-blur sm:px-6">
-          <div className="mx-auto flex max-w-6xl flex-col gap-4">
+        <div className="border-b border-white/10 bg-black/10 backdrop-blur">
+          <div className="page-wrap py-4">
             <div className="grid gap-3 sm:grid-cols-3">
               {roomStats.map((item) => (
-                <div key={item.label} className="glass-panel rounded-[24px] px-4 py-4">
+                <div key={item.label} className="stat-card">
                   <p className="text-[11px] uppercase tracking-[0.24em] text-gray-500">{item.label}</p>
                   <p className="mt-2 text-lg font-semibold text-white">{item.value}</p>
                 </div>
               ))}
             </div>
 
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.24em] text-gray-500">Feed controls</p>
                 <h2 className="mt-1 text-lg font-semibold text-white">Filter the conversation by signal</h2>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 lg:justify-end">
+                <button
+                  onClick={() => document.getElementById("room-composer")?.scrollIntoView({ behavior: "smooth", block: "center" })}
+                  className="inline-flex items-center gap-2 rounded-full border border-brand-400/40 bg-brand-500/10 px-4 py-2 text-sm font-medium text-brand-100 transition hover:bg-brand-500/20"
+                >
+                  <PlusSquare size={14} />
+                  Compose
+                </button>
                 {FEED_FILTERS.map((filter) => {
                   const filterLabel = filter === "all" ? "All posts" : `${POST_TYPE_CONFIG[filter].emoji} ${POST_TYPE_CONFIG[filter].label}`;
                   return (
@@ -99,17 +107,17 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
         {pinnedPosts && pinnedPosts.length > 0 ? <PinnedPostsBanner posts={pinnedPosts} /> : null}
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="min-h-0 overflow-y-auto overscroll-contain pb-4">
           <PostFeed posts={posts} roomId={roomId} emptyStateLabel={activeFilter === "all" ? "No posts yet" : `No ${activeFilter} posts yet`} />
         </div>
 
-        <div className="border-t border-white/10 bg-gray-950/95 pb-safe backdrop-blur">
+        <div id="room-composer" className="sticky bottom-0 border-t border-white/10 bg-gray-950/95 backdrop-blur">
           <PostComposer roomId={roomId} />
         </div>
       </div>
 
       {currentUser?.role === "teacher" || currentUser?.role === "super_admin" ? (
-        <aside className="hidden w-80 xl:flex">
+        <aside className="hidden w-[20rem] 2xl:flex">
           <TeacherPanel roomId={roomId} />
         </aside>
       ) : null}

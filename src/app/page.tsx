@@ -1,8 +1,21 @@
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
+import { isClerkConfigured } from "@/lib/deployment";
+
+export const dynamic = "force-dynamic";
 
 export default async function LandingPage() {
+  if (!isClerkConfigured) {
+    return (
+      <DeploymentSetupNotice
+        title="Configure Clerk before publishing UniBoard"
+        detail="The landing page uses Clerk session checks to redirect authenticated users. Add the missing Clerk public key in Vercel to enable the full app shell."
+      />
+    );
+  }
+
   const { userId } = await auth();
   if (userId) {
     redirect("/dashboard");

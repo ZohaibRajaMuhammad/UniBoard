@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { useMutation, useQuery } from "convex/react";
-import { MessageSquare, Send, Trash2 } from "lucide-react";
+import { MessageSquare, Send, Sparkles, Trash2 } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
+import { ROOM_MENTION_AI } from "@/lib/constants";
 import { cn, formatRelativeTime, initials } from "@/lib/utils";
 
 type Comment = {
@@ -25,15 +26,17 @@ type Comment = {
   };
 };
 
-export function CommentThread({ postId }: { postId: Id<"posts"> }) {
+export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId: Id<"rooms"> }) {
   const comments = useQuery(api.comments.getByPost, { postId }) as Comment[] | undefined;
   const currentUser = useQuery(api.users.getCurrentUser);
+  const members = useQuery(api.rooms.getMembers, { roomId });
   const createComment = useMutation(api.comments.create);
   const deleteComment = useMutation(api.comments.deleteComment);
   const [content, setContent] = useState("");
   const [replyTo, setReplyTo] = useState<Id<"comments"> | undefined>(undefined);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const topLevelComments = (comments ?? []).filter((comment) => !comment.parentCommentId);
   const repliesByParent = new Map<string, Comment[]>();
@@ -47,12 +50,26 @@ export function CommentThread({ postId }: { postId: Id<"posts"> }) {
     repliesByParent.set(key, existing);
   }
 
+  const mentionableNames = useMemo(() => {
+    const names = (members ?? [])
+      .map((member) => member.user.name)
+      .filter((name, index, array) => array.indexOf(name) === index)
+      .slice(0, 6);
+
+    return [ROOM_MENTION_AI, ...names.map((name) => `@${name.replace(/\s+/g, "")}`)];
+  }, [members]);
+
+  function insertMention(mention: string) {
+    setContent((current) => `${current.trimEnd()}${current.trim() ? " " : ""}${mention} `);
+  }
+
   async function handleSubmit() {
     if (!content.trim() || isSubmitting) {
       return;
     }
 
     setIsSubmitting(true);
+    setSubmitError("");
     try {
       await createComment({
         postId,
@@ -62,6 +79,9 @@ export function CommentThread({ postId }: { postId: Id<"posts"> }) {
       });
       setContent("");
       setReplyTo(undefined);
+      setIsAnonymous(false);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Unable to comment.");
     } finally {
       setIsSubmitting(false);
     }
@@ -82,16 +102,26 @@ export function CommentThread({ postId }: { postId: Id<"posts"> }) {
             <div key={comment._id} className="space-y-2">
               <CommentCard
                 comment={comment}
-                canDelete={Boolean(currentUser && !comment.isAnonymous && comment.authorId === currentUser._id)}
+                canDelete={Boolean(
+                  currentUser &&
+                    (!comment.isAnonymous && comment.authorId === currentUser._id ||
+                      currentUser.role === "teacher" ||
+                      currentUser.role === "super_admin")
+                )}
                 onDelete={() => void deleteComment({ commentId: comment._id })}
                 onReply={() => setReplyTo(comment._id)}
               />
               {(repliesByParent.get(String(comment._id)) ?? []).map((reply) => (
-                <div key={reply._id} className="ml-8">
+                <div key={reply._id} className="ml-4 sm:ml-8">
                   <CommentCard
                     comment={reply}
                     compact
-                    canDelete={Boolean(currentUser && !reply.isAnonymous && reply.authorId === currentUser._id)}
+                    canDelete={Boolean(
+                      currentUser &&
+                        (!reply.isAnonymous && reply.authorId === currentUser._id ||
+                          currentUser.role === "teacher" ||
+                          currentUser.role === "super_admin")
+                    )}
                     onDelete={() => void deleteComment({ commentId: reply._id })}
                   />
                 </div>
@@ -103,6 +133,24 @@ export function CommentThread({ postId }: { postId: Id<"posts"> }) {
 
       <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3">
         {replyTo ? <p className="mb-2 text-xs text-brand-200">Replying to a comment</p> : null}
+
+        <div className="mb-3 flex flex-wrap gap-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-300">
+            <Sparkles size={12} />
+            Quick mentions
+          </div>
+          {mentionableNames.map((mention) => (
+            <button
+              key={mention}
+              type="button"
+              onClick={() => insertMention(mention)}
+              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-200 transition hover:bg-white/10"
+            >
+              {mention}
+            </button>
+          ))}
+        </div>
+
         <textarea
           value={content}
           onChange={(event) => setContent(event.target.value)}
@@ -111,7 +159,10 @@ export function CommentThread({ postId }: { postId: Id<"posts"> }) {
           placeholder="Add a comment"
           className="w-full resize-none rounded-xl bg-transparent text-sm text-white outline-none placeholder:text-gray-500"
         />
-        <div className="mt-3 flex items-center justify-between gap-3">
+
+        {submitError ? <p className="mt-2 text-sm text-red-300">{submitError}</p> : null}
+
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             onClick={() => setIsAnonymous((current) => !current)}
             className={cn(
@@ -121,7 +172,7 @@ export function CommentThread({ postId }: { postId: Id<"posts"> }) {
           >
             {isAnonymous ? "Anonymous" : "Visible"}
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {replyTo ? (
               <button onClick={() => setReplyTo(undefined)} className="text-xs text-gray-500 transition hover:text-white">
                 Cancel reply
@@ -172,11 +223,11 @@ function CommentCard({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-semibold text-white">{comment.author.name}</p>
             <span className="text-xs text-gray-500">{formatRelativeTime(comment.createdAt)}</span>
           </div>
-          <p className={cn("mt-1 whitespace-pre-wrap text-sm leading-6 text-gray-300", compact && "text-[13px]")}>{comment.content}</p>
+          <p className={cn("mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-gray-300", compact && "text-[13px]")}>{comment.content}</p>
           <div className="mt-2 flex items-center gap-3">
             {!compact && onReply ? (
               <button onClick={onReply} className="text-xs text-gray-500 transition hover:text-white">

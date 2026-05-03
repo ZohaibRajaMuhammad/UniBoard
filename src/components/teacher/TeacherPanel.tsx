@@ -13,9 +13,10 @@ export function TeacherPanel({ roomId }: { roomId: Id<"rooms"> }) {
   const [activeTab, setActiveTab] = useState<Tab>("flagged");
   const reportedPosts = useQuery(api.posts.getReportedPosts, { roomId });
   const members = useQuery(api.rooms.getMembers, { roomId });
-  const analytics = useQuery(api.analytics.getRoomAnalytics, { roomId, days: 7 });
+  const analytics = useQuery(api.analytics.getRoomAnalytics, { roomId, days: 14 });
   const removePost = useMutation(api.posts.remove);
   const muteOrBan = useMutation(api.rooms.muteOrBanMember);
+  const setMemberRole = useMutation(api.rooms.setMemberRole);
 
   const tabs = [
     { id: "flagged" as const, label: "Flagged", icon: <Flag size={14} /> },
@@ -81,20 +82,52 @@ export function TeacherPanel({ roomId }: { roomId: Id<"rooms"> }) {
           <div className="space-y-2">
             {members?.map((member) => (
               <div key={member._id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-white">{member.user.name}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-white">{member.user.name}</p>
                     <p className="text-xs text-gray-500">{member.role}</p>
+                    {member.isMuted ? <p className="mt-1 text-xs text-amber-300">Muted</p> : null}
+                    {member.isBanned ? <p className="mt-1 text-xs text-red-300">Banned</p> : null}
                   </div>
-                  {member.role !== "owner" && !member.isMuted ? (
-                    <button
-                      onClick={() => void muteOrBan({ roomId, targetUserId: member.userId, action: "mute", muteDurationHours: 24 })}
-                      className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-200 transition hover:bg-white/10"
-                    >
-                      Mute 24h
-                    </button>
-                  ) : null}
                 </div>
+
+                {member.role !== "owner" ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <MemberAction
+                      label={member.role === "moderator" ? "Demote" : "Promote"}
+                      onClick={() =>
+                        setMemberRole({
+                          roomId,
+                          targetUserId: member.userId,
+                          newRole: member.role === "moderator" ? "member" : "moderator"
+                        })
+                      }
+                    />
+                    <MemberAction
+                      label={member.isMuted ? "Unmute" : "Mute 24h"}
+                      onClick={() =>
+                        muteOrBan({
+                          roomId,
+                          targetUserId: member.userId,
+                          action: member.isMuted ? "unmute" : "mute",
+                          muteDurationHours: member.isMuted ? undefined : 24
+                        })
+                      }
+                    />
+                    <MemberAction
+                      label={member.isBanned ? "Unban" : "Ban"}
+                      tone={member.isBanned ? "default" : "danger"}
+                      onClick={() =>
+                        muteOrBan({
+                          roomId,
+                          targetUserId: member.userId,
+                          action: member.isBanned ? "unban" : "ban",
+                          reason: member.isBanned ? undefined : "Manual moderation action"
+                        })
+                      }
+                    />
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>
@@ -103,11 +136,12 @@ export function TeacherPanel({ roomId }: { roomId: Id<"rooms"> }) {
         {activeTab === "analytics" && analytics ? (
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <StatCard label="Posts (7d)" value={analytics.totalPosts} />
+              <StatCard label="Posts (14d)" value={analytics.totalPosts} />
               <StatCard label="Members" value={analytics.totalMembers} />
               <StatCard label="Resolved" value={analytics.resolvedQuestions} />
               <StatCard label="Anonymous" value={analytics.anonymousPosts} />
             </div>
+
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
               <p className="text-xs uppercase tracking-[0.18em] text-gray-500">By Type</p>
               <div className="mt-3 space-y-2">
@@ -125,6 +159,30 @@ export function TeacherPanel({ roomId }: { roomId: Id<"rooms"> }) {
                 ))}
               </div>
             </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+              <p className="text-xs uppercase tracking-[0.18em] text-gray-500">Posting cadence</p>
+              <div className="mt-3 space-y-2">
+                {Object.entries(analytics.byDay).map(([day, count]) => (
+                  <div key={day} className="flex items-center justify-between gap-3 rounded-xl bg-black/20 px-3 py-2 text-xs text-gray-300">
+                    <span>{day}</span>
+                    <span>{count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+              <p className="text-xs uppercase tracking-[0.18em] text-gray-500">Top contributors</p>
+              <div className="mt-3 space-y-2">
+                {analytics.topContributors.map((contributor) => (
+                  <div key={contributor.userId} className="flex items-center justify-between gap-3 rounded-xl bg-black/20 px-3 py-2 text-sm text-gray-200">
+                    <span className="truncate">{contributor.name}</span>
+                    <span className="text-xs text-gray-400">{contributor.postCount} posts</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : null}
       </div>
@@ -138,5 +196,29 @@ function StatCard({ label, value }: { label: string; value: number }) {
       <p className="text-[11px] uppercase tracking-[0.18em] text-gray-500">{label}</p>
       <p className="mt-2 text-2xl font-bold text-white">{value}</p>
     </div>
+  );
+}
+
+function MemberAction({
+  label,
+  onClick,
+  tone = "default"
+}: {
+  label: string;
+  onClick: () => Promise<unknown>;
+  tone?: "default" | "danger";
+}) {
+  return (
+    <button
+      onClick={() => void onClick()}
+      className={cn(
+        "rounded-xl border px-3 py-2 text-xs transition",
+        tone === "danger"
+          ? "border-red-400/20 bg-red-500/10 text-red-200 hover:bg-red-500/20"
+          : "border-white/10 bg-white/5 text-gray-200 hover:bg-white/10"
+      )}
+    >
+      {label}
+    </button>
   );
 }

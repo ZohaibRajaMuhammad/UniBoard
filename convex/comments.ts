@@ -2,6 +2,9 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { buildPublicAuthor, createNotification, getCurrentUserOrThrow, getMembership } from "./lib";
 
+const AI_EMAIL = "uniboard.ai@example.com";
+const AI_MENTION = "@uniboardai";
+
 export const getByPost = query({
   args: { postId: v.id("posts") },
   handler: async (ctx, args) => {
@@ -97,6 +100,28 @@ export const create = mutation({
         isRead: false,
         createdAt: now
       });
+    }
+
+    if (content.toLowerCase().includes(AI_MENTION)) {
+      const aiUser = await ctx.db.query("users").withIndex("by_email", (query) => query.eq("email", AI_EMAIL)).unique();
+      if (aiUser) {
+        await ctx.db.insert("comments", {
+          postId: args.postId,
+          roomId: post.roomId,
+          authorId: aiUser._id,
+          content: "UniBoard AI: Clarify the exact blocker, the expected outcome, and the current failed attempt so the room can answer with less ambiguity.",
+          parentCommentId: undefined,
+          isAnonymous: false,
+          isDeleted: false,
+          isEdited: false,
+          upvoteCount: 0,
+          createdAt: Date.now()
+        });
+
+        await ctx.db.patch(post._id, {
+          commentCount: (post.commentCount ?? 0) + 2
+        });
+      }
     }
 
     return commentId;

@@ -1,3 +1,5 @@
+import type { Id } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import {
@@ -11,6 +13,64 @@ import {
   sanitizeAuthor
 } from "./lib";
 import { postTypeValidator } from "./schema";
+
+const AI_EMAIL = "uniboard.ai@example.com";
+const AI_MENTION = "@uniboardai";
+
+async function maybeCreateAiReply(
+  ctx: MutationCtx,
+  {
+    postId,
+    roomId,
+    content
+  }: {
+    postId: Id<"posts">;
+    roomId: Id<"rooms">;
+    content: string;
+  }
+) {
+  if (!content.toLowerCase().includes(AI_MENTION)) {
+    return;
+  }
+
+  const aiUser = await ctx.db.query("users").withIndex("by_email", (query) => query.eq("email", AI_EMAIL)).unique();
+  if (!aiUser) {
+    return;
+  }
+
+  const lowered = content.toLowerCase();
+  let reply = "I can help break this down. Restate the goal, list the constraint, and ask one concrete next-step question for the room.";
+
+  if (lowered.includes("deadline")) {
+    reply = "Deadline triage: confirm due date, deliverable format, dependencies, and what can be submitted early today.";
+  } else if (lowered.includes("database") || lowered.includes("query") || lowered.includes("index")) {
+    reply = "Database angle: check access pattern, explain current bottleneck, compare indexes, and inspect the execution plan before changing schema.";
+  } else if (lowered.includes("design") || lowered.includes("architecture") || lowered.includes("service")) {
+    reply = "Architecture angle: define ownership boundaries, failure path, retries, and the observable signals you expect when the design fails.";
+  } else if (lowered.includes("deploy") || lowered.includes("release") || lowered.includes("production")) {
+    reply = "Release checklist: verify environment parity, rollback path, health checks, logging, and who owns the final go/no-go decision.";
+  }
+
+  await ctx.db.insert("comments", {
+    postId,
+    roomId,
+    authorId: aiUser._id,
+    content: `UniBoard AI: ${reply}`,
+    parentCommentId: undefined,
+    isAnonymous: false,
+    isDeleted: false,
+    isEdited: false,
+    upvoteCount: 0,
+    createdAt: Date.now()
+  });
+
+  const post = await ctx.db.get(postId);
+  if (post) {
+    await ctx.db.patch(postId, {
+      commentCount: (post.commentCount ?? 0) + 1
+    });
+  }
+}
 
 export const getByRoom = query({
   args: {
@@ -328,6 +388,12 @@ export const create = mutation({
         createdAt: now
       });
     }
+
+    await maybeCreateAiReply(ctx, {
+      postId,
+      roomId: args.roomId,
+      content
+    });
 
     return postId;
   }

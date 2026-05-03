@@ -26,6 +26,21 @@ Real-time class noticeboard built with Next.js 14, Convex, Clerk, and Tailwind C
 3. Run `npx convex dev` once to attach a real deployment and regenerate `convex/_generated`.
 4. Run `npm run dev`.
 
+## Vercel Deployment
+
+Required for the app shell and authentication:
+
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_CONVEX_URL`
+
+Required if you want Clerk webhooks and Convex JWT auth fully wired in production:
+
+- `CLERK_WEBHOOK_SECRET`
+- `CLERK_JWT_ISSUER_DOMAIN`
+
+If any required public key is missing, the app now renders a deployment setup screen instead of crashing during prerender.
+
 ## Convex Notes
 
 - `convex/schema.ts` defines the full data model.

@@ -9,10 +9,12 @@ import { cn } from "@/lib/utils";
 
 export function UpvoteButton({
   postId,
-  upvoteCount
+  upvoteCount,
+  label = "Upvote"
 }: {
   postId: Id<"posts">;
   upvoteCount: number;
+  label?: string;
 }) {
   const toggleVote = useMutation(api.votes.toggle);
   const currentVote = useQuery(api.posts.getUserVote, { postId });
@@ -49,7 +51,8 @@ export function UpvoteButton({
       )}
     >
       <ArrowUp size={14} />
-      {count}
+      <span>{label}</span>
+      <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white">{count}</span>
     </button>
   );
 }

@@ -39,26 +39,38 @@ const convex = new ConvexHttpClient(convexUrl);
 
 const demoUsers = [
   {
-    email: "teacher.demo.uniboard@example.com",
-    password: "TeacherDemo123!",
-    firstName: "Dr. Ayesha",
-    lastName: "Khan",
-    username: "teacher_demo",
-    role: "teacher",
-    batch: "SP26-BS(SE)-AM",
-    department: "Software Engineering",
-    bio: "Course instructor focused on clarity, rigor, and high-signal class operations."
-  },
-  {
-    email: "admin.demo.uniboard@example.com",
-    password: "AdminDemo123!",
-    firstName: "Usman",
-    lastName: "Raza",
-    username: "admin_demo",
+    email: "davidshead0@gmail.com",
+    password: "DavidAdmin123!",
+    firstName: "David",
+    lastName: "Shead",
+    username: "david_super_admin",
     role: "super_admin",
     batch: "SP26-BS(SE)-AM",
     department: "Software Engineering",
-    bio: "Platform super admin for audit, moderation, and cross-room validation."
+    bio: "Platform super admin for audit, moderation, operations, and cross-room validation."
+  },
+  {
+    email: "robinseo82@gmail.com",
+    password: "RobinTeacher123!",
+    firstName: "Robin",
+    lastName: "Seo",
+    username: "robin_teacher",
+    role: "teacher",
+    batch: "SP26-BS(SE)-AM",
+    department: "Software Engineering",
+    bio: "Course instructor focused on clear room operations, moderation, and deadline discipline."
+  },
+  {
+    email: "zohaib99080@gmail.com",
+    password: "ZohaibStudent123!",
+    firstName: "Zohaib",
+    lastName: "Ahmed",
+    username: "zohaib_student",
+    role: "student",
+    batch: "SP26-BS(SE)-AM",
+    department: "Software Engineering",
+    studentId: "SE-2026-001",
+    bio: "Primary student test account for feed, room, profile, and notification validation."
   },
   {
     email: "student.sara.uniboard@example.com",
@@ -69,7 +81,7 @@ const demoUsers = [
     role: "student",
     batch: "SP26-BS(SE)-AM",
     department: "Software Engineering",
-    studentId: "SE-2026-001",
+    studentId: "SE-2026-002",
     bio: "Strong systems student who asks sharp anonymous questions when needed."
   },
   {
@@ -81,7 +93,7 @@ const demoUsers = [
     role: "student",
     batch: "SP26-BS(SE)-AM",
     department: "Software Engineering",
-    studentId: "SE-2026-002",
+    studentId: "SE-2026-003",
     bio: "Resource curator who shares practical references and review material."
   },
   {
@@ -93,8 +105,31 @@ const demoUsers = [
     role: "student",
     batch: "SP26-BS(SE)-AM",
     department: "Software Engineering",
-    studentId: "SE-2026-003",
+    studentId: "SE-2026-004",
     bio: "Design-oriented student who keeps project rooms organized and active."
+  },
+  {
+    email: "student.aleena.uniboard@example.com",
+    password: "StudentAleena123!",
+    firstName: "Aleena",
+    lastName: "Tariq",
+    username: "student_aleena",
+    role: "student",
+    batch: "SP26-BS(SE)-AM",
+    department: "Software Engineering",
+    studentId: "SE-2026-005",
+    bio: "Testing account for moderation, search, and discussion density."
+  },
+  {
+    email: "uniboard.ai@example.com",
+    password: "UniBoardAI123!",
+    firstName: "UniBoard",
+    lastName: "AI",
+    username: "uniboard_ai",
+    role: "super_admin",
+    batch: "SP26-BS(SE)-AM",
+    department: "Software Engineering",
+    bio: "System responder for mention-based academic follow-up inside seeded environments."
   }
 ];
 

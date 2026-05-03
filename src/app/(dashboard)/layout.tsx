@@ -1,20 +1,42 @@
 import { auth } from "@clerk/nextjs/server";
+import nextDynamic from "next/dynamic";
 import { redirect } from "next/navigation";
-import { MobileNav } from "@/components/layout/MobileNav";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
+import { isClerkConfigured } from "@/lib/deployment";
+
+export const dynamic = "force-dynamic";
+
+const Sidebar = nextDynamic(() => import("@/components/layout/Sidebar").then((mod) => mod.Sidebar), {
+  ssr: false
+});
+
+const MobileNav = nextDynamic(() => import("@/components/layout/MobileNav").then((mod) => mod.MobileNav), {
+  ssr: false
+});
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  if (!isClerkConfigured) {
+    return (
+      <DeploymentSetupNotice
+        title="Dashboard auth is not configured"
+        detail="UniBoard dashboard routes are protected by Clerk. Add the missing Vercel environment variables before deploying protected routes."
+      />
+    );
+  }
+
   const { userId } = await auth();
   if (!userId) {
     redirect("/sign-in");
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-950">
-      <aside className="hidden w-80 shrink-0 md:flex">
+    <div className="app-shell flex overflow-hidden bg-gray-950">
+      <aside className="hidden w-[18rem] shrink-0 lg:flex xl:w-[19.5rem]">
         <Sidebar />
       </aside>
-      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">{children}</main>
+      <main id="main-content" className="flex min-w-0 flex-1 flex-col overflow-hidden pb-24 md:pb-0">
+        {children}
+      </main>
       <MobileNav />
     </div>
   );

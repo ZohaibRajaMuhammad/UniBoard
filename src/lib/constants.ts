@@ -12,14 +12,18 @@ export const DEPARTMENTS = [
   "Mechanical Engineering"
 ] as const;
 
-export const POST_TYPES = ["note", "deadline", "question", "resource", "announcement"] as const;
+export const POST_TYPES = ["note", "deadline", "question", "resource", "announcement", "poll", "project"] as const;
 
 export const POST_TYPE_CONFIG = {
   note: { label: "Note", emoji: "📝" },
   deadline: { label: "Deadline", emoji: "⏰" },
   question: { label: "Question", emoji: "❓" },
   resource: { label: "Resource", emoji: "🔗" },
-  announcement: { label: "Announcement", emoji: "📢" }
+  announcement: { label: "Announcement", emoji: "📢" },
+  poll: { label: "Poll", emoji: "📊" },
+  project: { label: "Project", emoji: "🚀" }
 } as const;
 
 export const REACTION_EMOJIS = ["👍", "❤️", "😂", "🔥", "😮", "😢"] as const;
+
+export const ROOM_MENTION_AI = "@uniboardai";

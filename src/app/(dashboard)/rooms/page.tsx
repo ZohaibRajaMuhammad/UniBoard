@@ -32,29 +32,26 @@ export default function RoomsPage() {
   }, [publicRooms, deferredQuery]);
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        <div className="spotlight-ring glass-panel mb-6 rounded-[34px] p-6 sm:p-8">
+    <div className="app-scroll">
+      <div className="page-wrap page-stack">
+        <div className="spotlight-ring glass-panel rounded-[var(--radius-panel)] p-6 sm:p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
-              <p className="text-sm uppercase tracking-[0.22em] text-brand-200">Rooms</p>
-              <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Find the right academic stream fast.</h1>
+              <p className="section-eyebrow text-brand-200">Rooms</p>
+              <h1 className="fluid-title mt-2 font-bold text-white">Find the right academic stream fast.</h1>
               <p className="mt-3 text-sm leading-6 text-gray-300">
                 Discover public spaces for your batch, join high-signal rooms, and create focused channels when the class needs a clean home.
               </p>
             </div>
-            <button
-              onClick={() => setShowModal(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-400"
-            >
+            <button onClick={() => setShowModal(true)} className="app-button app-button-primary w-full sm:w-auto">
               <Plus size={16} />
               Create room
             </button>
           </div>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_auto_auto]">
-            <div className="flex items-center gap-3 rounded-3xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              <Search size={18} className="text-gray-500" />
+          <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
+            <div className="app-input flex min-h-[3.25rem] items-center gap-3">
+              <Search size={18} className="shrink-0 text-gray-500" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -62,19 +59,25 @@ export default function RoomsPage() {
                 className="w-full bg-transparent text-sm text-white outline-none placeholder:text-gray-500"
               />
             </div>
-            <div className="rounded-3xl border border-white/10 bg-black/20 px-4 py-3">
+            <div className="stat-card">
               <p className="text-xs uppercase tracking-[0.22em] text-gray-500">Visible rooms</p>
               <p className="mt-2 text-2xl font-black text-white">{filteredRooms.length}</p>
             </div>
-            <div className="rounded-3xl border border-white/10 bg-black/20 px-4 py-3">
+            <div className="stat-card">
               <p className="text-xs uppercase tracking-[0.22em] text-gray-500">Batch</p>
               <p className="mt-2 text-sm font-semibold text-white">{user?.batch ?? "Unassigned"}</p>
             </div>
           </div>
 
           <div className="mt-5 flex flex-wrap gap-3 text-sm text-gray-300">
-            <div className="panel-chip rounded-2xl px-4 py-2"><Users size={14} /> Public collaboration</div>
-            <div className="panel-chip rounded-2xl px-4 py-2"><Sparkles size={14} /> Optimized for fast subject discovery</div>
+            <div className="panel-chip rounded-2xl px-4 py-2">
+              <Users size={14} />
+              Public collaboration
+            </div>
+            <div className="panel-chip rounded-2xl px-4 py-2">
+              <Sparkles size={14} />
+              Optimized for fast subject discovery
+            </div>
           </div>
         </div>
 
@@ -85,9 +88,11 @@ export default function RoomsPage() {
             ))}
           </div>
         ) : publicRooms.length === 0 ? (
-          <div className="glass-panel rounded-[28px] p-8 text-sm text-gray-400">No public rooms available for your current batch.</div>
+          <div className="glass-panel rounded-[var(--radius-panel)] p-8 text-sm text-gray-400">
+            No public rooms available for your current batch.
+          </div>
         ) : filteredRooms.length === 0 ? (
-          <div className="glass-panel rounded-[28px] p-10 text-center">
+          <div className="glass-panel rounded-[var(--radius-panel)] p-8 text-center sm:p-10">
             <div className="text-4xl">🔎</div>
             <h2 className="mt-4 text-xl font-semibold text-white">No rooms match your search</h2>
             <p className="mt-2 text-sm text-gray-400">Try a subject code, room name, or batch keyword.</p>
@@ -99,7 +104,7 @@ export default function RoomsPage() {
                 <RoomCard room={room} />
                 <button
                   onClick={() => void joinRoom({ roomId: room._id })}
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+                  className="app-button app-button-secondary w-full"
                 >
                   Join room
                 </button>
