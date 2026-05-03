@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import nextDynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
-import { isClerkConfigured } from "@/lib/deployment";
+import { isClerkServerConfigured } from "@/lib/deployment";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,7 @@ const MobileNav = nextDynamic(() => import("@/components/layout/MobileNav").then
 });
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  if (!isClerkConfigured) {
+  if (!isClerkServerConfigured) {
     return (
       <DeploymentSetupNotice
         title="Dashboard auth is not configured"

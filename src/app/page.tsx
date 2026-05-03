@@ -2,16 +2,16 @@ import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
-import { isClerkConfigured } from "@/lib/deployment";
+import { isClerkServerConfigured } from "@/lib/deployment";
 
 export const dynamic = "force-dynamic";
 
 export default async function LandingPage() {
-  if (!isClerkConfigured) {
+  if (!isClerkServerConfigured) {
     return (
       <DeploymentSetupNotice
         title="Configure Clerk before publishing UniBoard"
-        detail="The landing page uses Clerk session checks to redirect authenticated users. Add the missing Clerk public key in Vercel to enable the full app shell."
+        detail="The landing page uses Clerk session checks to redirect authenticated users. Add the missing Clerk environment variables in Vercel to enable the full app shell."
       />
     );
   }

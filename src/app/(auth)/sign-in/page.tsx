@@ -2,16 +2,16 @@ import { SignIn, SignOutButton } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
-import { isClerkConfigured } from "@/lib/deployment";
+import { isClerkServerConfigured } from "@/lib/deployment";
 
 export const dynamic = "force-dynamic";
 
 export default async function SignInPage() {
-  if (!isClerkConfigured) {
+  if (!isClerkServerConfigured) {
     return (
       <DeploymentSetupNotice
         title="Sign-in is not available yet"
-        detail="Clerk is not configured in this deployment. Add the missing public key in Vercel, redeploy, and the authentication screen will render normally."
+        detail="Clerk is not fully configured in this deployment. Add the missing Clerk environment variables in Vercel, redeploy, and the authentication screen will render normally."
       />
     );
   }
