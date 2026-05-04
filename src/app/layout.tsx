@@ -1,15 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Manrope } from "next/font/google";
 import { ConvexClientProvider } from "@/components/providers/ConvexClientProvider";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
 import { appEnv, isAppConfigured } from "@/lib/deployment";
 import "./globals.css";
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope"
-});
 
 export const metadata: Metadata = {
   title: "UniBoard",
@@ -24,7 +18,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={manrope.variable}>
+    <html lang="en">
       <body className="min-h-screen bg-gray-950 font-sans text-white antialiased">
         <a href="#main-content" className="skip-link">
           Skip to content

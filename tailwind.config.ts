@@ -38,7 +38,14 @@ const config: Config = {
         }
       },
       fontFamily: {
-        sans: ["var(--font-manrope)", "sans-serif"]
+        sans: [
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "\"Segoe UI\"",
+          "sans-serif"
+        ]
       },
       boxShadow: {
         panel: "0 20px 60px rgba(8, 10, 20, 0.35)"
