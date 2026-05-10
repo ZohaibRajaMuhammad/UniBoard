@@ -1,0 +1,1133 @@
+﻿openapi: 3.1.0
+info:
+  title: UniBoard API
+  version: 1.0.0
+  summary: Product API derived from the UniBoard HTML prototypes.
+  description: |
+    This contract operationalizes the visible product surface documented in /docs.
+servers:
+  - url: https://api.uniboard.example.com/api/v1
+    description: Production
+  - url: https://staging-api.uniboard.example.com/api/v1
+    description: Staging
+tags:
+  - name: Auth
+  - name: Rooms
+  - name: Posts
+  - name: Notifications
+  - name: Search
+  - name: AI
+  - name: Planner
+  - name: Analytics
+  - name: Reputation
+security:
+  - bearerAuth: []
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /session/current:
+    get:
+      tags: [Auth]
+      summary: Get current session
+      responses:
+        '200':
+          description: Current session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /dashboard:
+    get:
+      tags: [Rooms]
+      summary: Get dashboard composition payload
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+  /rooms:
+    get:
+      tags: [Rooms]
+      summary: Get rooms for current user
+      responses:
+        '200':
+          description: Room list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Room'
+    post:
+      tags: [Rooms]
+      summary: Create a room
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoomRequest'
+      responses:
+        '201':
+          description: Room created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Room'
+  /rooms/discovery:
+    get:
+      tags: [Rooms]
+      summary: Discover rooms
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200':
+          description: Discoverable rooms
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomDiscoveryResponse'
+  /rooms/{roomId}:
+    get:
+      tags: [Rooms]
+      summary: Get room detail
+      parameters:
+        - $ref: '#/components/parameters/RoomId'
+      responses:
+        '200':
+          description: Room detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/RoomDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /rooms/{roomId}/join:
+    post:
+      tags: [Rooms]
+      summary: Join a room
+      parameters:
+        - $ref: '#/components/parameters/RoomId'
+      responses:
+        '200':
+          description: Joined room
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/RoomMembership'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /rooms/{roomId}/settings:
+    get:
+      tags: [Rooms]
+      summary: Get room settings
+      parameters:
+        - $ref: '#/components/parameters/RoomId'
+      responses:
+        '200':
+          description: Room settings payload
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/RoomSettings'
+    patch:
+      tags: [Rooms]
+      summary: Update room settings
+      parameters:
+        - $ref: '#/components/parameters/RoomId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoomSettingsRequest'
+      responses:
+        '200':
+          description: Updated room settings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/RoomSettings'
+  /rooms/{roomId}/posts:
+    get:
+      tags: [Posts]
+      summary: Get room feed
+      parameters:
+        - $ref: '#/components/parameters/RoomId'
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200':
+          description: Feed page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostFeedResponse'
+    post:
+      tags: [Posts]
+      summary: Create a post
+      parameters:
+        - $ref: '#/components/parameters/RoomId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePostRequest'
+      responses:
+        '201':
+          description: Post created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Post'
+  /posts/{postId}/comments:
+    get:
+      tags: [Posts]
+      summary: Get comments for a post
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '200':
+          description: Comments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+    post:
+      tags: [Posts]
+      summary: Create a comment
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommentRequest'
+      responses:
+        '201':
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Comment'
+  /posts/{postId}/vote:
+    post:
+      tags: [Posts]
+      summary: Toggle vote on a post
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '200':
+          description: Updated interaction state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostInteractionResponse'
+  /posts/{postId}/save:
+    post:
+      tags: [Posts]
+      summary: Save a post
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '200':
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveStateResponse'
+    delete:
+      tags: [Posts]
+      summary: Unsave a post
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '200':
+          description: Unsaved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveStateResponse'
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Get notifications
+      parameters:
+        - in: query
+          name: filter
+          schema:
+            type: string
+            enum: [all, unread]
+      responses:
+        '200':
+          description: Notification list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationsResponse'
+  /notifications/{notificationId}:
+    patch:
+      tags: [Notifications]
+      summary: Update notification state
+      parameters:
+        - $ref: '#/components/parameters/NotificationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNotificationRequest'
+      responses:
+        '200':
+          description: Updated notification
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Notification'
+  /notifications/mark-all-read:
+    post:
+      tags: [Notifications]
+      summary: Mark all notifications read
+      responses:
+        '200':
+          description: All read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      unreadCount:
+                        type: integer
+  /search:
+    get:
+      tags: [Search]
+      summary: Search accessible content
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+  /ai/assistant:
+    post:
+      tags: [AI]
+      summary: Run AI assistant turn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiAssistantRequest'
+      responses:
+        '200':
+          description: Assistant response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAssistantResponse'
+  /ai/briefing:
+    get:
+      tags: [AI]
+      summary: Get dashboard AI briefing
+      responses:
+        '200':
+          description: Briefing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiBriefingResponse'
+  /ai/composer/suggest:
+    post:
+      tags: [AI]
+      summary: Get composer suggestions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiComposerSuggestRequest'
+      responses:
+        '200':
+          description: Suggestions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiComposerSuggestResponse'
+  /ai/knowledge/query:
+    post:
+      tags: [AI]
+      summary: Ask the knowledge base
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiKnowledgeQueryRequest'
+      responses:
+        '200':
+          description: Grounded answer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiKnowledgeQueryResponse'
+  /ai/room-summary:
+    post:
+      tags: [AI]
+      summary: Summarize a room
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roomId]
+              properties:
+                roomId:
+                  type: string
+      responses:
+        '200':
+          description: Room summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiRoomSummaryResponse'
+  /ai/deadline-risk:
+    get:
+      tags: [AI]
+      summary: Get deadline risk assessment
+      parameters:
+        - in: query
+          name: roomId
+          schema: { type: string }
+      responses:
+        '200':
+          description: Deadline risk
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiDeadlineRiskResponse'
+  /planner:
+    get:
+      tags: [Planner]
+      summary: Get planner snapshot
+      responses:
+        '200':
+          description: Planner state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlannerResponse'
+  /planner/replan:
+    post:
+      tags: [Planner]
+      summary: Recompute AI study plan
+      responses:
+        '202':
+          description: Replan accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      jobId:
+                        type: string
+                      status:
+                        type: string
+                        enum: [queued, running]
+  /deadlines:
+    post:
+      tags: [Planner]
+      summary: Create a deadline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeadlineRequest'
+      responses:
+        '201':
+          description: Deadline created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Deadline'
+  /planner/export:
+    post:
+      tags: [Planner]
+      summary: Export study sessions to a calendar provider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider:
+                  type: string
+                  enum: [google, outlook, ics]
+      responses:
+        '200':
+          description: Export result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      exportUrl:
+                        type: string
+                        format: uri
+  /analytics/overview:
+    get:
+      tags: [Analytics]
+      summary: Get analytics overview
+      responses:
+        '200':
+          description: Analytics overview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsOverviewResponse'
+  /analytics/engagement:
+    get:
+      tags: [Analytics]
+      summary: Get engagement analytics
+      responses:
+        '200':
+          description: Engagement analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsEngagementResponse'
+  /reputation/me:
+    get:
+      tags: [Reputation]
+      summary: Get current user reputation profile
+      responses:
+        '200':
+          description: Reputation profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReputationProfileResponse'
+  /reputation/activity:
+    get:
+      tags: [Reputation]
+      summary: Get XP activity timeline
+      responses:
+        '200':
+          description: XP events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReputationActivityResponse'
+  /reputation/leaderboard:
+    get:
+      tags: [Reputation]
+      summary: Get leaderboard
+      parameters:
+        - in: query
+          name: scope
+          schema:
+            type: string
+            enum: [all_rooms, room, this_week]
+      responses:
+        '200':
+          description: Leaderboard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaderboardResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    RoomId:
+      name: roomId
+      in: path
+      required: true
+      schema:
+        type: string
+    PostId:
+      name: postId
+      in: path
+      required: true
+      schema:
+        type: string
+    NotificationId:
+      name: notificationId
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    Unauthorized:
+      description: Authentication required or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflict or duplicate operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RateLimited:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            requestId:
+              type: string
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+    AuthResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            accessToken: { type: string }
+            refreshToken: { type: string }
+            user:
+              $ref: '#/components/schemas/User'
+    RegisterResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+            verificationRequired:
+              type: boolean
+    SessionResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            authenticated:
+              type: boolean
+            user:
+              $ref: '#/components/schemas/User'
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [student, instructor, moderator, tenant_admin] }
+        avatarUrl: { type: string, format: uri, nullable: true }
+    Room:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        subjectCode: { type: string }
+        batch: { type: string }
+        visibility: { type: string, enum: [public, private] }
+        joined: { type: boolean }
+        unreadCount: { type: integer }
+    RoomDetail:
+      allOf:
+        - $ref: '#/components/schemas/Room'
+        - type: object
+          properties:
+            description: { type: string }
+            memberCount: { type: integer }
+            postCount: { type: integer }
+    RoomMembership:
+      type: object
+      properties:
+        roomId: { type: string }
+        userId: { type: string }
+        status: { type: string, enum: [joined, pending] }
+    RoomSettings:
+      type: object
+      properties:
+        anonymousPostingEnabled: { type: boolean }
+        studentInvitesEnabled: { type: boolean }
+        aiFeaturesEnabled: { type: boolean }
+    CreateRoomRequest:
+      type: object
+      required: [name, subjectCode, visibility]
+      properties:
+        name: { type: string }
+        subjectCode: { type: string }
+        batch: { type: string }
+        visibility: { type: string, enum: [public, private] }
+    UpdateRoomSettingsRequest:
+      type: object
+      properties:
+        anonymousPostingEnabled: { type: boolean }
+        studentInvitesEnabled: { type: boolean }
+        aiFeaturesEnabled: { type: boolean }
+    Post:
+      type: object
+      properties:
+        id: { type: string }
+        roomId: { type: string }
+        type: { type: string, enum: [announcement, note, question, resource] }
+        body: { type: string }
+        author:
+          $ref: '#/components/schemas/User'
+        anonymous: { type: boolean }
+        upvotes: { type: integer }
+        commentsCount: { type: integer }
+        saved: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    CreatePostRequest:
+      type: object
+      required: [type, body]
+      properties:
+        type:
+          type: string
+          enum: [announcement, note, question, resource]
+        body: { type: string, minLength: 1, maxLength: 10000 }
+        anonymous: { type: boolean }
+    Comment:
+      type: object
+      properties:
+        id: { type: string }
+        postId: { type: string }
+        body: { type: string }
+        author:
+          $ref: '#/components/schemas/User'
+        createdAt: { type: string, format: date-time }
+    CreateCommentRequest:
+      type: object
+      required: [body]
+      properties:
+        body: { type: string, minLength: 1, maxLength: 4000 }
+    PostFeedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+        meta:
+          type: object
+          properties:
+            nextCursor: { type: string, nullable: true }
+    PostInteractionResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            upvoted: { type: boolean }
+            upvotes: { type: integer }
+    SaveStateResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            saved: { type: boolean }
+    Notification:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string }
+        message: { type: string }
+        unread: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        destination:
+          type: object
+          properties:
+            route: { type: string }
+            entityId: { type: string, nullable: true }
+    NotificationsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+        meta:
+          type: object
+          properties:
+            unreadCount: { type: integer }
+    UpdateNotificationRequest:
+      type: object
+      properties:
+        unread: { type: boolean }
+    SearchResult:
+      type: object
+      properties:
+        id: { type: string }
+        roomName: { type: string }
+        entityType: { type: string }
+        excerpt: { type: string }
+        relevanceScore: { type: number }
+        route: { type: string }
+    SearchResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+    AiAssistantRequest:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string, minLength: 1 }
+        roomId: { type: string, nullable: true }
+    AiAssistantResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            reply: { type: string }
+            actions:
+              type: array
+              items:
+                type: string
+    AiBriefingResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            title: { type: string }
+            summary: { type: string }
+            priorities:
+              type: array
+              items:
+                type: string
+    AiComposerSuggestRequest:
+      type: object
+      required: [draftBody, postType]
+      properties:
+        draftBody: { type: string }
+        postType: { type: string }
+        roomId: { type: string }
+    AiComposerSuggestResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            suggestions:
+              type: array
+              items:
+                type: string
+    AiKnowledgeQueryRequest:
+      type: object
+      required: [query]
+      properties:
+        query: { type: string }
+        roomIds:
+          type: array
+          items: { type: string }
+    SourceReference:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        route: { type: string }
+    AiKnowledgeQueryResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            answer: { type: string }
+            confidenceBand: { type: string, enum: [low, medium, high] }
+            sources:
+              type: array
+              items:
+                $ref: '#/components/schemas/SourceReference'
+    AiRoomSummaryResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            summary: { type: string }
+            keyPoints:
+              type: array
+              items: { type: string }
+    AiDeadlineRiskResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              deadlineId: { type: string }
+              riskPercent: { type: number }
+              severity: { type: string, enum: [low, medium, high] }
+              explanation: { type: string }
+    DashboardResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            metrics:
+              type: object
+            rooms:
+              type: array
+              items:
+                $ref: '#/components/schemas/Room'
+            deadlines:
+              type: array
+              items:
+                $ref: '#/components/schemas/Deadline'
+            aiBriefing:
+              $ref: '#/components/schemas/AiBriefingResponse'
+    RoomDiscoveryResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Room'
+        meta:
+          type: object
+          properties:
+            nextCursor: { type: string, nullable: true }
+    Deadline:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        roomId: { type: string }
+        dueAt: { type: string, format: date-time }
+        progressPercent: { type: number }
+    CreateDeadlineRequest:
+      type: object
+      required: [title, dueAt]
+      properties:
+        title: { type: string }
+        roomId: { type: string, nullable: true }
+        dueAt: { type: string, format: date-time }
+        estimatedHours: { type: number, minimum: 0 }
+    StudySession:
+      type: object
+      properties:
+        id: { type: string }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        title: { type: string }
+        source: { type: string, enum: [ai, manual] }
+    PlannerResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            deadlines:
+              type: array
+              items:
+                $ref: '#/components/schemas/Deadline'
+            studySessions:
+              type: array
+              items:
+                $ref: '#/components/schemas/StudySession'
+            aiPlanSummary: { type: string }
+    AnalyticsOverviewResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            stats:
+              type: object
+            charts:
+              type: array
+              items:
+                type: object
+    AnalyticsEngagementResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            heatmap:
+              type: array
+              items:
+                type: integer
+            postDistribution:
+              type: array
+              items:
+                type: object
+    ReputationProfileResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            xpTotal: { type: integer }
+            tier: { type: string }
+            nextTierTarget: { type: integer }
+            streakDays: { type: integer }
+            expertise:
+              type: array
+              items:
+                type: object
+    ReputationActivityResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              deltaXp: { type: integer }
+              reason: { type: string }
+              createdAt: { type: string, format: date-time }
+    LeaderboardRow:
+      type: object
+      properties:
+        rank: { type: integer }
+        user:
+          $ref: '#/components/schemas/User'
+        score: { type: integer }
+        delta: { type: integer }
+    LeaderboardResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LeaderboardRow'

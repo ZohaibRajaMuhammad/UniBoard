@@ -254,5 +254,19 @@ export default defineSchema({
     createdAt: v.number()
   })
     .index("by_userId", ["userId"])
-    .index("by_userId_postId", ["userId", "postId"])
+    .index("by_userId_postId", ["userId", "postId"]),
+
+  plannerDeadlines: defineTable({
+    userId: v.id("users"),
+    roomId: v.optional(v.id("rooms")),
+    title: v.string(),
+    notes: v.optional(v.string()),
+    dueDate: v.number(),
+    estimatedMinutes: v.optional(v.number()),
+    completed: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number()
+  })
+    .index("by_userId_dueDate", ["userId", "dueDate"])
+    .index("by_userId_completed", ["userId", "completed"])
 });

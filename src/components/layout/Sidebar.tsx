@@ -3,7 +3,19 @@
 import { useState } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-import { Bell, Home, Plus, Search, Settings } from "lucide-react";
+import {
+  BarChart3,
+  Bell,
+  BookOpen,
+  Bookmark,
+  BrainCircuit,
+  Crown,
+  Home,
+  Plus,
+  Search,
+  Settings,
+  Trophy
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { api } from "../../../convex/_generated/api";
@@ -24,8 +36,8 @@ export function Sidebar() {
   return (
     <div className="flex h-full w-full flex-col border-r border-white/10 bg-[linear-gradient(180deg,rgba(8,16,28,0.98),rgba(7,12,22,0.98))] backdrop-blur">
       <div className="flex min-h-[5.25rem] items-center gap-3 border-b border-white/10 px-4 xl:px-5">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand-300/20 bg-brand-500/15 text-2xl shadow-[0_0_30px_rgba(63,115,255,0.18)]">
-          📋
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand-300/20 bg-brand-500/15 text-lg font-black text-white shadow-[0_0_30px_rgba(63,115,255,0.18)]">
+          UB
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-lg font-bold text-white">UniBoard</p>
@@ -50,6 +62,7 @@ export function Sidebar() {
 
       <nav className="space-y-1 px-3 py-3">
         <NavItem href="/dashboard" active={pathname === "/dashboard"} icon={<Home size={17} />} label="Dashboard" />
+        <NavItem href="/search" active={pathname === "/search"} icon={<Search size={17} />} label="Search" />
         <NavItem
           href="/notifications"
           active={pathname === "/notifications"}
@@ -57,6 +70,12 @@ export function Sidebar() {
           label="Notifications"
           badge={unreadNotifications ?? 0}
         />
+        <NavItem href="/saved" active={pathname === "/saved"} icon={<Bookmark size={17} />} label="Saved" />
+        <NavItem href="/knowledge-base" active={pathname === "/knowledge-base"} icon={<BookOpen size={17} />} label="Knowledge base" />
+        <NavItem href="/planner" active={pathname === "/planner"} icon={<BrainCircuit size={17} />} label="Planner" />
+        <NavItem href="/analytics" active={pathname === "/analytics"} icon={<BarChart3 size={17} />} label="Analytics" />
+        <NavItem href="/leaderboard" active={pathname === "/leaderboard"} icon={<Crown size={17} />} label="Leaderboard" />
+        <NavItem href="/reputation" active={pathname === "/reputation"} icon={<Trophy size={17} />} label="Reputation" />
       </nav>
 
       <div className="flex items-center justify-between px-4 pt-2 xl:px-5">

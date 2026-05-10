@@ -3,6 +3,10 @@ import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { canModerateRoom, getCurrentUser, getMembership } from "./lib";
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
 export const getRoomAnalytics = query({
   args: {
     roomId: v.id("rooms"),
@@ -69,6 +73,64 @@ export const getRoomAnalytics = query({
       totalMembers: members.filter((member) => !member.isBanned).length,
       resolvedQuestions: livePosts.filter((post) => post.type === "question" && post.isResolved).length,
       anonymousPosts: livePosts.filter((post) => post.isAnonymous).length
+    };
+  }
+});
+
+export const getWorkspaceAnalytics = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      throw new Error("Unauthenticated");
+    }
+
+    const memberships = await ctx.db
+      .query("roomMembers")
+      .withIndex("by_userId", (query) => query.eq("userId", user._id))
+      .collect();
+    const allowedRoomIds = new Set(memberships.filter((membership) => !membership.isBanned).map((membership) => membership.roomId));
+    const posts = await ctx.db.query("posts").collect();
+    const roomPosts = posts.filter((post) => !post.isDeleted && !post.isHidden && allowedRoomIds.has(post.roomId));
+    const now = Date.now();
+    const last28Days = Array.from({ length: 28 }).map((_, index) => {
+      const day = new Date(now - (27 - index) * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      return {
+        day,
+        count: roomPosts.filter((post) => new Date(post.createdAt).toISOString().slice(0, 10) === day).length
+      };
+    });
+
+    const byType = roomPosts.reduce<Record<string, number>>((accumulator, post) => {
+      accumulator[post.type] = (accumulator[post.type] ?? 0) + 1;
+      return accumulator;
+    }, {});
+
+    const upcomingDeadlines = roomPosts
+      .filter((post) => post.type === "deadline" && post.deadlineDate && post.deadlineDate > now)
+      .sort((left, right) => (left.deadlineDate ?? 0) - (right.deadlineDate ?? 0))
+      .slice(0, 5)
+      .map((post) => {
+        const daysUntilDue = Math.max(0, Math.ceil(((post.deadlineDate ?? now) - now) / (24 * 60 * 60 * 1000)));
+        const score = clamp(daysUntilDue <= 1 ? 82 : daysUntilDue <= 3 ? 64 : daysUntilDue <= 7 ? 46 : 24, 20, 88);
+        return {
+          postId: post._id,
+          roomId: post.roomId,
+          title: post.deadlineTitle || post.content.slice(0, 72),
+          dueDate: post.deadlineDate,
+          score,
+          band: score >= 70 ? "high" : score >= 45 ? "medium" : "low"
+        };
+      });
+
+    return {
+      totalPosts: roomPosts.length,
+      activeRooms: allowedRoomIds.size,
+      last28Days,
+      byType,
+      anonymousPosts: roomPosts.filter((post) => post.isAnonymous).length,
+      resolvedQuestions: roomPosts.filter((post) => post.type === "question" && post.isResolved).length,
+      upcomingDeadlines
     };
   }
 });

@@ -1,0 +1,13 @@
+﻿{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "UniBoard API",
+    "version": "1.0.0",
+    "summary": "Product API derived from the UniBoard HTML prototypes"
+  },
+  "servers": [
+    { "url": "https://api.uniboard.example.com/api/v1", "description": "Production" },
+    { "url": "https://staging-api.uniboard.example.com/api/v1", "description": "Staging" }
+  ],
+  "description": "See openapi.yaml for the full contract. This JSON companion exists for downstream tooling that prefers JSON manifests."
+}

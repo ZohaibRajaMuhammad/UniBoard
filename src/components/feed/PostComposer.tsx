@@ -17,6 +17,7 @@ const postTypes = POST_TYPES.map((type) => ({
 
 export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
   const user = useCurrentUser();
+  const room = useQuery(api.rooms.getById, { roomId });
   const members = useQuery(api.rooms.getMembers, { roomId });
   const createPost = useMutation(api.posts.create);
   const [content, setContent] = useState("");
@@ -33,6 +34,8 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
   const [submitError, setSubmitError] = useState("");
 
   const canPostAnnouncement = user?.role === "teacher" || user?.role === "super_admin";
+  const allowsAnonymous = room?.allowAnonymous ?? true;
+  const isRoomArchived = room?.isArchived ?? false;
   const availablePostTypes = useMemo(
     () => postTypes.filter((type) => canPostAnnouncement || type.value !== "announcement"),
     [canPostAnnouncement]
@@ -43,6 +46,12 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
       setPostType("note");
     }
   }, [canPostAnnouncement, postType]);
+
+  useEffect(() => {
+    if (!allowsAnonymous && isAnonymous) {
+      setIsAnonymous(false);
+    }
+  }, [allowsAnonymous, isAnonymous]);
 
   const mentionableNames = useMemo(() => {
     const names = (members ?? [])
@@ -102,7 +111,7 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
   }
 
   async function handleSubmit() {
-    if (!content.trim() || isSubmitting) {
+    if (!content.trim() || isSubmitting || isRoomArchived) {
       return;
     }
 
@@ -166,14 +175,20 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
           </div>
 
           <button
-            onClick={() => setIsAnonymous((current) => !current)}
+            onClick={() => {
+              if (!allowsAnonymous || isRoomArchived) {
+                return;
+              }
+              setIsAnonymous((current) => !current);
+            }}
+            disabled={!allowsAnonymous || isRoomArchived}
             className={cn(
-              "inline-flex items-center justify-center gap-2 self-start rounded-2xl border px-4 py-2 text-sm transition",
+              "inline-flex items-center justify-center gap-2 self-start rounded-2xl border px-4 py-2 text-sm transition disabled:cursor-not-allowed disabled:opacity-60",
               isAnonymous ? "border-brand-400/40 bg-brand-500/10 text-brand-100" : "border-white/10 bg-white/5 text-gray-300"
             )}
           >
             {isAnonymous ? <EyeOff size={14} /> : <Eye size={14} />}
-            {isAnonymous ? "Anonymous mode" : "Visible identity"}
+            {!allowsAnonymous ? "Anonymous disabled in this room" : isAnonymous ? "Anonymous mode" : "Visible identity"}
           </button>
         </div>
 
@@ -209,6 +224,8 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
 
           <div className="panel-chip text-gray-300">{selectedType.label} format selected</div>
           {canPostAnnouncement ? <div className="panel-chip text-brand-100">Announcement access enabled</div> : null}
+          {!allowsAnonymous ? <div className="panel-chip text-amber-100">Anonymous posting disabled by room policy</div> : null}
+          {isRoomArchived ? <div className="panel-chip text-red-200">Archived rooms are read-only</div> : null}
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -313,7 +330,7 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
           <span className="text-xs text-gray-500">{content.length}/1000 • Press Ctrl/Cmd + Enter to post</span>
           <button
             onClick={() => void handleSubmit()}
-            disabled={!content.trim() || isSubmitting}
+            disabled={!content.trim() || isSubmitting || isRoomArchived}
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-400 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Send size={14} />

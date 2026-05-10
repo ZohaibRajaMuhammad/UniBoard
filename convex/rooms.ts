@@ -278,9 +278,19 @@ export const updateSettings = mutation({
       throw new Error("Permission denied");
     }
 
+    if (room.isArchived) {
+      throw new Error("Archived rooms are read-only.");
+    }
+
+    if (args.name !== undefined && !args.name.trim()) {
+      throw new Error("Room name is required.");
+    }
+
     const { roomId, ...updates } = args;
     await ctx.db.patch(roomId, {
       ...updates,
+      name: args.name?.trim(),
+      description: args.description?.trim() || undefined,
       updatedAt: Date.now(),
       joinCode:
         args.isPublic === undefined

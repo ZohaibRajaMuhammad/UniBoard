@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { PlusSquare } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 import { PinnedPostsBanner } from "@/components/feed/PinnedPostsBanner";
@@ -19,6 +20,7 @@ const FEED_FILTERS = ["all", ...POST_TYPES] as const;
 
 export default function RoomPage({ params }: { params: { roomId: string } }) {
   const roomId = params.roomId as Id<"rooms">;
+  const searchParams = useSearchParams();
   const currentUser = useCurrentUser();
   const [activeFilter, setActiveFilter] = useState<(typeof FEED_FILTERS)[number]>("all");
   const room = useQuery(api.rooms.getById, { roomId });
@@ -28,10 +30,26 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   });
   const pinnedPosts = useQuery(api.posts.getPinnedPosts, { roomId });
   const markSeen = useMutation(api.rooms.markSeen);
+  const highlightedPostId = searchParams.get("post") as Id<"posts"> | null;
 
   useEffect(() => {
     void markSeen({ roomId });
   }, [markSeen, roomId]);
+
+  useEffect(() => {
+    if (!highlightedPostId || posts === undefined) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      document.getElementById(`post-${highlightedPostId}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    }, 120);
+
+    return () => window.clearTimeout(timeout);
+  }, [highlightedPostId, posts]);
 
   const roomStats = useMemo(() => {
     if (!room) {
@@ -108,7 +126,12 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         {pinnedPosts && pinnedPosts.length > 0 ? <PinnedPostsBanner posts={pinnedPosts} /> : null}
 
         <div className="min-h-0 overflow-y-auto overscroll-contain pb-4">
-          <PostFeed posts={posts} roomId={roomId} emptyStateLabel={activeFilter === "all" ? "No posts yet" : `No ${activeFilter} posts yet`} />
+          <PostFeed
+            posts={posts}
+            roomId={roomId}
+            emptyStateLabel={activeFilter === "all" ? "No posts yet" : `No ${activeFilter} posts yet`}
+            highlightedPostId={highlightedPostId ?? undefined}
+          />
         </div>
 
         <div id="room-composer" className="sticky bottom-0 border-t border-white/10 bg-gray-950/95 backdrop-blur">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, BookOpen, Home, User } from "lucide-react";
+import { Bell, BookOpen, Home, Search, User } from "lucide-react";
 import { useUnreadCounts } from "@/hooks/useUnreadCounts";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ export function MobileNav() {
         <div className="flex min-h-[4.25rem] items-center justify-around pb-[max(0.5rem,env(safe-area-inset-bottom))]">
           <MobileNavItem href="/dashboard" label="Home" icon={<Home size={20} />} active={pathname === "/dashboard"} />
           <MobileNavItem href="/rooms" label="Rooms" icon={<BookOpen size={20} />} active={pathname.startsWith("/rooms")} badge={totalUnread} />
+          <MobileNavItem href="/search" label="Search" icon={<Search size={20} />} active={pathname === "/search"} />
           <MobileNavItem href="/notifications" label="Alerts" icon={<Bell size={20} />} active={pathname === "/notifications"} badge={unreadNotifications} />
           <MobileNavItem href="/profile" label="Profile" icon={<User size={20} />} active={pathname === "/profile"} />
         </div>

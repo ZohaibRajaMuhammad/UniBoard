@@ -35,7 +35,15 @@ const typeConfig: Record<string, string> = {
   project: "bg-cyan-500/10 text-cyan-200"
 };
 
-export function PostCard({ post, roomId }: { post: FeedPost; roomId: Id<"rooms"> }) {
+export function PostCard({
+  post,
+  roomId,
+  highlighted = false
+}: {
+  post: FeedPost;
+  roomId: Id<"rooms">;
+  highlighted?: boolean;
+}) {
   const currentUser = useQuery(api.users.getCurrentUser);
   const removePost = useMutation(api.posts.remove);
   const togglePin = useMutation(api.posts.togglePin);
@@ -105,7 +113,14 @@ export function PostCard({ post, roomId }: { post: FeedPost; roomId: Id<"rooms">
   }
 
   return (
-    <article className={cn("glass-panel rounded-[30px] p-5", post.isPinned && "border-amber-400/30 shadow-[0_0_0_1px_rgba(245,158,11,0.08),0_25px_70px_rgba(4,8,18,0.48)]")}>
+    <article
+      id={`post-${post._id}`}
+      className={cn(
+        "glass-panel rounded-[30px] p-5",
+        post.isPinned && "border-amber-400/30 shadow-[0_0_0_1px_rgba(245,158,11,0.08),0_25px_70px_rgba(4,8,18,0.48)]",
+        highlighted && "border-brand-400/40 shadow-[0_0_0_1px_rgba(63,115,255,0.18),0_30px_80px_rgba(10,20,48,0.42)]"
+      )}
+    >
       <div className="flex items-start gap-4">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-white">
           {post.author.imageUrl ? (

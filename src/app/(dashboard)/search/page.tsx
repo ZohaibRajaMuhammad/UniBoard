@@ -14,6 +14,7 @@ export default function SearchPage() {
   const deferredQuery = useDeferredValue(searchQuery);
   const results = useQuery(api.posts.search, { searchQuery: deferredQuery });
   const suggestions = useMemo(() => ["deadline", "OpenMP", "architecture", "normalization", "announcement"], []);
+  const queryTokens = deferredQuery.toLowerCase().split(/\s+/).filter(Boolean);
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
@@ -65,7 +66,7 @@ export default function SearchPage() {
             ((results as Array<FeedPost & { room?: Room | null }>)).map((result) => (
               <Link
                 key={result._id}
-                href={`/rooms/${result.roomId}`}
+                href={`/rooms/${result.roomId}?post=${result._id}`}
                 className="glass-panel block rounded-[28px] p-5 transition hover:border-brand-400/30"
               >
                 <div className="flex items-start justify-between gap-4">
@@ -74,7 +75,11 @@ export default function SearchPage() {
                     <div className="mt-2 flex flex-wrap gap-2">
                       <span className="panel-chip rounded-2xl px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-gray-200">{result.type}</span>
                     </div>
-                    <p className="mt-3 text-sm leading-6 text-gray-300">{result.content}</p>
+                    <p className="mt-3 text-sm leading-6 text-gray-300">
+                      {queryTokens.length > 0
+                        ? result.content.split(" ").slice(0, 40).join(" ")
+                        : result.content}
+                    </p>
                     <p className="mt-3 text-xs text-gray-500">by {result.author.name}</p>
                   </div>
                   <span className="text-xs text-gray-500">{formatRelativeTime(result.createdAt)}</span>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { BellRing, CheckCheck } from "lucide-react";
@@ -10,6 +11,7 @@ import { formatRelativeTime } from "@/lib/utils";
 export default function NotificationsPage() {
   const notifications = useQuery(api.notifications.getMyNotifications);
   const markAllRead = useMutation(api.notifications.markAllRead);
+  const markRead = useMutation(api.notifications.markRead);
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
   const items = useMemo(() => {
@@ -81,11 +83,34 @@ export default function NotificationsPage() {
               {items.map((notification) => (
                 <div key={notification._id} className={`p-5 ${notification.isRead ? "" : "bg-brand-500/[0.03]"}`}>
                   <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-medium text-white">{notification.message}</p>
-                      <p className="mt-1 text-xs text-gray-500">{notification.type.replace("_", " ")}</p>
+                    <div className="min-w-0 flex-1">
+                      {notification.roomId ? (
+                        <Link
+                          href={notification.postId ? `/rooms/${notification.roomId}?post=${notification.postId}` : `/rooms/${notification.roomId}`}
+                          onClick={() => void markRead({ notificationId: notification._id })}
+                          className="block"
+                        >
+                          <p className="text-sm font-medium text-white">{notification.message}</p>
+                          <p className="mt-1 text-xs text-gray-500">{notification.type.replace("_", " ")}</p>
+                        </Link>
+                      ) : (
+                        <>
+                          <p className="text-sm font-medium text-white">{notification.message}</p>
+                          <p className="mt-1 text-xs text-gray-500">{notification.type.replace("_", " ")}</p>
+                        </>
+                      )}
                     </div>
-                    <span className="text-xs text-gray-500">{formatRelativeTime(notification.createdAt)}</span>
+                    <div className="flex shrink-0 flex-col items-end gap-2">
+                      <span className="text-xs text-gray-500">{formatRelativeTime(notification.createdAt)}</span>
+                      {!notification.isRead ? (
+                        <button
+                          onClick={() => void markRead({ notificationId: notification._id })}
+                          className="text-xs font-medium text-brand-200 transition hover:text-white"
+                        >
+                          Mark read
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               ))}

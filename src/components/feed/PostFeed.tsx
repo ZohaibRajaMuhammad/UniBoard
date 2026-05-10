@@ -34,11 +34,13 @@ export interface FeedPost {
 export function PostFeed({
   posts,
   roomId,
-  emptyStateLabel = "No posts yet"
+  emptyStateLabel = "No posts yet",
+  highlightedPostId
 }: {
   posts: FeedPost[] | undefined;
   roomId: Id<"rooms">;
   emptyStateLabel?: string;
+  highlightedPostId?: Id<"posts">;
 }) {
   if (posts === undefined) {
     return (
@@ -65,7 +67,7 @@ export function PostFeed({
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4 sm:p-6">
       {posts.map((post) => (
-        <PostCard key={post._id} post={post} roomId={roomId} />
+        <PostCard key={post._id} post={post} roomId={roomId} highlighted={highlightedPostId === post._id} />
       ))}
       <div className="h-24" />
     </div>
