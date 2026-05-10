@@ -77,9 +77,7 @@ export default function SettingsPage() {
     setIsSaving(true);
     setStatus("");
     try {
-      await updateProfile({
-        notifPrefs: prefs
-      });
+      await updateProfile({ notifPrefs: prefs });
       setInitialPrefs(prefs);
       setStatus("Notification preferences updated.");
     } catch (error) {
@@ -96,13 +94,13 @@ export default function SettingsPage() {
 
   return (
     <div className="app-scroll">
-      <div className="page-wrap page-stack">
+      <div className="page-wrap page-stack content-column">
         <section className="glass-panel rounded-[28px] p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-500">Settings</p>
+              <p className="section-eyebrow text-[var(--app-primary-strong)]">Settings</p>
               <h1 className="mt-2 text-3xl font-bold text-white">Personal controls for room activity</h1>
-              <p className="mt-3 text-sm leading-7 text-gray-300">
+              <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">
                 Tune the alerts that matter, keep low-signal noise down, and use room settings for policy changes that affect everyone.
               </p>
             </div>
@@ -112,7 +110,7 @@ export default function SettingsPage() {
                 type="button"
                 onClick={handleReset}
                 disabled={isSaving || !hasChanges}
-                className="app-button app-button-secondary inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+                className="app-button app-button-secondary disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <RotateCcw size={14} />
                 Reset defaults
@@ -121,7 +119,7 @@ export default function SettingsPage() {
                 type="button"
                 onClick={() => void handleSave()}
                 disabled={isSaving || !hasChanges}
-                className="app-button app-button-primary inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+                className="app-button app-button-primary disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Save size={14} />
                 {isSaving ? "Saving..." : "Save changes"}
@@ -129,24 +127,22 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="grid gap-4">
               {SETTING_GROUPS.map((group) => {
                 const Icon = group.icon;
-
                 return (
-                  <section key={group.title} className="rounded-[24px] border border-white/10 bg-black/20 p-5">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand-400/25 bg-brand-500/10 text-brand-100">
+                  <section key={group.title} className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
+                    <div className="mb-5 flex items-start gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[rgba(109,140,255,0.25)] bg-[rgba(77,117,255,0.1)] text-[var(--app-primary-strong)]">
                         <Icon size={18} />
                       </div>
                       <div>
                         <h2 className="text-lg font-semibold text-white">{group.title}</h2>
-                        <p className="mt-1 text-sm leading-6 text-gray-400">{group.description}</p>
+                        <p className="mt-1 text-sm leading-6 text-[var(--app-text-muted)]">{group.description}</p>
                       </div>
                     </div>
-
-                    <div className="mt-5 grid gap-3">
+                    <div className="grid gap-3">
                       {group.items.map((item) => (
                         <SettingToggle
                           key={item.key}
@@ -166,26 +162,28 @@ export default function SettingsPage() {
               })}
             </div>
 
-            <aside className="rounded-[24px] border border-white/10 bg-black/20 p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-500">Workspace notes</p>
+            <aside className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Workspace notes</p>
               <h2 className="mt-2 text-xl font-semibold text-white">What is controlled here</h2>
-              <div className="mt-4 space-y-3 text-sm leading-7 text-gray-300">
+              <div className="mt-4 space-y-3 text-sm leading-7 text-[var(--app-text-soft)]">
                 <p>These preferences change your own notification experience only. Room-wide policy remains under room administration.</p>
                 <p>AI enablement is currently enforced at the room level, not as a personal override, so this screen leaves those controls read-only.</p>
               </div>
 
-              <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Dirty state</p>
-                <p className="mt-2 text-sm text-white">{hasChanges ? `${dirtyKeys.length} unsaved change${dirtyKeys.length === 1 ? "" : "s"}` : "All changes saved"}</p>
+              <div className="mt-5 rounded-2xl border border-[var(--app-line)] bg-white/[0.03] p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Dirty state</p>
+                <p className="mt-2 text-sm text-white">
+                  {hasChanges ? `${dirtyKeys.length} unsaved change${dirtyKeys.length === 1 ? "" : "s"}` : "All changes saved"}
+                </p>
               </div>
 
-              <Link href="/profile" className="mt-4 inline-flex text-sm font-medium text-brand-100 transition hover:text-brand-50">
+              <Link href="/profile" className="mt-4 inline-flex text-sm font-medium text-[var(--app-primary-strong)] transition hover:text-white">
                 Open profile details
               </Link>
             </aside>
           </div>
 
-          {status ? <p className="mt-4 text-sm text-gray-300">{status}</p> : null}
+          {status ? <p className="mt-4 text-sm text-[var(--app-text-soft)]">{status}</p> : null}
         </section>
       </div>
     </div>
@@ -209,21 +207,16 @@ function SettingToggle({
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className="flex min-h-11 items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left transition hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/70"
+      className="flex min-h-11 items-center justify-between gap-4 rounded-2xl border border-[var(--app-line)] bg-white/[0.03] px-4 py-3 text-left transition hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(109,140,255,0.45)]"
     >
       <div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-white">{label}</span>
-          {changed ? <span className="rounded-full bg-brand-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-100">Changed</span> : null}
+          {changed ? <span className="rounded-full bg-[rgba(77,117,255,0.14)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-primary-strong)]">Changed</span> : null}
         </div>
-        <p className="mt-1 text-xs leading-5 text-gray-400">{help}</p>
+        <p className="mt-1 text-xs leading-5 text-[var(--app-text-muted)]">{help}</p>
       </div>
-      <span
-        className={cn(
-          "rounded-full px-3 py-1 text-xs font-semibold",
-          checked ? "bg-brand-500 text-white" : "bg-white/10 text-gray-400"
-        )}
-      >
+      <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", checked ? "bg-[var(--app-primary)] text-white" : "bg-white/10 text-[var(--app-text-muted)]")}>
         {checked ? "On" : "Off"}
       </span>
     </button>

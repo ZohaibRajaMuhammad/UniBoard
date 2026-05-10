@@ -20,11 +20,11 @@ export default async function SignUpPage() {
 
   if (userId) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-950 px-4 py-10">
-        <div className="w-full max-w-md space-y-6 rounded-[1.75rem] border border-white/10 bg-gray-900 p-8 shadow-2xl">
+      <div className="flex min-h-screen items-center justify-center px-4 py-10">
+        <div className="glass-panel w-full max-w-[27.5rem] space-y-6 rounded-[28px] p-7">
           <div className="space-y-3 text-center">
             <h1 className="text-3xl font-bold text-white">You are already signed in</h1>
-            <p className="text-sm leading-6 text-gray-400">
+            <p className="text-sm leading-6 text-[var(--app-text-muted)]">
               Sign out first if you want to create or access another account from this browser.
             </p>
           </div>
@@ -44,27 +44,23 @@ export default async function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-950 px-4 py-10">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-white">Create your UniBoard account</h1>
-          <p className="mt-2 text-sm text-gray-400">Join your rooms, sync your profile, and start posting live.</p>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
+      <div className="hero-grid absolute inset-0 opacity-20" />
+      <div className="relative w-full max-w-[27.5rem] space-y-5">
+        <Link href="/" className="inline-flex items-center text-sm text-[var(--app-text-muted)] transition hover:text-white">
+          Back to home
+        </Link>
+        <div className="glass-panel rounded-[28px] p-7">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-white">Create your UniBoard account</h1>
+            <p className="mt-2 text-sm leading-6 text-[var(--app-text-muted)]">
+              Institutional onboarding with enough guidance to feel credible, not noisy.
+            </p>
+          </div>
+          <div className="[&_.cl-card]:!border-0 [&_.cl-card]:!bg-transparent [&_.cl-card]:!shadow-none [&_.cl-footerActionLink]:!text-[var(--app-primary-strong)] [&_.cl-formButtonPrimary]:!bg-[var(--app-primary)] [&_.cl-formButtonPrimary]:hover:!bg-[var(--app-primary-strong)] [&_.cl-formFieldInput]:!border-white/10 [&_.cl-formFieldInput]:!bg-white/5 [&_.cl-formFieldLabel]:!text-[var(--app-text-soft)] [&_.cl-headerSubtitle]:!hidden [&_.cl-headerTitle]:!hidden">
+            <SignUp routing="hash" redirectUrl="/dashboard" />
+          </div>
         </div>
-        <SignUp
-          routing="hash"
-          redirectUrl="/dashboard"
-          appearance={{
-            elements: {
-              card: "bg-gray-900 border border-gray-800 shadow-2xl",
-              headerTitle: "text-white",
-              headerSubtitle: "text-gray-400",
-              formFieldLabel: "text-gray-300",
-              formFieldInput: "bg-gray-800 border-gray-700 text-white",
-              formButtonPrimary: "bg-[#3657f7] hover:bg-[#5b7cff]",
-              footerActionLink: "text-[#90b3ff]"
-            }
-          }}
-        />
       </div>
     </div>
   );

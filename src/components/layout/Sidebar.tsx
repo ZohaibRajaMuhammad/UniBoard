@@ -34,29 +34,29 @@ export function Sidebar() {
   const [showCreateRoom, setShowCreateRoom] = useState(false);
 
   return (
-    <div className="flex h-full w-full flex-col border-r border-white/10 bg-[linear-gradient(180deg,rgba(8,16,28,0.98),rgba(7,12,22,0.98))] backdrop-blur">
-      <div className="flex min-h-[5.25rem] items-center gap-3 border-b border-white/10 px-4 xl:px-5">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-brand-300/20 bg-brand-500/15 text-lg font-black text-white shadow-[0_0_30px_rgba(63,115,255,0.18)]">
+    <div className="flex h-full w-full flex-col border-r border-[var(--app-line)] bg-[linear-gradient(180deg,rgba(8,15,27,0.98),rgba(5,11,20,0.98))] backdrop-blur">
+      <div className="flex min-h-[5.5rem] items-center gap-3 border-b border-[var(--app-line)] px-5">
+        <div className="flex h-12 w-12 items-center justify-center rounded-[18px] border border-[rgba(109,140,255,0.24)] bg-[rgba(77,117,255,0.14)] text-lg font-black text-white shadow-[0_0_30px_rgba(63,115,255,0.18)]">
           UB
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-lg font-bold text-white">UniBoard</p>
-          <p className="truncate text-[11px] uppercase tracking-[0.22em] text-gray-500">Academic command center</p>
+          <p className="truncate text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Academic command center</p>
         </div>
         {totalUnread ? (
-          <span className="rounded-full bg-brand-500 px-2 py-1 text-xs font-bold text-white">
+          <span className="rounded-full bg-[var(--app-primary)] px-2 py-1 text-xs font-bold text-white">
             {totalUnread > 99 ? "99+" : totalUnread}
           </span>
         ) : null}
       </div>
 
-      <div className="border-b border-white/10 px-4 py-4 xl:px-5">
+      <div className="border-b border-[var(--app-line)] px-5 py-4">
         <Link
           href="/search"
-          className="app-input flex min-h-[3rem] items-center gap-3 text-sm text-gray-300 transition hover:bg-white/10"
+          className="app-input flex min-h-[3.1rem] items-center gap-3 text-sm text-[var(--app-text-soft)] transition hover:bg-white/10"
         >
-          <Search size={16} className="shrink-0 text-gray-500" />
-          <span className="truncate text-gray-400">Search posts, deadlines, or rooms</span>
+          <Search size={16} className="shrink-0 text-[var(--app-text-muted)]" />
+          <span className="truncate text-[var(--app-text-muted)]">Search posts, deadlines, or rooms</span>
         </Link>
       </div>
 
@@ -78,11 +78,11 @@ export function Sidebar() {
         <NavItem href="/reputation" active={pathname === "/reputation"} icon={<Trophy size={17} />} label="Reputation" />
       </nav>
 
-      <div className="flex items-center justify-between px-4 pt-2 xl:px-5">
+      <div className="flex items-center justify-between px-5 pt-2">
         <p className="section-eyebrow">Rooms</p>
         <button
           onClick={() => setShowCreateRoom(true)}
-          className="touch-target rounded-xl border border-white/10 bg-white/5 p-2 text-gray-300 transition hover:bg-white/10"
+          className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-soft)] transition hover:bg-white/10"
           aria-label="Create room"
         >
           <Plus size={16} />
@@ -97,7 +97,7 @@ export function Sidebar() {
             ))}
           </div>
         ) : rooms.length === 0 ? (
-          <div className="rounded-[1.25rem] border border-dashed border-white/10 bg-white/[0.02] p-4 text-sm leading-6 text-gray-500">
+          <div className="rounded-[1.25rem] border border-dashed border-[var(--app-line)] bg-white/[0.02] p-4 text-sm leading-6 text-[var(--app-text-muted)]">
             No rooms joined yet.
           </div>
         ) : (
@@ -109,14 +109,14 @@ export function Sidebar() {
         )}
       </div>
 
-      <div className="border-t border-white/10 px-4 py-4 xl:px-5">
-        <div className="flex items-center gap-3 rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-3">
+      <div className="border-t border-[var(--app-line)] px-5 py-4">
+        <div className="flex items-center gap-3 rounded-[1.25rem] border border-[var(--app-line)] bg-white/[0.03] p-3">
           <UserButton afterSignOutUrl="/" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-white">Your account</p>
-            <p className="truncate text-xs text-gray-500">Managed by Clerk</p>
+            <p className="truncate text-xs text-[var(--app-text-muted)]">Managed by Clerk</p>
           </div>
-          <Link href="/settings" className="touch-target rounded-xl border border-white/10 bg-white/5 p-2 text-gray-300 transition hover:bg-white/10">
+          <Link href="/settings" className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-soft)] transition hover:bg-white/10">
             <Settings size={16} />
           </Link>
         </div>
@@ -144,13 +144,15 @@ function NavItem({
     <Link
       href={href}
       className={cn(
-        "flex min-h-[3rem] items-center gap-3 rounded-2xl px-4 py-3 text-sm transition",
-        active ? "bg-brand-500/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]" : "text-gray-400 hover:bg-white/5 hover:text-white"
+        "flex min-h-[3rem] items-center gap-3 rounded-[18px] px-4 py-3 text-sm transition",
+        active
+          ? "border border-[rgba(109,140,255,0.18)] bg-[rgba(77,117,255,0.14)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+          : "text-[var(--app-text-muted)] hover:bg-white/5 hover:text-white"
       )}
     >
       {icon}
       <span className="flex-1 truncate">{label}</span>
-      {badge ? <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">{badge}</span> : null}
+      {badge ? <span className="rounded-full bg-[var(--app-danger)] px-2 py-0.5 text-[10px] font-bold text-white">{badge}</span> : null}
     </Link>
   );
 }
@@ -172,13 +174,15 @@ function SidebarRoomItem({
     <Link
       href={`/rooms/${roomId}`}
       className={cn(
-        "flex min-h-[3rem] items-center gap-3 rounded-2xl px-4 py-3 text-sm transition",
-        active ? "bg-white/10 text-white" : "text-gray-400 hover:bg-white/5 hover:text-white"
+        "flex min-h-[3rem] items-center gap-3 rounded-[18px] border px-4 py-3 text-sm transition",
+        active
+          ? "border-[rgba(213,178,122,0.2)] bg-[rgba(213,178,122,0.08)] text-white"
+          : "border-transparent text-[var(--app-text-muted)] hover:bg-white/5 hover:text-white"
       )}
     >
       <span className="text-lg">{emoji}</span>
       <span className="min-w-0 flex-1 truncate">{name}</span>
-      {unreadCount ? <span className="rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-bold text-white">{unreadCount}</span> : null}
+      {unreadCount ? <span className="rounded-full bg-[var(--app-primary)] px-2 py-0.5 text-[10px] font-bold text-white">{unreadCount}</span> : null}
     </Link>
   );
 }

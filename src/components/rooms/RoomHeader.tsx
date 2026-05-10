@@ -3,7 +3,7 @@ import type { Doc } from "../../../convex/_generated/dataModel";
 
 export function RoomHeader({ room }: { room: Doc<"rooms"> }) {
   return (
-    <header className="border-b border-white/10 bg-gray-950/85 backdrop-blur">
+    <header className="border-b border-[var(--app-line)] bg-[rgba(6,12,22,0.84)] backdrop-blur">
       <div className="page-wrap py-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-start gap-4">
@@ -19,16 +19,14 @@ export function RoomHeader({ room }: { room: Doc<"rooms"> }) {
                 <span className="panel-chip text-gray-300">{room.isPublic ? "Public room" : "Private room"}</span>
               </div>
 
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-300">
-                {room.description || "A focused academic space for updates, deadlines, questions, and resources that matter to this class."}
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-text-soft)]">
+                {room.description ||
+                  "A focused academic space for updates, deadlines, questions, and resources that matter to this class."}
               </p>
             </div>
           </div>
 
-          <Link
-            href={`/rooms/${room._id}/settings`}
-            className="app-button app-button-secondary w-full sm:w-auto"
-          >
+          <Link href={`/rooms/${room._id}/settings`} className="app-button app-button-secondary w-full sm:w-auto">
             Room settings
           </Link>
         </div>

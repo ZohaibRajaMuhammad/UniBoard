@@ -3,6 +3,7 @@
 
 # next.js build output
 /.next/
+/.next-release/
 /out/
 
 # local env and secrets

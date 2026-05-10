@@ -34,34 +34,32 @@ export default function KnowledgeBasePage() {
     if (!draftQuestion.trim()) {
       return;
     }
-
     void runQuestion(draftQuestion.trim());
   }
 
   return (
     <div className="app-scroll">
-      <div className="page-wrap page-stack">
-        <section className="spotlight-ring glass-panel rounded-[34px] p-6 sm:p-8">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
-              <BookOpen size={20} className="text-brand-200" />
+      <div className="page-wrap page-stack content-column">
+        <section className="spotlight-ring glass-panel page-hero ai-glow">
+          <div className="max-w-3xl">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+              <BookOpen size={20} className="text-[var(--app-primary-strong)]" />
             </div>
-            <div className="max-w-3xl">
-              <h1 className="text-3xl font-bold tracking-tight text-white">Knowledge base</h1>
-              <p className="mt-2 text-sm leading-6 text-gray-300">
-                Ask a study question over the rooms you can access and inspect the grounded evidence before trusting the answer.
-              </p>
-            </div>
+            <p className="section-eyebrow text-[var(--app-violet)]">Knowledge Base</p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">Grounded course answers, not chat noise.</h1>
+            <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">
+              Ask a study question over the rooms you can access and inspect the grounded evidence before trusting the answer.
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="mt-6">
-            <div className="flex items-center gap-3 rounded-3xl border border-white/10 bg-white/[0.04] px-4 py-4">
-              <Search size={18} className="text-gray-500" />
+            <div className="flex items-center gap-3 rounded-[24px] border border-[var(--app-line)] bg-white/[0.04] px-4 py-4">
+              <Search size={18} className="text-[var(--app-text-muted)]" />
               <input
                 value={draftQuestion}
                 onChange={(event) => setDraftQuestion(event.target.value)}
                 placeholder="Ask about an assignment, concept, room decision, or resource..."
-                className="w-full bg-transparent text-sm text-white outline-none placeholder:text-gray-500"
+                className="w-full bg-transparent text-sm text-white outline-none placeholder:text-[var(--app-text-muted)]"
               />
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -73,7 +71,7 @@ export default function KnowledgeBasePage() {
                     setDraftQuestion(prompt);
                     void runQuestion(prompt);
                   }}
-                  className="panel-chip rounded-2xl px-4 py-2 text-sm text-gray-200"
+                  className="panel-chip rounded-2xl px-4 py-2 text-sm"
                 >
                   <Sparkles size={12} />
                   {prompt}
@@ -93,7 +91,7 @@ export default function KnowledgeBasePage() {
           <section className="glass-panel rounded-[28px] p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Generated answer</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Generated answer</p>
                 <h2 className="mt-2 text-2xl font-semibold text-white">{submittedQuestion}</h2>
               </div>
               {result ? (
@@ -113,18 +111,18 @@ export default function KnowledgeBasePage() {
                     : "Fallback mode"}
                 </span>
               ) : (
-                <span className="rounded-full bg-white/5 px-3 py-1 text-xs text-gray-400">Answering...</span>
+                <span className="rounded-full bg-white/5 px-3 py-1 text-xs text-[var(--app-text-muted)]">Answering...</span>
               )}
             </div>
 
-            <div className="mt-5 rounded-[24px] border border-white/10 bg-black/20 p-5">
+            <div className="mt-5 rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
               {isLoading ? (
                 <div className="h-32 animate-pulse rounded-[20px] bg-white/5" />
               ) : (
                 <div className="space-y-3">
-                  <p className="whitespace-pre-wrap text-sm leading-7 text-gray-200">{result?.data?.answer}</p>
+                  <p className="whitespace-pre-wrap text-sm leading-8 text-[var(--app-text-soft)]">{result?.data?.answer}</p>
                   {result?.data?.followUp ? (
-                    <p className="text-sm text-gray-400">Next best prompt: {result.data.followUp}</p>
+                    <p className="text-sm text-[var(--app-text-muted)]">Next best prompt: {result.data.followUp}</p>
                   ) : null}
                 </div>
               )}
@@ -132,17 +130,17 @@ export default function KnowledgeBasePage() {
 
             {result?.data?.sources.length ? (
               <div className="mt-5">
-                <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Sources</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Sources</p>
                 <div className="mt-3 flex flex-wrap gap-3">
                   {result.data.sources.map((source) => (
                     <Link
                       key={source.postId}
                       href={`/rooms/${source.roomId}?post=${source.postId}`}
-                      className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-gray-200 transition hover:bg-white/10"
+                      className="rounded-2xl border border-[var(--app-line)] bg-white/5 px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-white/10"
                     >
                       <span className="font-medium text-white">{source.roomName}</span>
-                      <span className="ml-2 text-gray-400">{source.title}</span>
-                      <span className="mt-2 block text-xs text-gray-500">{source.quote}</span>
+                      <span className="ml-2 text-[var(--app-text-muted)]">{source.title}</span>
+                      <span className="mt-2 block text-xs text-[var(--app-text-muted)]">{source.quote}</span>
                     </Link>
                   ))}
                 </div>

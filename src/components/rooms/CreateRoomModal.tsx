@@ -56,22 +56,22 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
     <Dialog.Root open onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" />
-        <Dialog.Content className="fixed inset-x-4 top-1/2 z-50 max-h-[calc(100dvh-2rem)] w-auto -translate-y-1/2 overflow-hidden rounded-[1.75rem] border border-white/10 bg-gray-900 shadow-2xl sm:left-1/2 sm:w-[min(42rem,calc(100vw-2rem))] sm:-translate-x-1/2">
-          <div className="flex items-start justify-between border-b border-white/10 px-5 py-4 sm:px-6">
+        <Dialog.Content className="glass-panel fixed inset-x-4 top-1/2 z-50 max-h-[calc(100dvh-2rem)] w-auto -translate-y-1/2 overflow-hidden rounded-[1.75rem] shadow-2xl sm:left-1/2 sm:w-[min(42rem,calc(100vw-2rem))] sm:-translate-x-1/2">
+          <div className="flex items-start justify-between border-b border-[var(--app-line)] px-5 py-4 sm:px-6">
             <div className="pr-4">
               <Dialog.Title className="text-xl font-bold text-white sm:text-2xl">Create room</Dialog.Title>
-              <Dialog.Description className="mt-2 text-sm leading-6 text-gray-400">
+              <Dialog.Description className="mt-2 text-sm leading-6 text-[var(--app-text-muted)]">
                 Define a clean academic space with the right subject identity, visibility, and tone from the start.
               </Dialog.Description>
             </div>
-            <Dialog.Close className="touch-target rounded-xl border border-white/10 bg-white/5 p-2 text-gray-400 transition hover:bg-white/10">
+            <Dialog.Close className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-muted)] transition hover:bg-white/10">
               <X size={16} />
             </Dialog.Close>
           </div>
 
           <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-5 py-5 sm:px-6">
             <div className="page-stack">
-              <div className="rounded-[1.25rem] border border-brand-400/20 bg-brand-500/8 p-4 text-sm leading-6 text-brand-100">
+              <div className="rounded-[1.25rem] border border-[rgba(109,140,255,0.24)] bg-[rgba(77,117,255,0.08)] p-4 text-sm leading-6 text-[var(--app-text-soft)]">
                 <div className="mb-2 flex items-center gap-2 font-semibold">
                   <Sparkles size={15} />
                   Room quality checklist
@@ -163,7 +163,7 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          <div className="flex flex-col-reverse gap-3 border-t border-white/10 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <div className="flex flex-col-reverse gap-3 border-t border-[var(--app-line)] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
             <button onClick={onClose} className="app-button app-button-secondary w-full sm:w-auto">
               Cancel
             </button>

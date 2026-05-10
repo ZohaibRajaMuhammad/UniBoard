@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import nextDynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
+import { AiAssistant } from "@/components/ai/AiAssistant";
 import { isClerkServerConfigured } from "@/lib/deployment";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +39,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {children}
       </main>
       <MobileNav />
+      <AiAssistant />
     </div>
   );
 }

@@ -77,12 +77,12 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         <RoomHeader room={room} />
         <PresenceBar roomId={roomId} />
 
-        <div className="border-b border-white/10 bg-black/10 backdrop-blur">
+        <div className="border-b border-[var(--app-line)] bg-black/10 backdrop-blur">
           <div className="page-wrap py-4">
             <div className="grid gap-3 sm:grid-cols-3">
               {roomStats.map((item) => (
                 <div key={item.label} className="stat-card">
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-gray-500">{item.label}</p>
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">{item.label}</p>
                   <p className="mt-2 text-lg font-semibold text-white">{item.value}</p>
                 </div>
               ))}
@@ -90,13 +90,13 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
             <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.24em] text-gray-500">Feed controls</p>
+                <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Feed controls</p>
                 <h2 className="mt-1 text-lg font-semibold text-white">Filter the conversation by signal</h2>
               </div>
               <div className="flex flex-wrap gap-2 lg:justify-end">
                 <button
                   onClick={() => document.getElementById("room-composer")?.scrollIntoView({ behavior: "smooth", block: "center" })}
-                  className="inline-flex items-center gap-2 rounded-full border border-brand-400/40 bg-brand-500/10 px-4 py-2 text-sm font-medium text-brand-100 transition hover:bg-brand-500/20"
+                  className="inline-flex items-center gap-2 rounded-full border border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.12)] px-4 py-2 text-sm font-medium text-[var(--app-text-soft)] transition hover:bg-[rgba(77,117,255,0.18)]"
                 >
                   <PlusSquare size={14} />
                   Compose
@@ -110,8 +110,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                       className={cn(
                         "rounded-full border px-4 py-2 text-sm font-medium transition",
                         activeFilter === filter
-                          ? "border-brand-400/50 bg-brand-500/15 text-white"
-                          : "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10"
+                          ? "border-[rgba(109,140,255,0.28)] bg-[rgba(77,117,255,0.14)] text-white"
+                          : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10"
                       )}
                     >
                       {filterLabel}

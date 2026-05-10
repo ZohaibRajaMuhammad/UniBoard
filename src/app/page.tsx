@@ -22,70 +22,95 @@ export default async function LandingPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden">
-      <div className="hero-grid absolute inset-0 opacity-30" />
-      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/10 to-transparent" />
-      <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col justify-center px-6 py-16">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-          <section className="spotlight-ring glass-panel rounded-[40px] p-8 sm:p-12">
-            <div className="panel-chip mb-8 text-brand-100">
-              <span className="text-lg">📋</span>
-              Real-time academic communication without WhatsApp noise
+    <main className="relative min-h-screen overflow-hidden px-4 py-4 sm:px-5">
+      <div className="hero-grid absolute inset-0 opacity-20" />
+      <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-[rgba(77,117,255,0.12)] to-transparent" />
+      <div className="relative mx-auto flex min-h-screen w-full max-w-[82.5rem] flex-col">
+        <header className="flex items-center justify-between gap-4 px-2 py-5 sm:px-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] border border-[rgba(109,140,255,0.24)] bg-[rgba(77,117,255,0.14)] text-lg font-black text-white">
+              UB
             </div>
-            <h1 className="max-w-3xl text-5xl font-extrabold tracking-[-0.04em] text-white sm:text-6xl xl:text-7xl">
-              Your class network, redesigned for signal instead of chaos.
+            <div>
+              <p className="text-lg font-bold text-white">UniBoard</p>
+              <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">
+                Academic intelligence workspace
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <Link href="/sign-in" className="app-button app-button-secondary min-h-[44px] px-5 py-3">
+              Sign in
+            </Link>
+            <Link href="/sign-up" className="app-button app-button-primary min-h-[44px] px-5 py-3">
+              Get started
+            </Link>
+          </div>
+        </header>
+
+        <div className="grid flex-1 items-center gap-6 py-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-8">
+          <section className="spotlight-ring glass-panel page-hero ambient-orb">
+            <div className="panel-chip mb-8 text-[var(--app-text-soft)]">
+              Real-time academic communication without class-stream chaos
+            </div>
+            <h1 className="max-w-[31rem] text-[clamp(2.8rem,2.1rem+2vw,5rem)] font-extrabold tracking-[-0.045em] text-white">
+              Your class network, rebuilt for signal.
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-300">
-              UniBoard turns batch chatter into a disciplined live workspace with anonymous posting, deadline urgency,
-              searchable knowledge, and moderation that feels native instead of bolted on.
+            <p className="mt-6 max-w-[31rem] text-[1rem] leading-8 text-[var(--app-text-soft)] sm:text-[1.05rem]">
+              UniBoard turns scattered class chatter into a disciplined academic operating layer with deadlines, rooms,
+              grounded AI help, and moderation that feels native rather than bolted on.
             </p>
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Link href="/sign-up" className="inline-flex items-center justify-center rounded-2xl bg-brand-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-400">
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+              <Link href="/sign-up" className="app-button app-button-primary px-6">
                 Start with your class
               </Link>
-              <Link href="/sign-in" className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10">
-                Sign in
+              <Link href="/sign-in" className="app-button app-button-secondary px-6">
+                Access existing workspace
               </Link>
             </div>
-            <div className="mt-10 grid gap-3 sm:grid-cols-3">
+            <div className="mt-10 grid gap-4 md:grid-cols-3">
               {[
-                { title: "Realtime", copy: "Convex subscriptions keep every room live without refresh." },
-                { title: "Anonymous", copy: "Students can contribute without social drag." },
-                { title: "Structured", copy: "Rooms, deadlines, and resources stay searchable." }
+                { title: "Realtime", copy: "Live room activity with no refresh loop." },
+                { title: "Anonymous", copy: "Contribution without social drag where policy allows." },
+                { title: "Structured", copy: "Deadlines, resources, and decisions stay searchable." }
               ].map((item) => (
-                <div key={item.title} className="rounded-3xl border border-white/10 bg-black/20 p-4">
+                <div key={item.title} className="stat-card">
                   <p className="text-sm font-semibold text-white">{item.title}</p>
-                  <p className="mt-2 text-sm leading-6 text-gray-400">{item.copy}</p>
+                  <p className="mt-2 text-sm leading-6 text-[var(--app-text-muted)]">{item.copy}</p>
                 </div>
               ))}
             </div>
           </section>
 
           <section className="grid gap-4 sm:grid-cols-2">
-            <div className="glass-panel rounded-[32px] p-6 sm:col-span-2">
-              <p className="text-xs uppercase tracking-[0.3em] text-brand-200">Live room pulse</p>
+            <div className="glass-panel rounded-[28px] p-6 sm:col-span-2">
+              <p className="text-xs uppercase tracking-[0.3em] text-[var(--app-primary-strong)]">Live room pulse</p>
               <div className="mt-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-bold text-white">Parallel Computing • SP26</h2>
-                  <p className="mt-2 text-sm leading-6 text-gray-400">Pinned deadlines, fast notes, and anonymous questions all in one subject room.</p>
+                  <p className="mt-2 text-sm leading-6 text-[var(--app-text-muted)]">
+                    Pinned deadlines, fast notes, and anonymous questions in one disciplined room.
+                  </p>
                 </div>
-                <div className="rounded-2xl bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-200">12 online now</div>
+                <div className="rounded-2xl bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-200">
+                  12 online now
+                </div>
               </div>
             </div>
-            <div className="glass-panel rounded-[32px] p-6">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Unread pull</p>
+            <div className="glass-panel rounded-[28px] p-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[var(--app-text-muted)]">Unread pull</p>
               <p className="mt-5 text-4xl font-black tracking-tight text-white">27</p>
-              <p className="mt-2 text-sm text-gray-400">Unread updates across rooms</p>
+              <p className="mt-2 text-sm text-[var(--app-text-muted)]">Unread updates across rooms</p>
             </div>
-            <div className="glass-panel rounded-[32px] p-6">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Deadline pressure</p>
+            <div className="glass-panel rounded-[28px] p-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[var(--app-text-muted)]">Deadline pressure</p>
               <p className="mt-5 text-lg font-semibold text-white">Assignment 3 due in 9h</p>
-              <p className="mt-2 text-sm text-gray-400">Pinned countdowns keep important work visible.</p>
+              <p className="mt-2 text-sm text-[var(--app-text-muted)]">Pinned countdowns keep important work visible.</p>
             </div>
-            <div className="glass-panel rounded-[32px] p-6 sm:col-span-2">
-              <div className="flex items-center justify-between">
+            <div className="glass-panel rounded-[28px] p-6 sm:col-span-2">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Posting modes</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-[var(--app-text-muted)]">Posting modes</p>
                   <h3 className="mt-3 text-xl font-semibold text-white">Visible or anonymous, same live stream.</h3>
                 </div>
                 <div className="flex gap-2">
@@ -93,7 +118,9 @@ export default async function LandingPage() {
                   <span className="panel-chip text-gray-200">Deadline</span>
                 </div>
               </div>
-              <p className="mt-4 text-sm leading-6 text-gray-400">The interface stays classical and restrained, but the activity layer stays fast and emotionally legible.</p>
+              <p className="mt-4 text-sm leading-6 text-[var(--app-text-muted)]">
+                The interface stays restrained, but the activity layer stays fast and academically legible.
+              </p>
             </div>
           </section>
         </div>

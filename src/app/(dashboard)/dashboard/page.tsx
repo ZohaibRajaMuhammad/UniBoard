@@ -17,15 +17,15 @@ export default function DashboardRoutePage() {
   return (
     <div className="app-scroll">
       <div className="page-wrap page-stack">
-        <div className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
-          <div className="spotlight-ring glass-panel rounded-[var(--radius-panel)] p-6 sm:p-8">
+        <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
+          <div className="spotlight-ring glass-panel page-hero">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="section-eyebrow text-brand-200">Dashboard</p>
+                <p className="section-eyebrow text-[var(--app-primary-strong)]">Dashboard</p>
                 <h1 className="fluid-title mt-2 font-bold text-white">
                   {user?.name ? `Welcome back, ${user.name.split(" ")[0]}` : "Your live academic workspace"}
                 </h1>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-300">
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--app-text-soft)]">
                   Monitor rooms, catch deadlines early, and move between classes without losing context.
                 </p>
               </div>
@@ -35,33 +35,25 @@ export default function DashboardRoutePage() {
               </Link>
             </div>
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              <div className="stat-card">
-                <p className="text-xs uppercase tracking-[0.25em] text-gray-500">Rooms</p>
-                <p className="mt-4 text-3xl font-black text-white">{rooms?.length ?? 0}</p>
-                <p className="mt-2 text-sm text-gray-400">Active academic spaces</p>
-              </div>
-              <div className="stat-card">
-                <p className="text-xs uppercase tracking-[0.25em] text-gray-500">Deadlines</p>
-                <p className="mt-4 text-3xl font-black text-white">{deadlines?.length ?? 0}</p>
-                <p className="mt-2 text-sm text-gray-400">Upcoming time-sensitive posts</p>
-              </div>
-              <div className="stat-card">
-                <p className="text-xs uppercase tracking-[0.25em] text-gray-500">Momentum</p>
-                <p className="mt-4 text-3xl font-black text-white">{rooms && rooms.length > 0 ? "Live" : "Idle"}</p>
-                <p className="mt-2 text-sm text-gray-400">Workspace engagement status</p>
-              </div>
+              <StatCard label="Rooms" value={String(rooms?.length ?? 0)} detail="Active academic spaces" />
+              <StatCard label="Deadlines" value={String(deadlines?.length ?? 0)} detail="Upcoming time-sensitive posts" />
+              <StatCard label="Momentum" value={rooms && rooms.length > 0 ? "Live" : "Idle"} detail="Workspace engagement status" />
             </div>
           </div>
 
           <div className="glass-panel rounded-[var(--radius-panel)] p-6">
-            <p className="section-eyebrow">Operating note</p>
+            <p className="section-eyebrow">AI briefing</p>
             <h2 className="mt-4 text-2xl font-bold text-white">Stay ahead of class churn.</h2>
-            <p className="mt-3 text-sm leading-6 text-gray-400">
+            <p className="mt-3 text-sm leading-7 text-[var(--app-text-muted)]">
               Keep the dashboard open while your class is active. Convex updates room activity, unread counts,
               and posts in place, so the page acts more like an operations board than a static dashboard.
             </p>
             <div className="mt-6 space-y-3">
-              {["Pin deadlines that drive behavior", "Encourage anonymous questions", "Use rooms as the official subject stream"].map((item) => (
+              {[
+                "Pin deadlines that drive behavior",
+                "Encourage anonymous questions",
+                "Use rooms as the official subject stream"
+              ].map((item) => (
                 <div key={item} className="panel-chip w-full justify-start rounded-2xl px-4 py-3 text-sm text-gray-200">
                   {item}
                 </div>
@@ -86,7 +78,7 @@ export default function DashboardRoutePage() {
         <section className="page-stack">
           <div className="section-heading">
             <h2 className="section-eyebrow">Your rooms</h2>
-            <span className="text-sm text-gray-500">{rooms?.length ?? 0} active</span>
+            <span className="text-sm text-[var(--app-text-muted)]">{rooms?.length ?? 0} active</span>
           </div>
           {rooms === undefined ? (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -97,8 +89,10 @@ export default function DashboardRoutePage() {
           ) : rooms.length === 0 ? (
             <div className="glass-panel rounded-[var(--radius-panel)] p-8 text-center sm:p-10">
               <div className="text-5xl">💬</div>
-              <h3 className="mt-4 text-xl font-semibold">No rooms yet</h3>
-              <p className="mt-2 text-sm text-gray-400">Create a room for a subject or join a public room to start receiving live posts.</p>
+              <h3 className="mt-4 text-xl font-semibold text-white">No rooms yet</h3>
+              <p className="mt-2 text-sm text-[var(--app-text-muted)]">
+                Create a room for a subject or join a public room to start receiving live posts.
+              </p>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -109,6 +103,16 @@ export default function DashboardRoutePage() {
           )}
         </section>
       </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return (
+    <div className="stat-card">
+      <p className="text-xs uppercase tracking-[0.25em] text-[var(--app-text-muted)]">{label}</p>
+      <p className="mt-4 text-3xl font-black text-white">{value}</p>
+      <p className="mt-2 text-sm text-[var(--app-text-muted)]">{detail}</p>
     </div>
   );
 }

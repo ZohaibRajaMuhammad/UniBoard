@@ -25,22 +25,22 @@ export function TeacherPanel({ roomId }: { roomId: Id<"rooms"> }) {
   ];
 
   return (
-    <div className="flex h-full flex-col border-l border-white/10 bg-[linear-gradient(180deg,rgba(8,16,28,0.98),rgba(7,12,22,0.98))]">
-      <div className="border-b border-white/10 px-4 py-4">
+    <div className="flex h-full flex-col border-l border-[var(--app-line)] bg-[linear-gradient(180deg,rgba(8,16,28,0.98),rgba(7,12,22,0.98))]">
+      <div className="border-b border-[var(--app-line)] px-4 py-4">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-200">
-          <Shield size={14} className="text-brand-300" />
+          <Shield size={14} className="text-[var(--app-primary-strong)]" />
           Teacher Panel
         </h2>
       </div>
 
-      <div className="flex border-b border-white/10">
+      <div className="flex border-b border-[var(--app-line)]">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
               "flex flex-1 items-center justify-center gap-2 px-3 py-3 text-xs font-medium transition",
-              activeTab === tab.id ? "border-b border-brand-400 text-white" : "text-gray-500 hover:text-white"
+              activeTab === tab.id ? "border-b border-[var(--app-primary)] text-white" : "text-[var(--app-text-muted)] hover:text-white"
             )}
           >
             {tab.icon}
@@ -59,7 +59,7 @@ export function TeacherPanel({ roomId }: { roomId: Id<"rooms"> }) {
                 ))}
               </div>
             ) : reportedPosts.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-gray-500">No reported posts.</div>
+              <div className="rounded-2xl border border-[var(--app-line)] bg-white/[0.03] p-4 text-sm text-[var(--app-text-muted)]">No reported posts.</div>
             ) : (
               reportedPosts.map((post) => (
                 <div key={post._id} className="rounded-2xl border border-red-400/20 bg-red-500/5 p-3">
@@ -81,7 +81,7 @@ export function TeacherPanel({ roomId }: { roomId: Id<"rooms"> }) {
         {activeTab === "members" ? (
           <div className="space-y-2">
             {members?.map((member) => (
-              <div key={member._id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+              <div key={member._id} className="rounded-2xl border border-[var(--app-line)] bg-white/[0.03] p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-white">{member.user.name}</p>
@@ -142,7 +142,7 @@ export function TeacherPanel({ roomId }: { roomId: Id<"rooms"> }) {
               <StatCard label="Anonymous" value={analytics.anonymousPosts} />
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+            <div className="rounded-2xl border border-[var(--app-line)] bg-white/[0.03] p-3">
               <p className="text-xs uppercase tracking-[0.18em] text-gray-500">By Type</p>
               <div className="mt-3 space-y-2">
                 {Object.entries(analytics.byType).map(([type, count]) => (
@@ -160,7 +160,7 @@ export function TeacherPanel({ roomId }: { roomId: Id<"rooms"> }) {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+            <div className="rounded-2xl border border-[var(--app-line)] bg-white/[0.03] p-3">
               <p className="text-xs uppercase tracking-[0.18em] text-gray-500">Posting cadence</p>
               <div className="mt-3 space-y-2">
                 {Object.entries(analytics.byDay).map(([day, count]) => (
@@ -172,7 +172,7 @@ export function TeacherPanel({ roomId }: { roomId: Id<"rooms"> }) {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+            <div className="rounded-2xl border border-[var(--app-line)] bg-white/[0.03] p-3">
               <p className="text-xs uppercase tracking-[0.18em] text-gray-500">Top contributors</p>
               <div className="mt-3 space-y-2">
                 {analytics.topContributors.map((contributor) => (

@@ -4,19 +4,38 @@
 
 :root {
   color-scheme: dark;
-  --app-bg: #07111f;
-  --app-panel: rgba(10, 18, 33, 0.74);
-  --app-panel-strong: rgba(12, 24, 44, 0.92);
-  --app-line: rgba(167, 190, 255, 0.12);
+  --font-sans: "Plus Jakarta Sans", "Avenir Next", "Segoe UI", "Noto Sans", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --app-bg: #07111a;
+  --app-bg-strong: #050c14;
+  --app-panel: rgba(10, 19, 34, 0.8);
+  --app-panel-strong: rgba(12, 22, 40, 0.92);
+  --app-panel-soft: rgba(255, 255, 255, 0.035);
+  --app-line: rgba(166, 190, 255, 0.11);
+  --app-line-strong: rgba(197, 215, 255, 0.18);
   --app-glow: rgba(63, 115, 255, 0.32);
+  --app-text: #f6f8fc;
+  --app-text-soft: #cad4e7;
+  --app-text-muted: #8b98b1;
+  --app-primary: #4d75ff;
+  --app-primary-strong: #6d8cff;
+  --app-gold: #d5b27a;
+  --app-violet: #9a8cff;
+  --app-success: #31c48d;
+  --app-danger: #fb7185;
+  --app-warning: #f4b860;
+  --app-info: #6ab7ff;
   --safe-top: env(safe-area-inset-top);
   --safe-right: env(safe-area-inset-right);
   --safe-bottom: env(safe-area-inset-bottom);
   --safe-left: env(safe-area-inset-left);
-  --radius-panel: clamp(1.25rem, 1rem + 1vw, 2rem);
-  --radius-card: clamp(1rem, 0.9rem + 0.6vw, 1.5rem);
-  --space-page-x: clamp(1rem, 0.75rem + 1vw, 2rem);
-  --space-page-y: clamp(1rem, 0.75rem + 1vw, 2rem);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-card: 16px;
+  --radius-panel: 22px;
+  --radius-hero: 28px;
+  --space-page-x: clamp(1rem, 0.55rem + 1.25vw, 2rem);
+  --space-page-y: clamp(1rem, 0.55rem + 1.15vw, 1.75rem);
   --text-fluid-xs: clamp(0.72rem, 0.7rem + 0.08vw, 0.8rem);
   --text-fluid-sm: clamp(0.875rem, 0.82rem + 0.2vw, 1rem);
   --text-fluid-base: clamp(1rem, 0.95rem + 0.24vw, 1.08rem);
@@ -48,10 +67,13 @@ body {
   @apply bg-gray-950 font-sans text-white antialiased;
   min-height: 100dvh;
   overflow-x: hidden;
+  font-family: var(--font-sans);
   background:
-    radial-gradient(circle at top left, rgba(81, 124, 255, 0.22), transparent 28%),
-    radial-gradient(circle at top right, rgba(17, 208, 170, 0.14), transparent 22%),
-    linear-gradient(180deg, #08101b 0%, #09111d 35%, #07111f 100%);
+    radial-gradient(circle at top left, rgba(95, 123, 255, 0.22), transparent 24%),
+    radial-gradient(circle at top right, rgba(194, 152, 88, 0.1), transparent 18%),
+    radial-gradient(circle at 50% -10%, rgba(135, 113, 255, 0.1), transparent 20%),
+    linear-gradient(180deg, #09111c 0%, #071019 38%, #060d15 100%);
+  color: var(--app-text);
 }
 
 img,
@@ -69,6 +91,16 @@ textarea,
 select {
   font: inherit;
   color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+code,
+pre,
+.font-mono {
+  font-family: var(--font-mono), monospace;
 }
 
 input,
@@ -143,11 +175,13 @@ h6 {
 
 .glass-panel {
   border: 1px solid var(--app-line);
-  background: linear-gradient(180deg, rgba(14, 24, 41, 0.88), rgba(7, 14, 27, 0.88));
+  background:
+    linear-gradient(180deg, rgba(14, 24, 41, 0.92), rgba(7, 14, 27, 0.92)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.03), transparent 42%);
   backdrop-filter: blur(22px);
   box-shadow:
-    0 20px 60px rgba(4, 8, 18, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 24px 60px rgba(4, 8, 18, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
 .hero-grid {
@@ -174,8 +208,9 @@ h6 {
 .panel-chip {
   @apply inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium;
   min-height: 2rem;
-  border-color: rgba(167, 190, 255, 0.18);
+  border-color: rgba(167, 190, 255, 0.14);
   background: rgba(255, 255, 255, 0.04);
+  color: var(--app-text-soft);
 }
 
 .ambient-orb {
@@ -200,6 +235,7 @@ h6 {
   padding-top: var(--safe-top);
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
+  position: relative;
 }
 
 .app-scroll {
@@ -213,7 +249,7 @@ h6 {
   width: min(100%, 88rem);
   margin-inline: auto;
   padding-inline: var(--space-page-x);
-  padding-block: var(--space-page-y);
+  padding-block: clamp(1rem, 0.75rem + 1vw, 1.75rem);
 }
 
 .page-stack {
@@ -233,7 +269,8 @@ h6 {
   font-size: var(--text-fluid-xs);
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: rgb(148 163 184);
+  color: var(--app-text-muted);
+  font-weight: 650;
 }
 
 .fluid-title {
@@ -249,44 +286,47 @@ h6 {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: 1rem;
+  border-radius: var(--radius-card);
   padding-inline: 1rem;
   padding-block: 0.85rem;
   font-size: 0.95rem;
   font-weight: 700;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
 }
 
 .app-button-primary {
-  background: rgb(59 130 246 / 0.95);
+  background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-strong) 100%);
   color: white;
+  box-shadow: 0 10px 28px rgba(63, 115, 255, 0.24);
 }
 
 .app-button-primary:hover {
-  background: rgb(96 165 250 / 0.95);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(63, 115, 255, 0.32);
 }
 
 .app-button-secondary {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
+  border: 1px solid var(--app-line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--app-text);
 }
 
 .app-button-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .app-input,
 .app-select,
 .app-textarea {
   width: 100%;
-  border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--app-line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.025));
   padding: 0.9rem 1rem;
-  color: white;
+  color: var(--app-text);
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: border-color 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease, transform 0.18s ease;
 }
 
 .app-input::placeholder,
@@ -297,21 +337,76 @@ h6 {
 .app-input:focus,
 .app-select:focus,
 .app-textarea:focus {
-  border-color: rgba(96, 165, 250, 0.9);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+  border-color: rgba(96, 165, 250, 0.78);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14), 0 0 22px rgba(77, 117, 255, 0.18);
 }
 
 .stat-card {
   border-radius: var(--radius-card);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--app-line);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.022)),
+    rgba(0, 0, 0, 0.18);
   padding: clamp(1rem, 0.85rem + 0.6vw, 1.35rem);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 .surface-card {
   border-radius: var(--radius-card);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--app-line);
   background: rgba(255, 255, 255, 0.03);
+}
+
+.surface-row {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--app-line);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.95rem 1rem;
+}
+
+.page-hero {
+  border-radius: var(--radius-hero);
+  padding: clamp(1.5rem, 1.1rem + 1vw, 2rem);
+}
+
+.content-column {
+  width: min(100%, 61.25rem);
+}
+
+.feed-column {
+  width: min(100%, 48.75rem);
+}
+
+.soft-divider {
+  border-color: var(--app-line);
+}
+
+.ai-glow {
+  box-shadow:
+    0 0 0 1px rgba(154, 140, 255, 0.14),
+    0 18px 42px rgba(83, 74, 142, 0.22);
+}
+
+.ai-pulse {
+  animation: ai-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes ai-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(154, 140, 255, 0.14); }
+  50% { box-shadow: 0 0 0 10px rgba(154, 140, 255, 0.02); }
+}
+
+@media (max-width: 1023px) {
+  .page-wrap {
+    width: min(100%, 76rem);
+  }
+}
+
+@media (max-width: 767px) {
+  .page-wrap {
+    padding-inline: clamp(1rem, 0.9rem + 1vw, 1.25rem);
+    padding-block: 1rem;
+  }
 }
 
 .touch-target {

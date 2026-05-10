@@ -23,19 +23,20 @@ export default function SavedPage() {
 
   return (
     <div className="app-scroll">
-      <div className="page-wrap page-stack">
-        <section className="spotlight-ring glass-panel rounded-[34px] p-6 sm:p-8">
+      <div className="page-wrap page-stack content-column">
+        <section className="spotlight-ring glass-panel page-hero">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
-                <Bookmark size={20} className="text-brand-200" />
+                <Bookmark size={20} className="text-[var(--app-primary-strong)]" />
               </div>
-              <h1 className="text-3xl font-bold tracking-tight text-white">Saved content</h1>
-              <p className="mt-2 text-sm leading-6 text-gray-300">
+              <p className="section-eyebrow text-[var(--app-primary-strong)]">Saved</p>
+              <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">Private retrieval, not clutter.</h1>
+              <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">
                 Return to valuable notes, resources, and deadlines without searching the workspace again.
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-gray-300">
+            <div className="rounded-2xl border border-[var(--app-line)] bg-black/20 px-4 py-3 text-sm text-[var(--app-text-soft)]">
               {(savedPosts as FeedPost[] | undefined)?.length ?? 0} saved item{((savedPosts as FeedPost[] | undefined)?.length ?? 0) === 1 ? "" : "s"}
             </div>
           </div>
@@ -46,7 +47,7 @@ export default function SavedPage() {
                 key={type}
                 type="button"
                 onClick={() => setActiveType(type)}
-                className={activeType === type ? "rounded-2xl bg-brand-500 px-4 py-2 text-sm font-medium text-white" : "rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300"}
+                className={activeType === type ? "rounded-2xl bg-[var(--app-primary)] px-4 py-2 text-sm font-medium text-white" : "rounded-2xl border border-[var(--app-line)] bg-white/5 px-4 py-2 text-sm text-[var(--app-text-soft)]"}
               >
                 {type === "all" ? "All saved" : type}
               </button>
@@ -62,43 +63,36 @@ export default function SavedPage() {
               ))}
             </div>
           ) : items.length === 0 ? (
-            <div className="rounded-[24px] border border-dashed border-white/10 bg-black/20 p-10 text-center">
+            <div className="rounded-[24px] border border-dashed border-[var(--app-line)] bg-black/20 p-10 text-center">
               <h2 className="text-xl font-semibold text-white">No saved items yet</h2>
-              <p className="mt-3 text-sm leading-6 text-gray-400">
+              <p className="mt-3 text-sm leading-7 text-[var(--app-text-muted)]">
                 Use the post menu in any room to save material that deserves a second pass later.
               </p>
-              <Link href="/rooms" className="mt-5 inline-flex text-sm font-medium text-brand-100 transition hover:text-white">
+              <Link href="/rooms" className="mt-5 inline-flex text-sm font-medium text-[var(--app-primary-strong)] transition hover:text-white">
                 Browse rooms
               </Link>
             </div>
           ) : (
             <div className="space-y-4">
               {items.map((item) => (
-                <div key={item._id} className="rounded-[24px] border border-white/10 bg-black/20 p-5">
+                <div key={item._id} className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="panel-chip rounded-2xl px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-gray-200">{item.type}</span>
-                        <span className="text-xs text-gray-500">{formatRelativeTime(item.createdAt)}</span>
+                        <span className="panel-chip rounded-2xl px-3 py-1 text-[11px] uppercase tracking-[0.18em]">{item.type}</span>
+                        <span className="text-xs text-[var(--app-text-muted)]">{formatRelativeTime(item.createdAt)}</span>
                       </div>
                       <p className="mt-3 text-lg font-semibold text-white">{truncate(item.deadlineTitle || item.resourceTitle || item.content, 120)}</p>
-                      <p className="mt-2 text-sm leading-6 text-gray-300">{truncate(item.content, 220)}</p>
-                      <p className="mt-3 text-xs text-gray-500">Saved from room activity by {item.author.name}</p>
+                      <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">{truncate(item.content, 220)}</p>
+                      <p className="mt-3 text-xs text-[var(--app-text-muted)]">Saved from room activity by {item.author.name}</p>
                     </div>
 
                     <div className="flex flex-wrap gap-3">
-                      <Link
-                        href={`/rooms/${item.roomId}?post=${item._id}`}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
-                      >
+                      <Link href={`/rooms/${item.roomId}?post=${item._id}`} className="app-button app-button-secondary">
                         <ExternalLink size={14} />
                         Open source
                       </Link>
-                      <button
-                        type="button"
-                        onClick={() => void savePost({ postId: item._id })}
-                        className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-gray-300 transition hover:bg-white/5"
-                      >
+                      <button type="button" onClick={() => void savePost({ postId: item._id })} className="app-button app-button-secondary">
                         Unsave
                       </button>
                     </div>

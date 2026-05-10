@@ -34,12 +34,12 @@ export default function RoomsPage() {
   return (
     <div className="app-scroll">
       <div className="page-wrap page-stack">
-        <div className="spotlight-ring glass-panel rounded-[var(--radius-panel)] p-6 sm:p-8">
+        <div className="spotlight-ring glass-panel page-hero">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
-              <p className="section-eyebrow text-brand-200">Rooms</p>
+              <p className="section-eyebrow text-[var(--app-primary-strong)]">Rooms</p>
               <h1 className="fluid-title mt-2 font-bold text-white">Find the right academic stream fast.</h1>
-              <p className="mt-3 text-sm leading-6 text-gray-300">
+              <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">
                 Discover public spaces for your batch, join high-signal rooms, and create focused channels when the class needs a clean home.
               </p>
             </div>
@@ -51,25 +51,25 @@ export default function RoomsPage() {
 
           <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
             <div className="app-input flex min-h-[3.25rem] items-center gap-3">
-              <Search size={18} className="shrink-0 text-gray-500" />
+              <Search size={18} className="shrink-0 text-[var(--app-text-muted)]" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search rooms by title, subject, batch, or description"
-                className="w-full bg-transparent text-sm text-white outline-none placeholder:text-gray-500"
+                className="w-full bg-transparent text-sm text-white outline-none placeholder:text-[var(--app-text-muted)]"
               />
             </div>
             <div className="stat-card">
-              <p className="text-xs uppercase tracking-[0.22em] text-gray-500">Visible rooms</p>
+              <p className="text-xs uppercase tracking-[0.22em] text-[var(--app-text-muted)]">Visible rooms</p>
               <p className="mt-2 text-2xl font-black text-white">{filteredRooms.length}</p>
             </div>
             <div className="stat-card">
-              <p className="text-xs uppercase tracking-[0.22em] text-gray-500">Batch</p>
+              <p className="text-xs uppercase tracking-[0.22em] text-[var(--app-text-muted)]">Batch</p>
               <p className="mt-2 text-sm font-semibold text-white">{user?.batch ?? "Unassigned"}</p>
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-3 text-sm text-gray-300">
+          <div className="mt-5 flex flex-wrap gap-3 text-sm text-[var(--app-text-soft)]">
             <div className="panel-chip rounded-2xl px-4 py-2">
               <Users size={14} />
               Public collaboration
@@ -88,14 +88,14 @@ export default function RoomsPage() {
             ))}
           </div>
         ) : publicRooms.length === 0 ? (
-          <div className="glass-panel rounded-[var(--radius-panel)] p-8 text-sm text-gray-400">
+          <div className="glass-panel rounded-[var(--radius-panel)] p-8 text-sm text-[var(--app-text-muted)]">
             No public rooms available for your current batch.
           </div>
         ) : filteredRooms.length === 0 ? (
           <div className="glass-panel rounded-[var(--radius-panel)] p-8 text-center sm:p-10">
             <div className="text-4xl">🔎</div>
             <h2 className="mt-4 text-xl font-semibold text-white">No rooms match your search</h2>
-            <p className="mt-2 text-sm text-gray-400">Try a subject code, room name, or batch keyword.</p>
+            <p className="mt-2 text-sm text-[var(--app-text-muted)]">Try a subject code, room name, or batch keyword.</p>
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

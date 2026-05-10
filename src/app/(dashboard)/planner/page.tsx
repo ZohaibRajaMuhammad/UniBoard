@@ -23,13 +23,7 @@ export default function PlannerPage() {
   const [status, setStatus] = useState("");
   const [studyPlan, setStudyPlan] = useState<AiEnvelope<StudyPlan> | null>(null);
   const [studyPlanError, setStudyPlanError] = useState("");
-  const [draft, setDraft] = useState({
-    title: "",
-    dueDate: "",
-    estimatedMinutes: "120",
-    roomId: "",
-    notes: ""
-  });
+  const [draft, setDraft] = useState({ title: "", dueDate: "", estimatedMinutes: "120", roomId: "", notes: "" });
 
   const calendarCells = useMemo(() => {
     const baseDate = new Date();
@@ -46,7 +40,6 @@ export default function PlannerPage() {
 
   useEffect(() => {
     let cancelled = false;
-
     void getAi<StudyPlan>("/api/v1/ai/study-plan")
       .then((payload) => {
         if (!cancelled) {
@@ -59,7 +52,6 @@ export default function PlannerPage() {
           setStudyPlanError(error instanceof Error ? error.message : "Unable to load the AI study planner.");
         }
       });
-
     return () => {
       cancelled = true;
     };
@@ -81,13 +73,7 @@ export default function PlannerPage() {
         roomId: draft.roomId ? (draft.roomId as Id<"rooms">) : undefined,
         notes: draft.notes || undefined
       });
-      setDraft({
-        title: "",
-        dueDate: "",
-        estimatedMinutes: "120",
-        roomId: "",
-        notes: ""
-      });
+      setDraft({ title: "", dueDate: "", estimatedMinutes: "120", roomId: "", notes: "" });
       setShowForm(false);
       setStatus("Manual deadline added.");
     } catch (error) {
@@ -100,14 +86,15 @@ export default function PlannerPage() {
   return (
     <div className="app-scroll">
       <div className="page-wrap page-stack">
-        <section className="spotlight-ring glass-panel rounded-[34px] p-6 sm:p-8">
+        <section className="spotlight-ring glass-panel page-hero">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-3xl">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
-                <CalendarDays size={20} className="text-brand-200" />
+                <CalendarDays size={20} className="text-[var(--app-primary-strong)]" />
               </div>
-              <h1 className="text-3xl font-bold tracking-tight text-white">Planner</h1>
-              <p className="mt-2 text-sm leading-6 text-gray-300">
+              <p className="section-eyebrow text-[var(--app-primary-strong)]">Planner</p>
+              <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">A premium study operations console.</h1>
+              <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">
                 Turn deadlines into a visible calendar, inspect AI-prioritized study blocks, and add manual work that does not yet live in room posts.
               </p>
             </div>
@@ -124,24 +111,16 @@ export default function PlannerPage() {
                   anchor.click();
                   URL.revokeObjectURL(url);
                 }}
-                className="app-button app-button-secondary inline-flex items-center gap-2"
+                className="app-button app-button-secondary"
               >
                 <Download size={14} />
                 Export
               </button>
-              <button
-                type="button"
-                onClick={() => void replan({})}
-                className="app-button app-button-secondary inline-flex items-center gap-2"
-              >
+              <button type="button" onClick={() => void replan({})} className="app-button app-button-secondary">
                 <RefreshCcw size={14} />
                 Re-plan
               </button>
-              <button
-                type="button"
-                onClick={() => setShowForm((current) => !current)}
-                className="app-button app-button-primary inline-flex items-center gap-2"
-              >
+              <button type="button" onClick={() => setShowForm((current) => !current)} className="app-button app-button-primary">
                 <Plus size={14} />
                 Add deadline
               </button>
@@ -158,11 +137,11 @@ export default function PlannerPage() {
               <StatCard label="Planned hours" value={String(planner.metrics.plannedHours)} />
             </section>
 
-            <section className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+            <section className="grid gap-5 xl:grid-cols-[1fr_340px]">
               <div className="glass-panel rounded-[28px] p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Calendar</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Calendar</p>
                     <h2 className="mt-2 text-2xl font-semibold text-white">Plan against real due dates</h2>
                   </div>
                   <div className="flex gap-2">
@@ -171,7 +150,7 @@ export default function PlannerPage() {
                         key={value}
                         type="button"
                         onClick={() => setCalendarView(value)}
-                        className={calendarView === value ? "rounded-2xl bg-brand-500 px-4 py-2 text-sm font-medium text-white" : "rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300"}
+                        className={calendarView === value ? "rounded-2xl bg-[var(--app-primary)] px-4 py-2 text-sm font-medium text-white" : "rounded-2xl border border-[var(--app-line)] bg-white/5 px-4 py-2 text-sm text-[var(--app-text-soft)]"}
                       >
                         {value}
                       </button>
@@ -179,7 +158,7 @@ export default function PlannerPage() {
                   </div>
                 </div>
 
-                <div className="mt-5 grid grid-cols-7 gap-2 text-center text-xs uppercase tracking-[0.18em] text-gray-500">
+                <div className="mt-5 grid grid-cols-7 gap-2 text-center text-xs uppercase tracking-[0.18em] text-[var(--app-text-muted)]">
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((label) => (
                     <div key={label}>{label}</div>
                   ))}
@@ -190,7 +169,7 @@ export default function PlannerPage() {
                     const dayEvents = planner.items.filter((item) => new Date(item.dueDate).toDateString() === date.toDateString());
                     const daySessions = planner.sessions.filter((item) => new Date(item.startAt).toDateString() === date.toDateString());
                     return (
-                      <div key={date.toISOString()} className="min-h-[8rem] rounded-[24px] border border-white/10 bg-black/20 p-3">
+                      <div key={date.toISOString()} className="min-h-[8rem] rounded-[24px] border border-[var(--app-line)] bg-black/20 p-3">
                         <p className="text-sm font-medium text-white">{date.getDate()}</p>
                         <div className="mt-3 space-y-2">
                           {dayEvents.slice(0, 2).map((item) => (
@@ -199,7 +178,7 @@ export default function PlannerPage() {
                             </div>
                           ))}
                           {daySessions.slice(0, 1).map((session) => (
-                            <div key={session.id} className="rounded-xl bg-brand-500/15 px-2 py-1 text-[11px] text-brand-100">
+                            <div key={session.id} className="rounded-xl bg-[rgba(77,117,255,0.14)] px-2 py-1 text-[11px] text-[var(--app-primary-strong)]">
                               Study block
                             </div>
                           ))}
@@ -212,7 +191,7 @@ export default function PlannerPage() {
 
               <div className="space-y-5">
                 <div className="glass-panel rounded-[28px] p-6">
-                  <p className="text-xs uppercase tracking-[0.2em] text-gray-500">AI study planner</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">AI study planner</p>
                   <h2 className="mt-2 text-2xl font-semibold text-white">Recommended sessions</h2>
                   <div className="mt-5 space-y-3">
                     {studyPlanError ? (
@@ -220,50 +199,50 @@ export default function PlannerPage() {
                     ) : studyPlan === null ? (
                       Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-20 animate-pulse rounded-2xl bg-white/5" />)
                     ) : studyPlan.data?.sessions.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-white/10 bg-black/20 p-4 text-sm text-gray-400">
+                      <div className="rounded-2xl border border-dashed border-[var(--app-line)] bg-black/20 p-4 text-sm text-[var(--app-text-muted)]">
                         Add or inherit deadlines first so the planner can allocate study blocks.
                       </div>
                     ) : (
                       studyPlan.data?.sessions.slice(0, 6).map((session) => (
-                        <div key={session.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                        <div key={session.id} className="rounded-2xl border border-[var(--app-line)] bg-black/20 p-4">
                           <div className="flex items-start justify-between gap-4">
                             <div>
                               <p className="font-medium text-white">{session.title}</p>
-                              <p className="mt-1 text-xs text-gray-500">{formatDeadline(session.startAt)} to {new Date(session.endAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</p>
+                              <p className="mt-1 text-xs text-[var(--app-text-muted)]">{formatDeadline(session.startAt)} to {new Date(session.endAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</p>
                             </div>
                             <span className={session.urgency === "high" ? "rounded-full bg-red-500/15 px-3 py-1 text-xs font-medium text-red-100" : session.urgency === "medium" ? "rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-100" : "rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-100"}>
                               {session.urgency}
                             </span>
                           </div>
-                          <p className="mt-3 text-sm leading-6 text-gray-300">{session.reasoning}</p>
+                          <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">{session.reasoning}</p>
                         </div>
                       ))
                     )}
-                    {studyPlan?.data?.summary ? <p className="text-sm text-gray-400">{studyPlan.data.summary}</p> : null}
+                    {studyPlan?.data?.summary ? <p className="text-sm text-[var(--app-text-muted)]">{studyPlan.data.summary}</p> : null}
                   </div>
                 </div>
 
                 <div className="glass-panel rounded-[28px] p-6">
-                  <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Upcoming deadlines</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Upcoming deadlines</p>
                   <div className="mt-5 space-y-3">
                     {planner.items.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-white/10 bg-black/20 p-4 text-sm text-gray-400">
+                      <div className="rounded-2xl border border-dashed border-[var(--app-line)] bg-black/20 p-4 text-sm text-[var(--app-text-muted)]">
                         No deadlines are currently available.
                       </div>
                     ) : (
                       planner.items.slice(0, 8).map((item) => (
-                        <div key={item.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                        <div key={item.id} className="rounded-2xl border border-[var(--app-line)] bg-black/20 p-4">
                           <div className="flex items-start justify-between gap-4">
                             <div>
                               <p className="font-medium text-white">{item.title}</p>
-                              <p className="mt-1 text-xs text-gray-500">{item.roomName ?? "Manual planning item"}</p>
+                              <p className="mt-1 text-xs text-[var(--app-text-muted)]">{item.roomName ?? "Manual planning item"}</p>
                             </div>
                             <span className={item.urgency === "high" ? "rounded-full bg-red-500/15 px-3 py-1 text-xs font-medium text-red-100" : item.urgency === "medium" ? "rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-100" : "rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-100"}>
                               {item.riskScore}%
                             </span>
                           </div>
-                          <p className="mt-3 text-sm leading-6 text-gray-300">{item.explanation}</p>
-                          <p className="mt-3 text-xs text-gray-500">Due {formatDeadline(item.dueDate)}</p>
+                          <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">{item.explanation}</p>
+                          <p className="mt-3 text-xs text-[var(--app-text-muted)]">Due {formatDeadline(item.dueDate)}</p>
                         </div>
                       ))
                     )}
@@ -284,55 +263,25 @@ export default function PlannerPage() {
           <section className="glass-panel rounded-[28px] p-6">
             <h2 className="text-2xl font-semibold text-white">Add manual deadline</h2>
             <form onSubmit={handleSubmit} className="mt-5 grid gap-4 lg:grid-cols-2">
-              <input
-                value={draft.title}
-                onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
-                placeholder="Deadline title"
-                className="app-input"
-              />
-              <input
-                type="datetime-local"
-                value={draft.dueDate}
-                onChange={(event) => setDraft((current) => ({ ...current, dueDate: event.target.value }))}
-                className="app-input"
-              />
-              <input
-                value={draft.estimatedMinutes}
-                onChange={(event) => setDraft((current) => ({ ...current, estimatedMinutes: event.target.value }))}
-                placeholder="Estimated minutes"
-                className="app-input"
-              />
-              <select
-                value={draft.roomId}
-                onChange={(event) => setDraft((current) => ({ ...current, roomId: event.target.value }))}
-                className="app-input"
-              >
+              <input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="Deadline title" className="app-input" />
+              <input type="datetime-local" value={draft.dueDate} onChange={(event) => setDraft((current) => ({ ...current, dueDate: event.target.value }))} className="app-input" />
+              <input value={draft.estimatedMinutes} onChange={(event) => setDraft((current) => ({ ...current, estimatedMinutes: event.target.value }))} placeholder="Estimated minutes" className="app-input" />
+              <select value={draft.roomId} onChange={(event) => setDraft((current) => ({ ...current, roomId: event.target.value }))} className="app-input">
                 <option value="">No room linkage</option>
                 {(rooms as Doc<"rooms">[] | undefined)?.map((room) => (
-                  <option key={room._id} value={room._id}>
-                    {room.name}
-                  </option>
+                  <option key={room._id} value={room._id}>{room.name}</option>
                 ))}
               </select>
-              <textarea
-                value={draft.notes}
-                onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))}
-                placeholder="Optional notes"
-                className="app-textarea lg:col-span-2"
-              />
+              <textarea value={draft.notes} onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))} placeholder="Optional notes" className="app-textarea lg:col-span-2" />
               <div className="flex flex-wrap gap-3 lg:col-span-2">
-                <button type="submit" disabled={isSubmitting} className="app-button app-button-primary">
-                  {isSubmitting ? "Saving..." : "Save deadline"}
-                </button>
-                <button type="button" onClick={() => setShowForm(false)} className="app-button app-button-secondary">
-                  Cancel
-                </button>
+                <button type="submit" disabled={isSubmitting} className="app-button app-button-primary">{isSubmitting ? "Saving..." : "Save deadline"}</button>
+                <button type="button" onClick={() => setShowForm(false)} className="app-button app-button-secondary">Cancel</button>
               </div>
             </form>
-            {status ? <p className="mt-4 text-sm text-gray-300">{status}</p> : null}
+            {status ? <p className="mt-4 text-sm text-[var(--app-text-soft)]">{status}</p> : null}
           </section>
         ) : status ? (
-          <p className="text-sm text-gray-300">{status}</p>
+          <p className="text-sm text-[var(--app-text-soft)]">{status}</p>
         ) : null}
       </div>
     </div>
@@ -342,7 +291,7 @@ export default function PlannerPage() {
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="stat-card">
-      <p className="text-xs uppercase tracking-[0.25em] text-gray-500">{label}</p>
+      <p className="text-xs uppercase tracking-[0.25em] text-[var(--app-text-muted)]">{label}</p>
       <p className="mt-4 text-3xl font-black text-white">{value}</p>
     </div>
   );

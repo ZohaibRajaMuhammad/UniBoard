@@ -122,35 +122,35 @@ export default function RoomSettingsPage({ params }: { params: { roomId: string 
   }
 
   if (!room) {
-    return <div className="flex flex-1 items-center justify-center text-gray-400">Room not found.</div>;
+    return <div className="flex flex-1 items-center justify-center text-[var(--app-text-muted)]">Room not found.</div>;
   }
 
   return (
     <div className="app-scroll">
       <div className="page-wrap page-stack">
-        <div className="glass-panel rounded-[28px] p-6">
+        <section className="glass-panel rounded-[28px] p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
-              <Link href={`/rooms/${roomId}`} className="inline-flex items-center gap-2 text-sm text-gray-400 transition hover:text-white">
+              <Link href={`/rooms/${roomId}`} className="inline-flex items-center gap-2 text-sm text-[var(--app-text-muted)] transition hover:text-white">
                 <ArrowLeft size={14} />
                 Back to room
               </Link>
-              <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-500">Room governance</p>
+              <p className="mt-5 section-eyebrow">Room governance</p>
               <h1 className="mt-2 text-3xl font-bold text-white">Room settings</h1>
-              <p className="mt-3 text-sm leading-7 text-gray-300">
+              <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">
                 Review room identity, adjust posting policy, and keep discovery, invites, and AI behavior aligned with how the class should operate.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-gray-300">
+              <div className="rounded-2xl border border-[var(--app-line)] bg-white/[0.03] px-4 py-3 text-sm text-[var(--app-text-soft)]">
                 {room.isArchived ? "Archived room" : canEdit ? (isDirty ? "Unsaved changes" : "All changes saved") : "Read-only access"}
               </div>
               <button
                 type="button"
                 onClick={() => void handleSave()}
                 disabled={saveDisabled}
-                className="app-button app-button-primary inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+                className="app-button app-button-primary disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Save size={14} />
                 {isSaving ? "Saving..." : "Save settings"}
@@ -164,7 +164,9 @@ export default function RoomSettingsPage({ params }: { params: { roomId: string 
                 <Lock size={16} className="mt-0.5 shrink-0" />
                 <div>
                   <p className="font-semibold">This room is viewable, but policy edits are restricted.</p>
-                  <p className="mt-1 text-amber-50/90">The current backend contract allows room owners, teachers, and super admins to save changes. Members can still inspect the room configuration here.</p>
+                  <p className="mt-1 text-amber-50/90">
+                    The current backend contract allows room owners, teachers, and super admins to save changes. Members can still inspect the room configuration here.
+                  </p>
                 </div>
               </div>
             </div>
@@ -176,192 +178,136 @@ export default function RoomSettingsPage({ params }: { params: { roomId: string 
             </div>
           ) : null}
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <div className="space-y-5">
-              <section className="rounded-[24px] border border-white/10 bg-black/20 p-5">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Room name" error={validationError}>
-                    <input
-                      value={form.name}
-                      onChange={(event) => {
-                        setForm((current) => ({ ...current, name: event.target.value }));
-                        setStatus("");
-                      }}
-                      disabled={isReadOnly}
-                      className={cn("app-input", isReadOnly && "cursor-not-allowed opacity-70")}
-                    />
-                  </Field>
-                  <Field label="Subject">
-                    <input value={room.subject} disabled className="app-input opacity-70" />
-                  </Field>
-                </div>
-
-                <Field label="Description" className="mt-4">
-                  <textarea
-                    value={form.description}
+          <div className="mt-6 grid gap-6 xl:grid-cols-2">
+            <section className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
+              <h2 className="text-lg font-semibold text-white">Metadata</h2>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <Field label="Room name" error={validationError}>
+                  <input
+                    value={form.name}
                     onChange={(event) => {
-                      setForm((current) => ({ ...current, description: event.target.value }));
+                      setForm((current) => ({ ...current, name: event.target.value }));
                       setStatus("");
                     }}
                     disabled={isReadOnly}
-                    className={cn("app-textarea min-h-[8rem]", isReadOnly && "cursor-not-allowed opacity-70")}
+                    className={cn("app-input", isReadOnly && "cursor-not-allowed opacity-70")}
                   />
                 </Field>
-              </section>
+                <Field label="Subject">
+                  <input value={room.subject} disabled className="app-input opacity-70" />
+                </Field>
+              </div>
 
-              <section className="rounded-[24px] border border-white/10 bg-black/20 p-5">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Field label="Accent color">
-                    <div className="flex flex-wrap gap-2">
-                      {ROOM_COLORS.map((color) => (
-                        <button
-                          key={color}
-                          type="button"
-                          onClick={() => {
-                            if (isReadOnly) {
-                              return;
-                            }
-                            setForm((current) => ({ ...current, color }));
-                            setStatus("");
-                          }}
-                          disabled={isReadOnly}
-                          className={cn(
-                            "rounded-xl border px-3 py-2 text-sm capitalize transition",
-                            form.color === color
-                              ? "border-brand-400 bg-brand-500/20 text-white"
-                              : "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10",
-                            isReadOnly && "cursor-not-allowed opacity-60 hover:bg-white/5"
-                          )}
-                        >
-                          {color}
-                        </button>
-                      ))}
-                    </div>
-                  </Field>
+              <Field label="Description" className="mt-4">
+                <textarea
+                  value={form.description}
+                  onChange={(event) => {
+                    setForm((current) => ({ ...current, description: event.target.value }));
+                    setStatus("");
+                  }}
+                  disabled={isReadOnly}
+                  className={cn("app-textarea min-h-[8rem]", isReadOnly && "cursor-not-allowed opacity-70")}
+                />
+              </Field>
 
-                  <Field label="Emoji">
-                    <div className="grid grid-cols-5 gap-2">
-                      {ROOM_EMOJIS.map((emoji) => (
-                        <button
-                          key={emoji}
-                          type="button"
-                          onClick={() => {
-                            if (isReadOnly) {
-                              return;
-                            }
-                            setForm((current) => ({ ...current, emoji }));
-                            setStatus("");
-                          }}
-                          disabled={isReadOnly}
-                          className={cn(
-                            "rounded-xl border px-3 py-2 text-lg transition",
-                            form.emoji === emoji ? "border-brand-400 bg-brand-500/20" : "border-white/10 bg-white/5 hover:bg-white/10",
-                            isReadOnly && "cursor-not-allowed opacity-60 hover:bg-white/5"
-                          )}
-                        >
-                          {emoji}
-                        </button>
-                      ))}
-                    </div>
-                  </Field>
-                </div>
-              </section>
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <Field label="Accent color">
+                  <div className="flex flex-wrap gap-2">
+                    {ROOM_COLORS.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => {
+                          if (isReadOnly) {
+                            return;
+                          }
+                          setForm((current) => ({ ...current, color }));
+                          setStatus("");
+                        }}
+                        disabled={isReadOnly}
+                        className={cn(
+                          "rounded-xl border px-3 py-2 text-sm capitalize transition",
+                          form.color === color
+                            ? "border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.14)] text-white"
+                            : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10",
+                          isReadOnly && "cursor-not-allowed opacity-60 hover:bg-white/5"
+                        )}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
 
-              <section className="rounded-[24px] border border-white/10 bg-black/20 p-5">
-                <h2 className="text-lg font-semibold text-white">Room policies</h2>
-                <p className="mt-1 text-sm leading-6 text-gray-400">These controls affect composer behavior, invite paths, room discovery, and AI visibility immediately after a successful save.</p>
-                <div className="mt-5 grid gap-3">
-                  <Toggle
-                    label="Public room"
-                    help="Public rooms remain visible in discovery. Private rooms rely on a join code."
-                    checked={form.isPublic}
-                    disabled={isReadOnly}
-                    onChange={(checked) => {
-                      setForm((current) => ({ ...current, isPublic: checked }));
-                      setStatus("");
-                    }}
-                  />
-                  <Toggle
-                    label="Allow anonymous posting"
-                    help="When off, the composer should force visible identity for posts and comments."
-                    checked={form.allowAnonymous}
-                    disabled={isReadOnly}
-                    onChange={(checked) => {
-                      setForm((current) => ({ ...current, allowAnonymous: checked }));
-                      setStatus("");
-                    }}
-                  />
-                  <Toggle
-                    label="Allow student invites"
-                    help="Enable room members to bring in more classmates without owner intervention."
-                    checked={form.allowStudentInvite}
-                    disabled={isReadOnly}
-                    onChange={(checked) => {
-                      setForm((current) => ({ ...current, allowStudentInvite: checked }));
-                      setStatus("");
-                    }}
-                  />
-                  <Toggle
-                    label="Enable AI helper"
-                    help="Expose room-scoped AI experiences only when this policy is on."
-                    checked={form.aiEnabled}
-                    disabled={isReadOnly}
-                    onChange={(checked) => {
-                      setForm((current) => ({ ...current, aiEnabled: checked }));
-                      setStatus("");
-                    }}
-                  />
-                  <Toggle
-                    label="Archive room"
-                    help="Archived rooms stop new participation and become operationally frozen after save."
-                    checked={form.isArchived}
-                    disabled={isReadOnly}
-                    onChange={(checked) => {
-                      setForm((current) => ({ ...current, isArchived: checked }));
-                      setStatus("");
-                    }}
-                  />
-                </div>
-              </section>
+                <Field label="Emoji">
+                  <div className="grid grid-cols-5 gap-2">
+                    {ROOM_EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => {
+                          if (isReadOnly) {
+                            return;
+                          }
+                          setForm((current) => ({ ...current, emoji }));
+                          setStatus("");
+                        }}
+                        disabled={isReadOnly}
+                        className={cn(
+                          "rounded-xl border px-3 py-2 text-lg transition",
+                          form.emoji === emoji ? "border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.14)]" : "border-[var(--app-line)] bg-white/5 hover:bg-white/10",
+                          isReadOnly && "cursor-not-allowed opacity-60 hover:bg-white/5"
+                        )}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+              </div>
+            </section>
 
-              {status ? <p className="text-sm text-gray-300">{status}</p> : null}
-            </div>
+            <section className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
+              <h2 className="text-lg font-semibold text-white">Policy controls</h2>
+              <p className="mt-1 text-sm leading-6 text-[var(--app-text-muted)]">
+                These controls affect composer behavior, invite paths, room discovery, and AI visibility immediately after a successful save.
+              </p>
+              <div className="mt-5 grid gap-3">
+                <Toggle label="Public room" help="Public rooms remain visible in discovery. Private rooms rely on a join code." checked={form.isPublic} disabled={isReadOnly} onChange={(checked) => { setForm((current) => ({ ...current, isPublic: checked })); setStatus(""); }} />
+                <Toggle label="Allow anonymous posting" help="When off, the composer should force visible identity for posts and comments." checked={form.allowAnonymous} disabled={isReadOnly} onChange={(checked) => { setForm((current) => ({ ...current, allowAnonymous: checked })); setStatus(""); }} />
+                <Toggle label="Allow student invites" help="Enable room members to bring in more classmates without owner intervention." checked={form.allowStudentInvite} disabled={isReadOnly} onChange={(checked) => { setForm((current) => ({ ...current, allowStudentInvite: checked })); setStatus(""); }} />
+                <Toggle label="Enable AI helper" help="Expose room-scoped AI experiences only when this policy is on." checked={form.aiEnabled} disabled={isReadOnly} onChange={(checked) => { setForm((current) => ({ ...current, aiEnabled: checked })); setStatus(""); }} />
+                <Toggle label="Archive room" help="Archived rooms stop new participation and become operationally frozen after save." checked={form.isArchived} disabled={isReadOnly} onChange={(checked) => { setForm((current) => ({ ...current, isArchived: checked })); setStatus(""); }} />
+              </div>
 
-            <div className="space-y-4">
-              <InfoCard label="Join code" value={room.joinCode ?? "Public rooms do not use join codes"} />
-              <InfoCard label="Batch" value={room.batch} />
-              <InfoCard label="Members" value={String(room.memberCount)} />
-
-              <div className="rounded-[24px] border border-white/10 bg-black/20 p-5">
-                <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Membership</p>
+              <div className="mt-5 rounded-[24px] border border-[var(--app-line)] bg-white/[0.03] p-5">
+                <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Membership</p>
                 <div className="mt-3 space-y-2">
                   {members.map((member) => (
                     <div key={member._id} className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.03] px-3 py-2 text-sm">
                       <span className="truncate text-white">{member.user.name}</span>
-                      <span className="text-xs uppercase tracking-[0.18em] text-gray-500">{member.role}</span>
+                      <span className="text-xs uppercase tracking-[0.18em] text-[var(--app-text-muted)]">{member.role}</span>
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <InfoCard label="Join code" value={room.joinCode ?? "Public"} />
+                <InfoCard label="Batch" value={room.batch} />
+                <InfoCard label="Members" value={String(room.memberCount)} />
+              </div>
+            </section>
           </div>
-        </div>
+
+          {status ? <p className="mt-4 text-sm text-[var(--app-text-soft)]">{status}</p> : null}
+        </section>
       </div>
     </div>
   );
 }
 
-function Field({
-  label,
-  children,
-  error,
-  className
-}: {
-  label: string;
-  children: React.ReactNode;
-  error?: string;
-  className?: string;
-}) {
+function Field({ label, children, error, className }: { label: string; children: React.ReactNode; error?: string; className?: string }) {
   return (
     <label className={cn("grid gap-2", className)}>
       <span className="text-sm font-semibold text-gray-200">{label}</span>
@@ -371,36 +317,19 @@ function Field({
   );
 }
 
-function Toggle({
-  label,
-  help,
-  checked,
-  disabled,
-  onChange
-}: {
-  label: string;
-  help: string;
-  checked: boolean;
-  disabled: boolean;
-  onChange: (checked: boolean) => void;
-}) {
+function Toggle({ label, help, checked, disabled, onChange }: { label: string; help: string; checked: boolean; disabled: boolean; onChange: (checked: boolean) => void }) {
   return (
     <button
       type="button"
       onClick={() => onChange(!checked)}
       disabled={disabled}
-      className="flex min-h-11 items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left transition hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/70 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-white/[0.03]"
+      className="flex min-h-11 items-center justify-between gap-4 rounded-2xl border border-[var(--app-line)] bg-white/[0.03] px-4 py-3 text-left transition hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(109,140,255,0.45)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-white/[0.03]"
     >
       <div>
         <span className="text-sm font-medium text-white">{label}</span>
-        <p className="mt-1 text-xs leading-5 text-gray-400">{help}</p>
+        <p className="mt-1 text-xs leading-5 text-[var(--app-text-muted)]">{help}</p>
       </div>
-      <span
-        className={cn(
-          "rounded-full px-3 py-1 text-xs font-semibold",
-          checked ? "bg-brand-500 text-white" : "bg-white/10 text-gray-400"
-        )}
-      >
+      <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", checked ? "bg-[var(--app-primary)] text-white" : "bg-white/10 text-[var(--app-text-muted)]")}>
         {checked ? "On" : "Off"}
       </span>
     </button>
@@ -409,9 +338,9 @@ function Toggle({
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[24px] border border-white/10 bg-black/20 p-5">
-      <p className="text-xs uppercase tracking-[0.2em] text-gray-500">{label}</p>
-      <p className="mt-2 text-lg font-semibold text-white">{value}</p>
+    <div className="rounded-[20px] border border-[var(--app-line)] bg-black/20 p-4">
+      <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">{label}</p>
+      <p className="mt-2 text-sm font-semibold text-white">{value}</p>
     </div>
   );
 }
