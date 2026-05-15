@@ -10,6 +10,7 @@ import { POST_TYPE_CONFIG, POST_TYPES, ROOM_MENTION_AI } from "@/lib/constants";
 import { postAi } from "@/lib/ai/client";
 import type { AssistantReply, ComposerSuggestion } from "@/lib/ai/contracts";
 import { buildAssistantPrompt, containsAiMention, formatAssistantComment } from "@/lib/ai/mentions";
+import { getPostTypeIcon } from "@/lib/ui-icons";
 import { cn } from "@/lib/utils";
 
 const postTypes = POST_TYPES.map((type) => ({
@@ -250,7 +251,10 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
               onClick={() => setShowTypes((current) => !current)}
               className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white"
             >
-              <span>{selectedType.emoji}</span>
+              {(() => {
+                const SelectedTypeIcon = getPostTypeIcon(selectedType.value);
+                return <SelectedTypeIcon size={16} />;
+              })()}
               {selectedType.label}
               <ChevronDown size={14} />
             </button>
@@ -266,7 +270,10 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
                     }}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-gray-200 transition hover:bg-white/5"
                   >
-                    <span>{type.emoji}</span>
+                    {(() => {
+                      const TypeIcon = getPostTypeIcon(type.value);
+                      return <TypeIcon size={16} />;
+                    })()}
                     <span>{type.label}</span>
                   </button>
                 ))}

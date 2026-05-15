@@ -26,7 +26,7 @@ function applyTheme(theme: AppTheme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<AppTheme>("dark");
+  const [theme, setThemeState] = useState<AppTheme>("light");
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -35,7 +35,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         ? stored
         : window.matchMedia("(prefers-color-scheme: light)").matches
           ? "light"
-          : "dark";
+          : "light";
 
     setThemeState(nextTheme);
     applyTheme(nextTheme);

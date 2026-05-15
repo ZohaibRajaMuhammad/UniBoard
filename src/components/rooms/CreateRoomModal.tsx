@@ -5,7 +5,8 @@ import { Sparkles, X } from "lucide-react";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { BATCHES, ROOM_COLORS, ROOM_EMOJIS } from "@/lib/constants";
+import { BATCHES, ROOM_COLORS } from "@/lib/constants";
+import { ROOM_ICON_OPTIONS } from "@/lib/ui-icons";
 
 type CreateRoomForm = {
   name: string;
@@ -27,7 +28,7 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
     description: "",
     isPublic: true,
     color: ROOM_COLORS[0],
-    emoji: ROOM_EMOJIS[0]
+    emoji: ROOM_ICON_OPTIONS[0].value
   });
 
   async function handleSubmit() {
@@ -145,18 +146,24 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
                     ))}
                   </div>
                 </Field>
-                <Field label="Emoji">
+                <Field label="Room icon">
                   <div className="grid grid-cols-5 gap-2">
-                    {ROOM_EMOJIS.map((emoji) => (
+                    {ROOM_ICON_OPTIONS.map((option) => {
+                      const Icon = option.icon;
+                      return (
                       <button
-                        key={emoji}
+                        key={option.value}
                         type="button"
-                        onClick={() => setForm((current) => ({ ...current, emoji }))}
-                        className={`touch-target rounded-xl border text-lg transition ${form.emoji === emoji ? "border-brand-400 bg-brand-500/20" : "border-white/10 bg-white/5 hover:bg-white/10"}`}
+                        onClick={() => setForm((current) => ({ ...current, emoji: option.value }))}
+                        className={`touch-target rounded-xl border transition ${form.emoji === option.value ? "border-brand-400 bg-brand-500/20 text-white" : "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10"}`}
+                        title={option.label}
                       >
-                        {emoji}
+                        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl">
+                          <Icon size={18} />
+                        </div>
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
                 </Field>
               </div>

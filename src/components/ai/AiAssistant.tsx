@@ -117,9 +117,6 @@ export function AiAssistant() {
                 <div className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
                   <p className="text-sm font-semibold text-white">Academic Copilot</p>
-                  <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-[var(--app-text-muted)]">
-                    OpenAI
-                  </span>
                 </div>
                 <p className="mt-1 text-xs text-[var(--app-text-muted)]">
                   Grounded guidance only. Low-confidence answers are labeled.

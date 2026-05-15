@@ -2,7 +2,7 @@
 
 import { useDeferredValue, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { Plus, Search, Sparkles, Users } from "lucide-react";
+import { Plus, Search, SearchX, Sparkles, Users } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { CreateRoomModal } from "@/components/rooms/CreateRoomModal";
 import { RoomCard } from "@/components/rooms/RoomCard";
@@ -93,7 +93,9 @@ export default function RoomsPage() {
           </div>
         ) : filteredRooms.length === 0 ? (
           <div className="glass-panel rounded-[var(--radius-panel)] p-8 text-center sm:p-10">
-            <div className="text-4xl">🔎</div>
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl border border-[var(--app-line)] bg-white/5 text-[var(--app-primary-strong)]">
+              <SearchX size={24} />
+            </div>
             <h2 className="mt-4 text-xl font-semibold text-white">No rooms match your search</h2>
             <p className="mt-2 text-sm text-[var(--app-text-muted)]">Try a subject code, room name, or batch keyword.</p>
           </div>

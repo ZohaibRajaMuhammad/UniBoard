@@ -1,6 +1,7 @@
 "use client";
 
 import type { Id } from "../../../convex/_generated/dataModel";
+import { FilePlus2 } from "lucide-react";
 import { PostCard } from "./PostCard";
 
 export interface FeedPost {
@@ -55,7 +56,9 @@ export function PostFeed({
   if (posts.length === 0) {
     return (
       <div className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-white/5 text-4xl">+</div>
+        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[var(--app-primary-strong)]">
+          <FilePlus2 size={28} />
+        </div>
         <h2 className="mt-5 text-2xl font-semibold text-white">{emptyStateLabel}</h2>
         <p className="mt-2 max-w-md text-sm leading-7 text-gray-400">
           Start with a note, question, resource, or deadline so the room becomes useful immediately for everyone else.

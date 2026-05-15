@@ -23,6 +23,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { UniBoardLogo } from "@/components/brand/UniBoardLogo";
 import { CreateRoomModal } from "@/components/rooms/CreateRoomModal";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { getRoomIcon } from "@/lib/ui-icons";
 import { cn } from "@/lib/utils";
 import type { Room } from "@/types";
 
@@ -109,7 +110,7 @@ export function Sidebar() {
           <UserButton afterSignOutUrl="/" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-white">Your account</p>
-            <p className="truncate text-xs text-[var(--app-text-muted)]">Managed by Clerk</p>
+            <p className="truncate text-xs text-[var(--app-text-muted)]">Personal workspace controls</p>
           </div>
           <Link href="/settings" className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-soft)] transition hover:bg-white/10">
             <Settings size={16} />
@@ -164,6 +165,7 @@ function SidebarRoomItem({
   active: boolean;
 }) {
   const unreadCount = useQuery(api.rooms.getUnreadCount, { roomId: roomId as Id<"rooms"> });
+  const RoomIcon = getRoomIcon(emoji);
 
   return (
     <Link
@@ -175,7 +177,9 @@ function SidebarRoomItem({
           : "border-transparent text-[var(--app-text-muted)] hover:bg-white/5 hover:text-white"
       )}
     >
-      <span className="text-lg">{emoji}</span>
+      <span className="flex h-8 w-8 items-center justify-center rounded-2xl border border-[var(--app-line)] bg-white/5 text-[var(--app-primary-strong)]">
+        <RoomIcon size={15} />
+      </span>
       <span className="min-w-0 flex-1 truncate">{name}</span>
       {unreadCount ? <span className="rounded-full bg-[var(--app-primary)] px-2 py-0.5 text-[10px] font-bold text-white">{unreadCount}</span> : null}
     </Link>

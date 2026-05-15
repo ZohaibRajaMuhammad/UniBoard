@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import { Smile } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
-import { REACTION_EMOJIS } from "@/lib/constants";
+import { getReactionIcon, REACTION_OPTIONS } from "@/lib/ui-icons";
 import { cn } from "@/lib/utils";
 
 export function ReactionBar({ postId }: { postId: Id<"posts"> }) {
@@ -25,6 +25,9 @@ export function ReactionBar({ postId }: { postId: Id<"posts"> }) {
   return (
     <div className="flex items-center gap-1">
       {reactions?.map((reaction) => (
+        (() => {
+          const ReactionIcon = getReactionIcon(reaction.emoji);
+          return (
         <button
           key={reaction.emoji}
           onClick={() => void handleReact(reaction.emoji)}
@@ -34,10 +37,12 @@ export function ReactionBar({ postId }: { postId: Id<"posts"> }) {
               ? "border-brand-400/40 bg-brand-500/10 text-brand-100"
               : "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10"
           )}
-        >
-          <span>{reaction.emoji}</span>
+          >
+          <ReactionIcon size={13} />
           <span>{reaction.count}</span>
         </button>
+          );
+        })()
       ))}
 
       <div className="relative">
@@ -51,11 +56,20 @@ export function ReactionBar({ postId }: { postId: Id<"posts"> }) {
           <>
             <div className="fixed inset-0 z-10" onClick={() => setShowPicker(false)} />
             <div className="absolute bottom-10 left-0 z-20 flex gap-1 rounded-2xl border border-white/10 bg-gray-900 p-2 shadow-2xl">
-              {REACTION_EMOJIS.map((emoji) => (
-                <button key={emoji} onClick={() => void handleReact(emoji)} className="text-lg transition hover:scale-110">
-                  {emoji}
+              {REACTION_OPTIONS.map((reaction) => {
+                const Icon = reaction.icon;
+                return (
+                <button
+                  key={reaction.value}
+                  onClick={() => void handleReact(reaction.value)}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl text-[var(--app-text-soft)] transition hover:scale-110 hover:bg-white/5 hover:text-white"
+                  aria-label={reaction.label}
+                  title={reaction.label}
+                >
+                  <Icon size={16} />
                 </button>
-              ))}
+                );
+              })}
             </div>
           </>
         ) : null}

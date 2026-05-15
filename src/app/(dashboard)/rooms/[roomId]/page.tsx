@@ -16,6 +16,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { postAi } from "@/lib/ai/client";
 import type { AiEnvelope, RoomSummary } from "@/lib/ai/contracts";
 import { POST_TYPE_CONFIG, POST_TYPES } from "@/lib/constants";
+import { getPostTypeIcon } from "@/lib/ui-icons";
 import { cn } from "@/lib/utils";
 
 const FEED_FILTERS = ["all", ...POST_TYPES] as const;
@@ -107,7 +108,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         <RoomHeader room={room} />
         <PresenceBar roomId={roomId} />
 
-        <div className="border-b border-[var(--app-line)] bg-black/10 backdrop-blur">
+        <div className="border-b border-[var(--app-line)] bg-white/5 backdrop-blur">
           <div className="page-wrap py-4">
             <div className="grid gap-3 sm:grid-cols-3">
               {roomStats.map((item) => (
@@ -157,7 +158,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                   Compose
                 </button>
                 {FEED_FILTERS.map((filter) => {
-                  const filterLabel = filter === "all" ? "All posts" : `${POST_TYPE_CONFIG[filter].emoji} ${POST_TYPE_CONFIG[filter].label}`;
+                  const FilterIcon = filter === "all" ? null : getPostTypeIcon(filter);
                   return (
                     <button
                       key={filter}
@@ -169,7 +170,10 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                           : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10"
                       )}
                     >
-                      {filterLabel}
+                      <span className="inline-flex items-center gap-2">
+                        {FilterIcon ? <FilterIcon size={14} /> : null}
+                        {filter === "all" ? "All posts" : POST_TYPE_CONFIG[filter].label}
+                      </span>
                     </button>
                   );
                 })}
@@ -189,7 +193,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
           />
         </div>
 
-        <div id="room-composer" className="sticky bottom-0 border-t border-white/10 bg-gray-950/95 backdrop-blur">
+        <div id="room-composer" className="sticky bottom-0 border-t border-white/10 bg-[var(--app-panel-strong)] backdrop-blur">
           <PostComposer roomId={roomId} />
         </div>
       </div>

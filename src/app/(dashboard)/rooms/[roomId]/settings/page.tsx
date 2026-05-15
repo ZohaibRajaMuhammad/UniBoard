@@ -6,14 +6,15 @@ import { useMutation, useQuery } from "convex/react";
 import { ArrowLeft, Lock, Save } from "lucide-react";
 import { api } from "../../../../../../convex/_generated/api";
 import type { Id } from "../../../../../../convex/_generated/dataModel";
-import { ROOM_COLORS, ROOM_EMOJIS } from "@/lib/constants";
+import { ROOM_COLORS } from "@/lib/constants";
+import { getRoomIcon, ROOM_ICON_OPTIONS } from "@/lib/ui-icons";
 import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 type RoomSettingsForm = {
   name: string;
   description: string;
-  emoji: (typeof ROOM_EMOJIS)[number];
+  emoji: string;
   color: (typeof ROOM_COLORS)[number];
   isPublic: boolean;
   allowAnonymous: boolean;
@@ -33,7 +34,7 @@ export default function RoomSettingsPage({ params }: { params: { roomId: string 
   const [form, setForm] = useState<RoomSettingsForm>({
     name: "",
     description: "",
-    emoji: ROOM_EMOJIS[0],
+    emoji: ROOM_ICON_OPTIONS[0].value,
     color: ROOM_COLORS[0],
     isPublic: true,
     allowAnonymous: true,
@@ -51,7 +52,7 @@ export default function RoomSettingsPage({ params }: { params: { roomId: string 
     const nextForm: RoomSettingsForm = {
       name: room.name,
       description: room.description ?? "",
-      emoji: room.emoji as (typeof ROOM_EMOJIS)[number],
+      emoji: room.emoji,
       color: room.color as (typeof ROOM_COLORS)[number],
       isPublic: room.isPublic,
       allowAnonymous: room.allowAnonymous ?? true,
@@ -239,29 +240,35 @@ export default function RoomSettingsPage({ params }: { params: { roomId: string 
                   </div>
                 </Field>
 
-                <Field label="Emoji">
+                <Field label="Room icon">
                   <div className="grid grid-cols-5 gap-2">
-                    {ROOM_EMOJIS.map((emoji) => (
+                    {ROOM_ICON_OPTIONS.map((option) => {
+                      const Icon = option.icon;
+                      return (
                       <button
-                        key={emoji}
+                        key={option.value}
                         type="button"
                         onClick={() => {
                           if (isReadOnly) {
                             return;
                           }
-                          setForm((current) => ({ ...current, emoji }));
+                          setForm((current) => ({ ...current, emoji: option.value }));
                           setStatus("");
                         }}
                         disabled={isReadOnly}
                         className={cn(
-                          "rounded-xl border px-3 py-2 text-lg transition",
-                          form.emoji === emoji ? "border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.14)]" : "border-[var(--app-line)] bg-white/5 hover:bg-white/10",
+                          "rounded-xl border px-3 py-2 transition",
+                          form.emoji === option.value ? "border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.14)] text-white" : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10",
                           isReadOnly && "cursor-not-allowed opacity-60 hover:bg-white/5"
                         )}
+                        title={option.label}
                       >
-                        {emoji}
+                        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl">
+                          <Icon size={18} />
+                        </div>
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
                 </Field>
               </div>

@@ -1,8 +1,11 @@
 import Link from "next/link";
 import type { Doc } from "../../../convex/_generated/dataModel";
+import { getRoomIcon } from "@/lib/ui-icons";
 import { formatRelativeTime } from "@/lib/utils";
 
 export function RoomCard({ room }: { room: Doc<"rooms"> }) {
+  const RoomIcon = getRoomIcon(room.emoji);
+
   return (
     <Link
       href={`/rooms/${room._id}`}
@@ -10,8 +13,8 @@ export function RoomCard({ room }: { room: Doc<"rooms"> }) {
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-2xl">
-            {room.emoji}
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-[var(--app-primary-strong)]">
+            <RoomIcon size={22} />
           </div>
           <h3 className="text-lg font-semibold text-white sm:text-xl">{room.name}</h3>
           <p className="mt-1 text-sm text-[var(--app-text-muted)]">{room.subject}</p>

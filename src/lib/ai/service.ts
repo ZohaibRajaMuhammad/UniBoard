@@ -395,7 +395,7 @@ export async function getKnowledgeAnswer(question: string) {
           schema: knowledgeSchema,
           schemaName: "knowledge_answer",
           instructions:
-            "Answer only from the provided study sources. If evidence is weak, abstain plainly. Never invent facts or citations.",
+            "Answer only from the provided study sources. Keep the answer concise, neutral, and point-to-point. If evidence is weak, abstain plainly. Never invent facts or citations.",
           input: `Question:\n${question}\n\nAuthorized sources:\n${chunks
             .map(
               (chunk, index) =>
@@ -681,7 +681,7 @@ export async function getAssistantReply(message: string, roomId?: string) {
           schema: assistantSchema,
           schemaName: "assistant_reply",
           instructions:
-            "Act as an academic workspace assistant. Give a grounded reply, keep it concise, and suggest concrete next actions.",
+            "Act as an academic workspace assistant. Reply in short, direct, professional language. Prefer 1 to 4 concise sentences or up to 3 tight bullets. Give a grounded answer first, avoid filler, and suggest only concrete next actions.",
           input: `Request:\n${message}\n\nAuthorized context:\n${chunks
             .map((chunk, index) => `[${index + 1}] ${chunk.roomName} | ${chunk.title}\n${chunk.content}`)
             .join("\n\n")}`

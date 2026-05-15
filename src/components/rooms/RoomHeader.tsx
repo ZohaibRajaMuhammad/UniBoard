@@ -1,14 +1,17 @@
 import Link from "next/link";
 import type { Doc } from "../../../convex/_generated/dataModel";
+import { getRoomIcon } from "@/lib/ui-icons";
 
 export function RoomHeader({ room }: { room: Doc<"rooms"> }) {
+  const RoomIcon = getRoomIcon(room.emoji);
+
   return (
-    <header className="border-b border-[var(--app-line)] bg-[rgba(6,12,22,0.84)] backdrop-blur">
+    <header className="border-b border-[var(--app-line)] bg-[color:var(--app-panel-strong)] backdrop-blur">
       <div className="page-wrap py-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] border border-white/10 bg-white/5 text-3xl shadow-[0_18px_36px_rgba(3,8,20,0.28)]">
-              {room.emoji}
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] border border-white/10 bg-white/5 text-[var(--app-primary-strong)] shadow-[0_18px_36px_rgba(3,8,20,0.28)]">
+              <RoomIcon size={28} />
             </div>
 
             <div className="min-w-0">
