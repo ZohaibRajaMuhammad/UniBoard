@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { BellRing, CheckCheck } from "lucide-react";
+import { ArrowUpRight, BellRing, CheckCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Notification } from "@/types";
+import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils";
 
 export default function NotificationsPage() {
@@ -58,11 +59,7 @@ export default function NotificationsPage() {
               <button
                 key={value}
                 onClick={() => setFilter(value)}
-                className={
-                  filter === value
-                    ? "rounded-2xl bg-[var(--app-primary)] px-4 py-2 text-sm font-medium text-white"
-                    : "rounded-2xl border border-[var(--app-line)] bg-white/5 px-4 py-2 text-sm text-[var(--app-text-soft)]"
-                }
+                className={cn("app-filter-pill", filter === value && "app-filter-pill-active")}
               >
                 {value === "all" ? "All activity" : "Unread only"}
               </button>
@@ -86,9 +83,10 @@ export default function NotificationsPage() {
               {items.map((notification) => {
                 const row = (
                   <div
-                    className={`surface-row flex items-start gap-4 transition hover:bg-white/[0.05] ${
+                    className={cn(
+                      "surface-row flex items-start gap-4 transition hover:bg-white/[0.05]",
                       notification.isRead ? "" : "border-[rgba(109,140,255,0.18)] bg-[rgba(77,117,255,0.06)]"
-                    }`}
+                    )}
                   >
                     <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-[var(--app-primary-strong)]">
                       <BellRing size={16} />
@@ -101,9 +99,18 @@ export default function NotificationsPage() {
                           {notification.type.replace("_", " ")}
                         </span>
                         <span className="text-xs text-[var(--app-text-muted)]">{formatRelativeTime(notification.createdAt)}</span>
+                        {notification.roomId ? (
+                          <span className="text-xs text-[var(--app-text-muted)]">Opens source context</span>
+                        ) : null}
                       </div>
                     </div>
-                    <div className="shrink-0">
+                    <div className="shrink-0 text-right">
+                      {notification.roomId ? (
+                        <span className="mb-2 inline-flex items-center gap-1 text-xs text-[var(--app-text-muted)]">
+                          Open
+                          <ArrowUpRight size={12} />
+                        </span>
+                      ) : null}
                       {!notification.isRead ? (
                         <button
                           onClick={(event) => {

@@ -20,6 +20,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
+import { UniBoardLogo } from "@/components/brand/UniBoardLogo";
 import { CreateRoomModal } from "@/components/rooms/CreateRoomModal";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
@@ -34,15 +35,9 @@ export function Sidebar() {
   const [showCreateRoom, setShowCreateRoom] = useState(false);
 
   return (
-    <div className="flex h-full w-full flex-col border-r border-[var(--app-line)] bg-[linear-gradient(180deg,rgba(8,15,27,0.98),rgba(5,11,20,0.98))] backdrop-blur">
+    <div className="sidebar-theme-surface flex h-full w-full flex-col border-r border-[var(--app-line)] backdrop-blur">
       <div className="flex min-h-[5.5rem] items-center gap-3 border-b border-[var(--app-line)] px-5">
-        <div className="flex h-12 w-12 items-center justify-center rounded-[18px] border border-[rgba(109,140,255,0.24)] bg-[rgba(77,117,255,0.14)] text-lg font-black text-white shadow-[0_0_30px_rgba(63,115,255,0.18)]">
-          UB
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-lg font-bold text-white">UniBoard</p>
-          <p className="truncate text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Academic command center</p>
-        </div>
+        <UniBoardLogo subtitle="Academic command center" className="min-w-0 flex-1" />
         {totalUnread ? (
           <span className="rounded-full bg-[var(--app-primary)] px-2 py-1 text-xs font-bold text-white">
             {totalUnread > 99 ? "99+" : totalUnread}

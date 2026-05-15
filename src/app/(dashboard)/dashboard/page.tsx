@@ -1,18 +1,43 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useQuery } from "convex/react";
-import { Plus } from "lucide-react";
+import { FolderOpen, Plus, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { DeadlineWidget } from "@/components/feed/DeadlineWidget";
 import { RoomCard } from "@/components/rooms/RoomCard";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { getAi } from "@/lib/ai/client";
+import type { AiBriefing, AiEnvelope } from "@/lib/ai/contracts";
 import type { Post, Room } from "@/types";
 
 export default function DashboardRoutePage() {
   const user = useCurrentUser();
   const rooms = useQuery(api.rooms.getMyRooms);
   const deadlines = useQuery(api.posts.getUpcomingDeadlines, {});
+  const [briefing, setBriefing] = useState<AiEnvelope<AiBriefing> | null>(null);
+  const [briefingError, setBriefingError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    void getAi<AiBriefing>("/api/v1/ai/briefing")
+      .then((payload) => {
+        if (!cancelled) {
+          setBriefing(payload);
+          setBriefingError("");
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setBriefingError(error instanceof Error ? error.message : "Unable to load AI briefing.");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="app-scroll">
@@ -41,24 +66,39 @@ export default function DashboardRoutePage() {
             </div>
           </div>
 
-          <div className="glass-panel rounded-[var(--radius-panel)] p-6">
-            <p className="section-eyebrow">AI briefing</p>
-            <h2 className="mt-4 text-2xl font-bold text-white">Stay ahead of class churn.</h2>
-            <p className="mt-3 text-sm leading-7 text-[var(--app-text-muted)]">
-              Keep the dashboard open while your class is active. Convex updates room activity, unread counts,
-              and posts in place, so the page acts more like an operations board than a static dashboard.
-            </p>
-            <div className="mt-6 space-y-3">
-              {[
-                "Pin deadlines that drive behavior",
-                "Encourage anonymous questions",
-                "Use rooms as the official subject stream"
-              ].map((item) => (
-                <div key={item} className="panel-chip w-full justify-start rounded-2xl px-4 py-3 text-sm text-gray-200">
-                  {item}
-                </div>
-              ))}
+          <div className="glass-panel ai-glow rounded-[var(--radius-panel)] p-6">
+            <div className="flex items-center gap-2">
+              <Sparkles size={16} className="text-[var(--app-violet)]" />
+              <p className="section-eyebrow">AI briefing</p>
             </div>
+            {briefingError ? (
+              <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-100">{briefingError}</div>
+            ) : briefing === null ? (
+              <div className="mt-4 h-40 animate-pulse rounded-2xl bg-white/5" />
+            ) : (
+              <>
+                <h2 className="mt-4 text-2xl font-bold text-white">{briefing.data?.summary ?? "Workspace briefing"}</h2>
+                <div className="mt-5 space-y-3">
+                  {(briefing.data?.priorities ?? []).slice(0, 3).map((item) => (
+                    <div key={item} className="panel-chip w-full justify-start rounded-2xl px-4 py-3 text-sm text-[var(--app-text-soft)]">
+                      {item}
+                    </div>
+                  ))}
+                </div>
+                {(briefing.data?.warnings?.length ?? 0) > 0 ? (
+                  <div className="mt-5 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4">
+                    <p className="text-xs uppercase tracking-[0.2em] text-amber-100">Warnings</p>
+                    <div className="mt-2 space-y-2">
+                      {briefing.data?.warnings.map((item) => (
+                        <p key={item} className="text-sm text-amber-50">
+                          {item}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            )}
           </div>
         </div>
 
@@ -67,7 +107,7 @@ export default function DashboardRoutePage() {
             <div className="section-heading">
               <h2 className="section-eyebrow">Upcoming deadlines</h2>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-3">
+            <div className="smooth-x-scroll flex gap-4 pb-3">
               {(deadlines as Post[]).slice(0, 6).map((deadline) => (
                 <DeadlineWidget key={deadline._id} post={deadline} />
               ))}
@@ -88,7 +128,9 @@ export default function DashboardRoutePage() {
             </div>
           ) : rooms.length === 0 ? (
             <div className="glass-panel rounded-[var(--radius-panel)] p-8 text-center sm:p-10">
-              <div className="text-5xl">💬</div>
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl border border-[var(--app-line)] bg-white/5 text-[var(--app-primary-strong)]">
+                <FolderOpen size={26} />
+              </div>
               <h3 className="mt-4 text-xl font-semibold text-white">No rooms yet</h3>
               <p className="mt-2 text-sm text-[var(--app-text-muted)]">
                 Create a room for a subject or join a public room to start receiving live posts.

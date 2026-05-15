@@ -31,7 +31,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="app-shell flex overflow-hidden bg-gray-950">
+    <div className="app-shell flex overflow-hidden">
       <aside className="hidden w-[18rem] shrink-0 lg:flex xl:w-[19.5rem]">
         <Sidebar />
       </aside>

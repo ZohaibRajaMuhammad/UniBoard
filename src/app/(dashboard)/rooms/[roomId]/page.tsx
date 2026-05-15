@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { PlusSquare } from "lucide-react";
+import { PlusSquare, Sparkles } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
@@ -13,6 +13,8 @@ import { PresenceBar } from "@/components/rooms/PresenceBar";
 import { RoomHeader } from "@/components/rooms/RoomHeader";
 import { TeacherPanel } from "@/components/teacher/TeacherPanel";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { postAi } from "@/lib/ai/client";
+import type { AiEnvelope, RoomSummary } from "@/lib/ai/contracts";
 import { POST_TYPE_CONFIG, POST_TYPES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +33,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   const pinnedPosts = useQuery(api.posts.getPinnedPosts, { roomId });
   const markSeen = useMutation(api.rooms.markSeen);
   const highlightedPostId = searchParams.get("post") as Id<"posts"> | null;
+  const [summary, setSummary] = useState<AiEnvelope<RoomSummary> | null>(null);
+  const [summaryError, setSummaryError] = useState("");
 
   useEffect(() => {
     void markSeen({ roomId });
@@ -50,6 +54,32 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
     return () => window.clearTimeout(timeout);
   }, [highlightedPostId, posts]);
+
+  useEffect(() => {
+    if (!room?.aiEnabled) {
+      setSummary(null);
+      setSummaryError("");
+      return;
+    }
+
+    let cancelled = false;
+    void postAi<RoomSummary>("/api/v1/ai/room-summary", { roomId })
+      .then((payload) => {
+        if (!cancelled) {
+          setSummary(payload);
+          setSummaryError("");
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setSummaryError(error instanceof Error ? error.message : "Unable to load room summary.");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [room?.aiEnabled, roomId]);
 
   const roomStats = useMemo(() => {
     if (!room) {
@@ -87,6 +117,31 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                 </div>
               ))}
             </div>
+
+            {room.aiEnabled ? (
+              <div className="mt-4 rounded-[24px] border border-[rgba(154,140,255,0.18)] bg-[rgba(154,140,255,0.08)] p-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={15} className="text-[var(--app-violet)]" />
+                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-soft)]">AI room summary</p>
+                </div>
+                {summaryError ? (
+                  <p className="mt-3 text-sm text-red-200">{summaryError}</p>
+                ) : summary === null ? (
+                  <div className="mt-3 h-16 animate-pulse rounded-2xl bg-white/5" />
+                ) : (
+                  <>
+                    <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">{summary.data?.summary}</p>
+                    {(summary.data?.keyPoints?.length ?? 0) > 0 ? (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {summary.data?.keyPoints.slice(0, 4).map((item) => (
+                          <span key={item} className="panel-chip rounded-2xl px-3 py-2 text-xs">{item}</span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </>
+                )}
+              </div>
+            ) : null}
 
             <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>

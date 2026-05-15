@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { UniBoardLogo } from "@/components/brand/UniBoardLogo";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
 import { isClerkServerConfigured } from "@/lib/deployment";
 
@@ -27,17 +28,7 @@ export default async function LandingPage() {
       <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-[rgba(77,117,255,0.12)] to-transparent" />
       <div className="relative mx-auto flex min-h-screen w-full max-w-[82.5rem] flex-col">
         <header className="flex items-center justify-between gap-4 px-2 py-5 sm:px-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] border border-[rgba(109,140,255,0.24)] bg-[rgba(77,117,255,0.14)] text-lg font-black text-white">
-              UB
-            </div>
-            <div>
-              <p className="text-lg font-bold text-white">UniBoard</p>
-              <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">
-                Academic intelligence workspace
-              </p>
-            </div>
-          </div>
+          <UniBoardLogo subtitle="Academic intelligence workspace" />
           <div className="flex gap-3">
             <Link href="/sign-in" className="app-button app-button-secondary min-h-[44px] px-5 py-3">
               Sign in

@@ -1,6 +1,8 @@
 import { SignIn, SignOutButton } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { UniBoardLogo } from "@/components/brand/UniBoardLogo";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
 import { isClerkServerConfigured } from "@/lib/deployment";
 
@@ -47,11 +49,13 @@ export default async function SignInPage() {
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
       <div className="hero-grid absolute inset-0 opacity-20" />
       <div className="relative w-full max-w-[27.5rem] space-y-5">
-        <Link href="/" className="inline-flex items-center text-sm text-[var(--app-text-muted)] transition hover:text-white">
+        <Link href="/" className="inline-flex items-center gap-2 text-sm text-[var(--app-text-muted)] transition hover:text-white">
+          <ArrowLeft size={15} />
           Back to home
         </Link>
         <div className="glass-panel rounded-[28px] p-7">
           <div className="mb-6">
+            <UniBoardLogo size={54} className="mb-5" showWordmark={false} />
             <h1 className="text-3xl font-bold text-white">Sign in to UniBoard</h1>
             <p className="mt-2 text-sm leading-6 text-[var(--app-text-muted)]">
               Secure, low-friction access to your academic workspace.

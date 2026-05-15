@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "convex/react";
-import { Bot, RotateCcw, Save, Settings2 } from "lucide-react";
+import { Bot, MoonStar, RotateCcw, Save, Settings2, SunMedium } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +48,7 @@ const SETTING_GROUPS: Array<{
 
 export default function SettingsPage() {
   const user = useCurrentUser();
+  const { theme, setTheme } = useTheme();
   const updateProfile = useMutation(api.users.updateProfile);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState("");
@@ -129,6 +131,37 @@ export default function SettingsPage() {
 
           <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="grid gap-4">
+              <section className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
+                <div className="mb-5 flex items-start gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[rgba(109,140,255,0.25)] bg-[rgba(77,117,255,0.1)] text-[var(--app-primary-strong)]">
+                    {theme === "dark" ? <MoonStar size={18} /> : <SunMedium size={18} />}
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-white">Appearance</h2>
+                    <p className="mt-1 text-sm leading-6 text-[var(--app-text-muted)]">
+                      Switch between the bright studio workspace and the dark focus workspace without changing the product hierarchy.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <ThemeOption
+                    label="Light mode"
+                    help="High-clarity daytime canvas with soft blue structure."
+                    icon={<SunMedium size={16} />}
+                    active={theme === "light"}
+                    onClick={() => setTheme("light")}
+                  />
+                  <ThemeOption
+                    label="Dark mode"
+                    help="Low-fatigue nighttime workspace with premium contrast."
+                    icon={<MoonStar size={16} />}
+                    active={theme === "dark"}
+                    onClick={() => setTheme("dark")}
+                  />
+                </div>
+              </section>
+
               {SETTING_GROUPS.map((group) => {
                 const Icon = group.icon;
                 return (
@@ -187,6 +220,41 @@ export default function SettingsPage() {
         </section>
       </div>
     </div>
+  );
+}
+
+function ThemeOption({
+  label,
+  help,
+  icon,
+  active,
+  onClick
+}: {
+  label: string;
+  help: string;
+  icon: React.ReactNode;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-[24px] border px-4 py-4 text-left transition",
+        active
+          ? "border-[rgba(109,140,255,0.28)] bg-[rgba(77,117,255,0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+          : "border-[var(--app-line)] bg-white/[0.03] hover:bg-white/[0.05]"
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <span className="flex h-9 w-9 items-center justify-center rounded-2xl border border-[var(--app-line)] bg-white/5 text-[var(--app-primary-strong)]">
+          {icon}
+        </span>
+        <span className="text-sm font-semibold text-white">{label}</span>
+      </div>
+      <p className="mt-3 text-sm leading-6 text-[var(--app-text-muted)]">{help}</p>
+    </button>
   );
 }
 

@@ -6,6 +6,9 @@ import { useMutation, useQuery } from "convex/react";
 import { MessageSquare, Send, Sparkles, Trash2 } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
+import { postAi } from "@/lib/ai/client";
+import type { AssistantReply } from "@/lib/ai/contracts";
+import { buildAssistantPrompt, containsAiMention, formatAssistantComment } from "@/lib/ai/mentions";
 import { ROOM_MENTION_AI } from "@/lib/constants";
 import { cn, formatRelativeTime, initials } from "@/lib/utils";
 
@@ -28,9 +31,11 @@ type Comment = {
 
 export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId: Id<"rooms"> }) {
   const comments = useQuery(api.comments.getByPost, { postId }) as Comment[] | undefined;
+  const post = useQuery(api.posts.getById, { postId });
   const currentUser = useQuery(api.users.getCurrentUser);
   const members = useQuery(api.rooms.getMembers, { roomId });
   const createComment = useMutation(api.comments.create);
+  const createAiReply = useMutation(api.comments.createAiReply);
   const deleteComment = useMutation(api.comments.deleteComment);
   const [content, setContent] = useState("");
   const [replyTo, setReplyTo] = useState<Id<"comments"> | undefined>(undefined);
@@ -77,6 +82,27 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
         isAnonymous,
         parentCommentId: replyTo
       });
+
+      if (containsAiMention(content)) {
+        const parentComment = replyTo ? (comments ?? []).find((comment) => comment._id === replyTo) : null;
+        void postAi<AssistantReply>("/api/v1/ai/assistant", {
+          message: buildAssistantPrompt(content, {
+            postTitle: post?.deadlineTitle ?? post?.resourceTitle ?? null,
+            postType: post?.type ?? null,
+            postContent: post?.content ?? null,
+            parentCommentContent: parentComment?.content ?? null
+          }),
+          roomId
+        })
+          .then((payload) =>
+            createAiReply({
+              postId,
+              content: formatAssistantComment(payload.data?.reply ?? "I could not ground a reliable answer for that mention.", payload.data?.suggestions)
+            })
+          )
+          .catch(() => null);
+      }
+
       setContent("");
       setReplyTo(undefined);
       setIsAnonymous(false);

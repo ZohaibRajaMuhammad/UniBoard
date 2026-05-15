@@ -3,7 +3,6 @@ import { v } from "convex/values";
 import { buildPublicAuthor, createNotification, getCurrentUserOrThrow, getMembership } from "./lib";
 
 const AI_EMAIL = "uniboard.ai@example.com";
-const AI_MENTION = "@uniboardai";
 
 export const getByPost = query({
   args: { postId: v.id("posts") },
@@ -102,29 +101,70 @@ export const create = mutation({
       });
     }
 
-    if (content.toLowerCase().includes(AI_MENTION)) {
-      const aiUser = await ctx.db.query("users").withIndex("by_email", (query) => query.eq("email", AI_EMAIL)).unique();
-      if (aiUser) {
-        await ctx.db.insert("comments", {
-          postId: args.postId,
-          roomId: post.roomId,
-          authorId: aiUser._id,
-          content: "UniBoard AI: Clarify the exact blocker, the expected outcome, and the current failed attempt so the room can answer with less ambiguity.",
-          parentCommentId: undefined,
-          isAnonymous: false,
-          isDeleted: false,
-          isEdited: false,
-          upvoteCount: 0,
-          createdAt: Date.now()
-        });
+    return commentId;
+  }
+});
 
-        await ctx.db.patch(post._id, {
-          commentCount: (post.commentCount ?? 0) + 2
-        });
-      }
+export const createAiReply = mutation({
+  args: {
+    postId: v.id("posts"),
+    content: v.string()
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const post = await ctx.db.get(args.postId);
+    if (!post || post.isDeleted) {
+      throw new Error("Post not found");
     }
 
-    return commentId;
+    const membership = await getMembership(ctx, post.roomId, user._id);
+    if (!membership || membership.isBanned) {
+      throw new Error("Not a member of this room");
+    }
+
+    const room = await ctx.db.get(post.roomId);
+    if (!room?.aiEnabled) {
+      throw new Error("AI is disabled in this room");
+    }
+
+    const aiUser = await ctx.db.query("users").withIndex("by_email", (query) => query.eq("email", AI_EMAIL)).unique();
+    if (!aiUser) {
+      throw new Error("AI user not found");
+    }
+
+    const content = args.content.trim();
+    if (!content) {
+      throw new Error("AI reply is empty");
+    }
+
+    const recentAiComment = await ctx.db
+      .query("comments")
+      .withIndex("by_postId_createdAt", (query) => query.eq("postId", args.postId))
+      .order("desc")
+      .take(3);
+
+    if (recentAiComment.some((comment) => comment.authorId === aiUser._id && comment.content === content)) {
+      return null;
+    }
+
+    await ctx.db.insert("comments", {
+      postId: args.postId,
+      roomId: post.roomId,
+      authorId: aiUser._id,
+      content,
+      parentCommentId: undefined,
+      isAnonymous: false,
+      isDeleted: false,
+      isEdited: false,
+      upvoteCount: 0,
+      createdAt: Date.now()
+    });
+
+    await ctx.db.patch(post._id, {
+      commentCount: (post.commentCount ?? 0) + 1
+    });
+
+    return true;
   }
 });
 

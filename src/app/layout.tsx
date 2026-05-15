@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/providers/ConvexClientProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
 import { appEnv, isAppConfigured } from "@/lib/deployment";
 import "./globals.css";
@@ -18,14 +19,16 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-gray-950 font-sans text-white antialiased">
+    <html lang="en" className="theme-dark" data-theme="dark" suppressHydrationWarning>
+      <body className="min-h-screen font-sans antialiased">
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
         {isAppConfigured ? (
           <ClerkProvider publishableKey={appEnv.clerkPublishableKey}>
-            <ConvexClientProvider>{children}</ConvexClientProvider>
+            <ThemeProvider>
+              <ConvexClientProvider>{children}</ConvexClientProvider>
+            </ThemeProvider>
           </ClerkProvider>
         ) : (
           <DeploymentSetupNotice />

@@ -7,6 +7,9 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { POST_TYPE_CONFIG, POST_TYPES, ROOM_MENTION_AI } from "@/lib/constants";
+import { postAi } from "@/lib/ai/client";
+import type { AssistantReply, ComposerSuggestion } from "@/lib/ai/contracts";
+import { buildAssistantPrompt, containsAiMention, formatAssistantComment } from "@/lib/ai/mentions";
 import { cn } from "@/lib/utils";
 
 const postTypes = POST_TYPES.map((type) => ({
@@ -20,6 +23,7 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
   const room = useQuery(api.rooms.getById, { roomId });
   const members = useQuery(api.rooms.getMembers, { roomId });
   const createPost = useMutation(api.posts.create);
+  const createAiReply = useMutation(api.comments.createAiReply);
   const [content, setContent] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [postType, setPostType] = useState<(typeof postTypes)[number]["value"]>("note");
@@ -32,6 +36,8 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
   const [pollOptions, setPollOptions] = useState("Option 1\nOption 2");
   const [tagInput, setTagInput] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [isAiDrafting, setIsAiDrafting] = useState(false);
+  const [aiDraftStatus, setAiDraftStatus] = useState("");
 
   const canPostAnnouncement = user?.role === "teacher" || user?.role === "super_admin";
   const allowsAnonymous = room?.allowAnonymous ?? true;
@@ -121,12 +127,14 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
       return;
     }
 
+    const finalContent = buildContent();
+
     setIsSubmitting(true);
     setSubmitError("");
     try {
-      await createPost({
+      const postId = await createPost({
         roomId,
-        content: buildContent(),
+        content: finalContent,
         type: postType,
         isAnonymous,
         tags: tagInput
@@ -140,6 +148,24 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
         resourceTitle: resourceTitle || undefined
       });
 
+      if ((room?.aiEnabled ?? false) && containsAiMention(finalContent)) {
+        void postAi<AssistantReply>("/api/v1/ai/assistant", {
+          message: buildAssistantPrompt(finalContent, {
+            postType,
+            postTitle: deadlineTitle || resourceTitle || null,
+            postContent: finalContent
+          }),
+          roomId
+        })
+          .then((payload) =>
+            createAiReply({
+              postId,
+              content: formatAssistantComment(payload.data?.reply ?? "I could not ground a reliable answer for that mention.", payload.data?.suggestions)
+            })
+          )
+          .catch(() => null);
+      }
+
       setContent("");
       setDeadlineDate("");
       setDeadlineTitle("");
@@ -152,6 +178,32 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
       setSubmitError(error instanceof Error ? error.message : "Unable to create post.");
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleAiDraft() {
+    if (isAiDrafting || isRoomArchived || !(room?.aiEnabled ?? false)) {
+      return;
+    }
+
+    setIsAiDrafting(true);
+    setAiDraftStatus("");
+
+    try {
+      const payload = await postAi<ComposerSuggestion>("/api/v1/ai/composer/suggest", {
+        prompt: content.trim() || `Draft a ${selectedType.label.toLowerCase()} post for this room.`,
+        roomId
+      });
+
+      setContent(payload.data?.body ?? content);
+      if (payload.data?.tags?.length) {
+        setTagInput(payload.data.tags.join(", "));
+      }
+      setAiDraftStatus(payload.data?.disclaimer ?? "AI draft inserted.");
+    } catch (error) {
+      setAiDraftStatus(error instanceof Error ? error.message : "AI draft suggestion is unavailable.");
+    } finally {
+      setIsAiDrafting(false);
     }
   }
 
@@ -243,6 +295,14 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
               {mention}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => void handleAiDraft()}
+            disabled={isAiDrafting || !(room?.aiEnabled ?? false)}
+            className="rounded-full border border-[rgba(154,140,255,0.24)] bg-[rgba(154,140,255,0.1)] px-3 py-1.5 text-xs text-[var(--app-text-soft)] transition hover:bg-[rgba(154,140,255,0.16)] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isAiDrafting ? "Drafting..." : "Draft with AI"}
+          </button>
         </div>
 
         {postType === "deadline" ? (
@@ -325,6 +385,7 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
         </div>
 
         {submitError ? <p className="mt-3 text-sm text-red-300">{submitError}</p> : null}
+        {aiDraftStatus ? <p className="mt-3 text-sm text-[var(--app-text-muted)]">{aiDraftStatus}</p> : null}
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-xs text-gray-500">{content.length}/1000 • Press Ctrl/Cmd + Enter to post</span>

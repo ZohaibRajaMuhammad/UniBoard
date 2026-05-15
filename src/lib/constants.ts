@@ -26,4 +26,5 @@ export const POST_TYPE_CONFIG = {
 
 export const REACTION_EMOJIS = ["👍", "❤️", "😂", "🔥", "😮", "😢"] as const;
 
-export const ROOM_MENTION_AI = "@uniboardai";
+export const ROOM_MENTION_AI = "@uniboard";
+export const ROOM_MENTION_AI_ALIASES = ["@uniboard", "@uniboardai"] as const;
