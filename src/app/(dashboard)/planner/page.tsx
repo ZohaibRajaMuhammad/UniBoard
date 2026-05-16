@@ -20,6 +20,8 @@ export default function PlannerPage() {
   const [calendarView, setCalendarView] = useState<CalendarView>("month");
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isReplanning, setIsReplanning] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [status, setStatus] = useState("");
   const [studyPlan, setStudyPlan] = useState<AiEnvelope<StudyPlan> | null>(null);
   const [studyPlanError, setStudyPlanError] = useState("");
@@ -83,6 +85,41 @@ export default function PlannerPage() {
     }
   }
 
+  async function handleExport() {
+    setIsExporting(true);
+    setStatus("");
+    try {
+      const result = await exportCalendar({});
+      const blob = new Blob([result.content], { type: "text/calendar;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = result.filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      setStatus("Planner calendar exported.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Unable to export calendar.");
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  async function handleReplan() {
+    setIsReplanning(true);
+    setStatus("");
+    try {
+      await replan({});
+      setStatus("Planner sessions were recalculated.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Unable to refresh the plan.");
+    } finally {
+      setIsReplanning(false);
+    }
+  }
+
   return (
     <div className="app-scroll">
       <div className="page-wrap page-stack">
@@ -101,26 +138,27 @@ export default function PlannerPage() {
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
-                onClick={async () => {
-                  const result = await exportCalendar({});
-                  const blob = new Blob([result.content], { type: "text/calendar;charset=utf-8" });
-                  const url = URL.createObjectURL(blob);
-                  const anchor = document.createElement("a");
-                  anchor.href = url;
-                  anchor.download = result.filename;
-                  anchor.click();
-                  URL.revokeObjectURL(url);
-                }}
+                onClick={() => void handleExport()}
+                disabled={isExporting}
                 className="app-button app-button-secondary"
               >
                 <Download size={14} />
-                Export
+                {isExporting ? "Exporting..." : "Export"}
               </button>
-              <button type="button" onClick={() => void replan({})} className="app-button app-button-secondary">
+              <button type="button" onClick={() => void handleReplan()} disabled={isReplanning} className="app-button app-button-secondary">
                 <RefreshCcw size={14} />
-                Re-plan
+                {isReplanning ? "Re-planning..." : "Re-plan"}
               </button>
-              <button type="button" onClick={() => setShowForm((current) => !current)} className="app-button app-button-primary">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForm((current) => !current);
+                  window.setTimeout(() => {
+                    document.getElementById("manual-deadline-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }, 80);
+                }}
+                className="app-button app-button-primary"
+              >
                 <Plus size={14} />
                 Add deadline
               </button>
@@ -260,7 +298,7 @@ export default function PlannerPage() {
         )}
 
         {showForm ? (
-          <section className="glass-panel rounded-[28px] p-6">
+          <section id="manual-deadline-form" className="glass-panel rounded-[28px] p-6">
             <h2 className="text-2xl font-semibold text-white">Add manual deadline</h2>
             <form onSubmit={handleSubmit} className="mt-5 grid gap-4 lg:grid-cols-2">
               <input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="Deadline title" className="app-input" />

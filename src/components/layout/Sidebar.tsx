@@ -12,8 +12,8 @@ import {
   Crown,
   Home,
   Plus,
-  Search,
   Settings,
+  Search,
   Trophy
 } from "lucide-react";
 import Link from "next/link";
@@ -109,12 +109,19 @@ export function Sidebar() {
         <div className="flex items-center gap-3 rounded-[1.25rem] border border-[var(--app-line)] bg-white/[0.03] p-3">
           <UserButton afterSignOutUrl="/" />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-white">Your account</p>
+            <Link href="/profile" className="truncate text-sm font-semibold text-white transition hover:text-[var(--app-primary-strong)]">
+              Your profile
+            </Link>
             <p className="truncate text-xs text-[var(--app-text-muted)]">Personal workspace controls</p>
           </div>
-          <Link href="/settings" className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-soft)] transition hover:bg-white/10">
+          <div className="flex items-center gap-2">
+            <Link href="/profile" className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-soft)] transition hover:bg-white/10" aria-label="Open profile">
+              <Crown size={16} />
+            </Link>
+            <Link href="/settings" className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-soft)] transition hover:bg-white/10" aria-label="Open settings">
             <Settings size={16} />
-          </Link>
+            </Link>
+          </div>
         </div>
       </div>
 

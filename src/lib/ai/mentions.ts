@@ -14,6 +14,16 @@ export function stripAiMentions(value: string) {
   ).trim();
 }
 
+export function extractAssistantUserRequest(value: string) {
+  const requestMatch = value.match(/User request:\s*([\s\S]+)$/i);
+  const base = requestMatch ? requestMatch[1] : value;
+
+  return stripAiMentions(base)
+    .replace(/@[a-z0-9_]+/gi, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 export function buildAssistantPrompt(
   value: string,
   context?: {

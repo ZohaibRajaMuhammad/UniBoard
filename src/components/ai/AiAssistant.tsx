@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Bot, Loader2, Send, Sparkles, X } from "lucide-react";
 import { postAi } from "@/lib/ai/client";
 import type { AiEnvelope, AssistantReply } from "@/lib/ai/contracts";
@@ -82,6 +82,13 @@ export function AiAssistant() {
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     void sendMessage(draft);
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void sendMessage(draft);
+    }
   }
 
   return (
@@ -190,6 +197,7 @@ export function AiAssistant() {
                 <textarea
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
+                  onKeyDown={handleKeyDown}
                   rows={3}
                   placeholder="Ask for a grounded explanation, summary, or next action..."
                   className="min-h-[88px] w-full resize-none rounded-[18px] bg-transparent px-3 py-2 text-sm text-white outline-none placeholder:text-[var(--app-text-muted)]"
@@ -200,7 +208,7 @@ export function AiAssistant() {
                       ? "Request timed out"
                       : status === "unavailable"
                         ? "Assistant unavailable"
-                        : "AI is clearly labeled and confidence-banded"}
+                        : "Press Enter to send. Use Shift+Enter for a new line."}
                   </p>
                   <button
                     type="submit"

@@ -74,6 +74,10 @@ export default function AnalyticsPage() {
                     <StatusChip label={riskResult.meta.mode === "openai" ? "Grounded model review" : "Fallback review"} tone="neutral" />
                   </div>
                 </>
+              ) : riskResult ? (
+                <div className="mt-4 rounded-2xl border border-dashed border-[var(--app-line)] bg-white/70 p-4 text-sm leading-7 text-[var(--app-text-soft)]">
+                  No urgent deadline signal is available yet. Add deadlines in the planner or join more active rooms to populate AI risk insights.
+                </div>
               ) : (
                 <div className="mt-4 h-28 animate-pulse rounded-2xl bg-white/5" />
               )}

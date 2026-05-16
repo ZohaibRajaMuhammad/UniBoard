@@ -18,6 +18,7 @@ import type {
   RoomSummary,
   StudyPlan
 } from "./contracts";
+import { extractAssistantUserRequest } from "./mentions";
 import type { SourcePost } from "./retrieval";
 import { retrieveChunks } from "./retrieval";
 import { AiValidationError } from "./safety";
@@ -308,6 +309,33 @@ function mapKnowledgeSources(postIds: string[], chunks: Awaited<ReturnType<typeo
     quote: chunk.quote,
     score: chunk.score
   }));
+}
+
+function isJoinedClassesQuestion(value: string) {
+  const normalized = value.toLowerCase();
+  return (
+    (normalized.includes("class") || normalized.includes("classes") || normalized.includes("room") || normalized.includes("rooms")) &&
+    (normalized.includes("joined") || normalized.includes("jioned") || normalized.includes("join")) &&
+    (normalized.includes("how many") || normalized.includes("total count") || normalized.includes("count"))
+  );
+}
+
+async function getJoinedClassesReply(token: string) {
+  const rooms = await fetchQuery(api.rooms.getMyRooms, {}, { token });
+  const count = rooms.length;
+  const names = rooms.slice(0, 6).map((room) => room.name);
+
+  return {
+    reply:
+      count === 0
+        ? "You have not joined any classes yet."
+        : count === 1
+          ? `You have joined 1 class: ${names[0]}.`
+          : `You have joined ${count} classes${names.length > 0 ? `: ${names.join(", ")}.` : "."}`,
+    confidenceBand: "high" as const,
+    suggestions: count > 0 ? ["Open the Rooms screen if you want the full list and current activity."] : ["Open Rooms to join or create a class workspace."],
+    sources: []
+  };
 }
 
 async function runWithFallback<T>({
@@ -667,14 +695,18 @@ export async function getRoomSummary(roomId: string) {
 
 export async function getAssistantReply(message: string, roomId?: string) {
   const { userId, token } = await getConvexToken();
+  const normalizedMessage = extractAssistantUserRequest(message);
 
   return runWithFallback<AssistantReply>({
     route: "/api/v1/ai/assistant",
     actorId: userId,
     primary: async () => {
+      if (isJoinedClassesQuestion(normalizedMessage)) {
+        return getJoinedClassesReply(token);
+      }
       const { posts } = await getScopedPosts(token, roomId);
       return withTimeout(async (client, signal) => {
-        const chunks = await retrieveChunks({ client, question: message, posts });
+        const chunks = await retrieveChunks({ client, question: normalizedMessage, posts });
         const parsed = await parseStructured({
           client,
           signal,
@@ -682,7 +714,7 @@ export async function getAssistantReply(message: string, roomId?: string) {
           schemaName: "assistant_reply",
           instructions:
             "Act as an academic workspace assistant. Reply in short, direct, professional language. Prefer 1 to 3 concise sentences or up to 3 tight bullets. Give the grounded answer first, avoid filler, avoid rephrasing the question, and suggest only concrete next actions when useful.",
-          input: `Request:\n${message}\n\nAuthorized context:\n${chunks
+          input: `Request:\n${normalizedMessage}\n\nAuthorized context:\n${chunks
             .map((chunk, index) => `[${index + 1}] ${chunk.roomName} | ${chunk.title}\n${chunk.content}`)
             .join("\n\n")}`
         });
@@ -696,9 +728,24 @@ export async function getAssistantReply(message: string, roomId?: string) {
       });
     },
     fallback: async () => {
-      const result = await fetchQuery(api.ai.queryKnowledgeBase, { question: message }, { token });
+      if (isJoinedClassesQuestion(normalizedMessage)) {
+        return getJoinedClassesReply(token);
+      }
+
+      const result = await fetchQuery(api.ai.queryKnowledgeBase, { question: normalizedMessage }, { token });
+
+      if (result.sources.length === 0) {
+        return {
+          reply: "I could not find grounded room material for that request. Name the course, topic, deadline, or artifact more explicitly.",
+          confidenceBand: "low" as const,
+          suggestions: ["Ask with a specific class name or open the relevant room before trying again."],
+          sources: []
+        };
+      }
+
+      const topSource = result.sources[0];
       return {
-        reply: result.answer,
+        reply: `I found relevant material in ${topSource.roomName}. The strongest grounded match is "${topSource.title}". Open that post or ask a narrower follow-up if you want a direct summary.`,
         confidenceBand: toConfidenceBand(result.confidence),
         suggestions: ["Open the cited room post before acting on this answer."],
         sources: result.sources.map((source) => ({

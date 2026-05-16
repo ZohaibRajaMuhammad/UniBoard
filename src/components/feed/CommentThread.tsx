@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { KeyboardEvent, useMemo, useState } from "react";
 import Image from "next/image";
 import { useMutation, useQuery } from "convex/react";
 import { MessageSquare, Send, Sparkles, Trash2 } from "lucide-react";
@@ -113,6 +113,13 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
     }
   }
 
+  function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void handleSubmit();
+    }
+  }
+
   return (
     <div className="rounded-[24px] border border-white/10 bg-black/15 p-4">
       <div className="mb-4 flex items-center gap-2 text-sm font-medium text-white">
@@ -180,6 +187,7 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
         <textarea
           value={content}
           onChange={(event) => setContent(event.target.value)}
+          onKeyDown={onKeyDown}
           rows={3}
           maxLength={500}
           placeholder="Add a comment"

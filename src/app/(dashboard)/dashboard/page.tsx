@@ -77,7 +77,9 @@ export default function DashboardRoutePage() {
               <div className="mt-4 h-40 animate-pulse rounded-2xl bg-white/5" />
             ) : (
               <>
-                <h2 className="mt-4 text-2xl font-bold text-white">{briefing.data?.summary ?? "Workspace briefing"}</h2>
+                <h2 className="mt-4 text-2xl font-bold text-white">
+                  {briefing.data?.summary?.trim() || "No briefing is available yet. Add deadlines or room activity to generate grounded guidance."}
+                </h2>
                 <div className="mt-5 space-y-3">
                   {(briefing.data?.priorities ?? []).slice(0, 3).map((item) => (
                     <div key={item} className="panel-chip w-full justify-start rounded-2xl px-4 py-3 text-sm text-[var(--app-text-soft)]">

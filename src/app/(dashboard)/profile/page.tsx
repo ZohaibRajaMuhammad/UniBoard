@@ -138,7 +138,7 @@ export default function ProfilePage() {
             <div className="mt-5 space-y-3">
               <InfoCard label="Email" value={user?.email ?? "Loading"} />
               <InfoCard label="Badges" value={user?.badges?.join(", ") || "None yet"} />
-              <div className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
+              <div className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-5">
                 <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">AI profile note</p>
                 <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">
                   Profile identity is direct user data. AI-driven learning inference appears in the reputation surfaces where confidence labeling is available.
@@ -155,7 +155,7 @@ export default function ProfilePage() {
             {savedPosts === undefined ? (
               Array.from({ length: 2 }).map((_, index) => <div key={index} className="h-32 animate-pulse rounded-[24px] bg-white/5" />)
             ) : savedPosts.length === 0 ? (
-              <div className="rounded-2xl border border-[var(--app-line)] bg-black/20 p-4 text-sm text-[var(--app-text-muted)]">No saved posts yet.</div>
+              <div className="rounded-2xl border border-[var(--app-line)] bg-white/5 p-4 text-sm text-[var(--app-text-muted)]">No saved posts yet.</div>
             ) : (
               savedPosts.map((post) => <PostCard key={post._id} post={post} roomId={post.roomId} />)
             )}
@@ -169,7 +169,7 @@ export default function ProfilePage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-semibold text-gray-200">{label}</span>
+      <span className="text-sm font-semibold text-[var(--app-text-soft)]">{label}</span>
       {children}
     </label>
   );
@@ -177,7 +177,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
+    <div className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-5">
       <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">{label}</p>
       <p className="mt-2 text-lg font-semibold text-white">{value}</p>
     </div>

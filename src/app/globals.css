@@ -101,7 +101,7 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   overflow-y: auto;
-  scrollbar-gutter: stable both-edges;
+  scrollbar-gutter: stable;
 }
 
 body,
@@ -319,6 +319,7 @@ h6 {
 
 .app-shell {
   min-height: 100dvh;
+  height: 100dvh;
   padding-top: var(--safe-top);
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
@@ -597,6 +598,11 @@ h6 {
 .theme-light body .hover\:bg-white\/5:hover,
 .theme-light .hover\:bg-white\/5:hover {
   background-color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.theme-light body .hover\:text-white:hover,
+.theme-light .hover\:text-white:hover {
+  color: var(--app-text) !important;
 }
 
 .theme-light body .text-amber-50,

@@ -209,6 +209,12 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && !event.shiftKey && !(event.metaKey || event.ctrlKey)) {
+      event.preventDefault();
+      void handleSubmit();
+      return;
+    }
+
     if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
       event.preventDefault();
       void handleSubmit();
@@ -395,7 +401,7 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
         {aiDraftStatus ? <p className="mt-3 text-sm text-[var(--app-text-muted)]">{aiDraftStatus}</p> : null}
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-xs text-gray-500">{content.length}/1000 • Press Ctrl/Cmd + Enter to post</span>
+          <span className="text-xs text-gray-500">{content.length}/1000 - Press Enter to post, Shift+Enter for a new line</span>
           <button
             onClick={() => void handleSubmit()}
             disabled={!content.trim() || isSubmitting || isRoomArchived}

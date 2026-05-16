@@ -9,11 +9,11 @@ export function RoomCard({ room }: { room: Doc<"rooms"> }) {
   return (
     <Link
       href={`/rooms/${room._id}`}
-      className="lift-on-hover spotlight-ring glass-panel block rounded-[var(--radius-panel)] p-5 transition hover:border-[rgba(109,140,255,0.24)] sm:p-6"
+      className="lift-on-hover spotlight-ring glass-panel block rounded-[var(--radius-panel)] p-5 transition hover:border-[rgba(109,140,255,0.24)] hover:bg-white/[0.04] sm:p-6"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-[var(--app-primary-strong)]">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--app-line)] bg-white/5 text-[var(--app-primary-strong)]">
             <RoomIcon size={22} />
           </div>
           <h3 className="text-lg font-semibold text-white sm:text-xl">{room.name}</h3>
