@@ -205,7 +205,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
         {pinnedPosts && pinnedPosts.length > 0 ? <PinnedPostsBanner posts={pinnedPosts} /> : null}
 
-        <div className="min-h-0 overflow-y-auto overscroll-contain px-1 pb-4">
+        <div className="min-h-0 overflow-y-auto overscroll-contain px-1 pb-[20rem]">
           <PostFeed
             posts={posts}
             roomId={roomId}
@@ -214,7 +214,10 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
           />
         </div>
 
-        <div id="room-composer" className="sticky bottom-0 border-t border-[var(--app-line)] bg-[color-mix(in_srgb,var(--app-panel-strong)_88%,white_12%)] backdrop-blur">
+        <div
+          id="room-composer"
+          className="sticky bottom-0 max-h-[38vh] overflow-y-auto border-t border-[var(--app-line)] bg-[color-mix(in_srgb,var(--app-panel-strong)_88%,white_12%)] shadow-[0_-18px_36px_rgba(42,58,94,0.12)] backdrop-blur"
+        >
           <PostComposer roomId={roomId} />
         </div>
       </div>

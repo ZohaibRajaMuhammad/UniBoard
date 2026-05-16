@@ -320,6 +320,34 @@ function isJoinedClassesQuestion(value: string) {
   );
 }
 
+function isRoomCountQuestion(value: string) {
+  const normalized = value.toLowerCase();
+  return (
+    (normalized.includes("room") || normalized.includes("rooms") || normalized.includes("class") || normalized.includes("classes")) &&
+    (normalized.includes("how many") || normalized.includes("total count") || normalized.includes("count") || normalized.includes("total"))
+  );
+}
+
+function isStudyNextQuestion(value: string) {
+  const normalized = value.toLowerCase();
+  return normalized.includes("study next") || normalized.includes("what should i study") || normalized.includes("what do i study next");
+}
+
+function isWeeklyAttentionQuestion(value: string) {
+  const normalized = value.toLowerCase();
+  return normalized.includes("attention this week") || normalized.includes("needs attention this week") || normalized.includes("what needs attention this week");
+}
+
+function isUrgentDeadlineQuestion(value: string) {
+  const normalized = value.toLowerCase();
+  return (
+    normalized.includes("urgent upcoming deadline") ||
+    normalized.includes("most urgent upcoming deadline") ||
+    (normalized.includes("urgent") && normalized.includes("deadline")) ||
+    (normalized.includes("deadline") && normalized.includes("upcoming"))
+  );
+}
+
 async function getJoinedClassesReply(token: string) {
   const rooms = await fetchQuery(api.rooms.getMyRooms, {}, { token });
   const count = rooms.length;
@@ -336,6 +364,110 @@ async function getJoinedClassesReply(token: string) {
     suggestions: count > 0 ? ["Open the Rooms screen if you want the full list and current activity."] : ["Open Rooms to join or create a class workspace."],
     sources: []
   };
+}
+
+async function getRoomCountReply(token: string) {
+  const rooms = await fetchQuery(api.rooms.getMyRooms, {}, { token });
+  const count = rooms.length;
+  return {
+    reply:
+      count === 0
+        ? "You currently have 0 rooms."
+        : count === 1
+          ? "You currently have 1 room."
+          : `You currently have ${count} rooms.`,
+    confidenceBand: "high" as const,
+    suggestions: count > 0 ? ["Open the Rooms screen to review them in detail."] : ["Open Rooms to join or create your first workspace."],
+    sources: []
+  };
+}
+
+async function getUrgentDeadlineReply(token: string) {
+  const planner = await fetchQuery(api.planner.getSnapshot, {}, { token });
+  const top = planner.items[0];
+
+  if (!top) {
+    return {
+      reply: "There are no tracked upcoming deadlines right now.",
+      confidenceBand: "high" as const,
+      suggestions: ["Add a manual deadline or join a room with deadline posts to populate the planner."],
+      sources: []
+    };
+  }
+
+  return {
+    reply: `The most urgent upcoming deadline is ${top.title}${top.roomName ? ` in ${top.roomName}` : ""}. It is due ${new Date(top.dueDate).toLocaleString()} and is currently rated at ${top.riskScore}% risk.`,
+    confidenceBand: "high" as const,
+    suggestions: ["Open the Planner screen to schedule or review the next study block."],
+    sources: []
+  };
+}
+
+async function getStudyNextReply(token: string) {
+  const planner = await fetchQuery(api.planner.getSnapshot, {}, { token });
+  const top = planner.items[0];
+  const nextSession = planner.sessions[0];
+
+  if (!top) {
+    return {
+      reply: "There is nothing scheduled to study next because no active deadlines are tracked yet.",
+      confidenceBand: "high" as const,
+      suggestions: ["Add a manual deadline or join an active class room first."],
+      sources: []
+    };
+  }
+
+  return {
+    reply: `Study ${top.title}${top.roomName ? ` from ${top.roomName}` : ""} next. It has the highest current planning priority at ${top.riskScore}% risk${nextSession ? `, and the next suggested study block starts ${new Date(nextSession.startAt).toLocaleString()}` : ""}.`,
+    confidenceBand: "high" as const,
+    suggestions: ["Open Planner to review the full sequence of study sessions."],
+    sources: []
+  };
+}
+
+async function getWeeklyAttentionReply(token: string) {
+  const planner = await fetchQuery(api.planner.getSnapshot, {}, { token });
+  const topItems = planner.items.slice(0, 3);
+
+  if (topItems.length === 0) {
+    return {
+      reply: "Nothing is currently flagged for attention this week because there are no tracked deadlines yet.",
+      confidenceBand: "high" as const,
+      suggestions: ["Add deadlines in Planner or join rooms with active coursework."],
+      sources: []
+    };
+  }
+
+  return {
+    reply: `This week needs attention on ${topItems.map((item) => item.title).join(", ")}. The highest current risk is ${planner.metrics.highRiskCount} high-risk item${planner.metrics.highRiskCount === 1 ? "" : "s"} across ${planner.metrics.dueSoonCount} due-soon deadline${planner.metrics.dueSoonCount === 1 ? "" : "s"}.`,
+    confidenceBand: "high" as const,
+    suggestions: ["Open Planner to schedule the highest-risk work first."],
+    sources: []
+  };
+}
+
+async function resolveDirectAssistantIntent(token: string, value: string) {
+  if (isJoinedClassesQuestion(value)) {
+    return getJoinedClassesReply(token);
+  }
+
+  if (isRoomCountQuestion(value)) {
+    return getRoomCountReply(token);
+  }
+
+  if (isUrgentDeadlineQuestion(value)) {
+    return getUrgentDeadlineReply(token);
+  }
+
+  if (isStudyNextQuestion(value)) {
+    return getStudyNextReply(token);
+  }
+
+  if (isWeeklyAttentionQuestion(value)) {
+    return getWeeklyAttentionReply(token);
+  }
+
+  return null;
 }
 
 async function runWithFallback<T>({
@@ -701,8 +833,9 @@ export async function getAssistantReply(message: string, roomId?: string) {
     route: "/api/v1/ai/assistant",
     actorId: userId,
     primary: async () => {
-      if (isJoinedClassesQuestion(normalizedMessage)) {
-        return getJoinedClassesReply(token);
+      const directIntent = await resolveDirectAssistantIntent(token, normalizedMessage);
+      if (directIntent) {
+        return directIntent;
       }
       const { posts } = await getScopedPosts(token, roomId);
       return withTimeout(async (client, signal) => {
@@ -728,8 +861,9 @@ export async function getAssistantReply(message: string, roomId?: string) {
       });
     },
     fallback: async () => {
-      if (isJoinedClassesQuestion(normalizedMessage)) {
-        return getJoinedClassesReply(token);
+      const directIntent = await resolveDirectAssistantIntent(token, normalizedMessage);
+      if (directIntent) {
+        return directIntent;
       }
 
       const result = await fetchQuery(api.ai.queryKnowledgeBase, { question: normalizedMessage }, { token });

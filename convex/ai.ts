@@ -6,6 +6,39 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+const AI_STOPWORDS = new Set([
+  "about",
+  "after",
+  "also",
+  "best",
+  "context",
+  "design",
+  "evidence",
+  "find",
+  "first",
+  "from",
+  "happy",
+  "next",
+  "note",
+  "paths",
+  "related",
+  "service",
+  "shape",
+  "sharing",
+  "signal",
+  "supporting",
+  "tell",
+  "that",
+  "their",
+  "them",
+  "then",
+  "this",
+  "what",
+  "with",
+  "would",
+  "your"
+]);
+
 export const queryKnowledgeBase = query({
   args: {
     question: v.string()
@@ -25,7 +58,17 @@ export const queryKnowledgeBase = query({
     const tokens = question
       .toLowerCase()
       .split(/[^a-z0-9]+/)
-      .filter((token) => token.length > 2);
+      .filter((token) => token.length > 2 && !AI_STOPWORDS.has(token));
+
+    if (tokens.length === 0) {
+      return {
+        answer:
+          "I could not find enough grounded evidence in your rooms to answer that confidently. Try naming the course, deadline, concept, or artifact more explicitly.",
+        confidence: "low",
+        sources: [],
+        mode: "fallback"
+      };
+    }
     const posts = await ctx.db.query("posts").collect();
 
     const ranked = await Promise.all(
@@ -38,7 +81,7 @@ export const queryKnowledgeBase = query({
             .join(" ")
             .toLowerCase();
           const score = tokens.reduce((total, token) => total + (haystack.includes(token) ? 1 : 0), 0);
-          return score > 0
+          return score >= 2
             ? {
                 score,
                 post,

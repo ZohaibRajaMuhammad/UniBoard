@@ -131,7 +131,7 @@ export default function SettingsPage() {
 
           <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="grid gap-4">
-              <section className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
+              <section className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-5">
                 <div className="mb-5 flex items-start gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[rgba(109,140,255,0.25)] bg-[rgba(77,117,255,0.1)] text-[var(--app-primary-strong)]">
                     {theme === "dark" ? <MoonStar size={18} /> : <SunMedium size={18} />}
@@ -165,7 +165,7 @@ export default function SettingsPage() {
               {SETTING_GROUPS.map((group) => {
                 const Icon = group.icon;
                 return (
-                  <section key={group.title} className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
+                  <section key={group.title} className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-5">
                     <div className="mb-5 flex items-start gap-3">
                       <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[rgba(109,140,255,0.25)] bg-[rgba(77,117,255,0.1)] text-[var(--app-primary-strong)]">
                         <Icon size={18} />
@@ -195,7 +195,7 @@ export default function SettingsPage() {
               })}
             </div>
 
-            <aside className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
+            <aside className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Workspace notes</p>
               <h2 className="mt-2 text-xl font-semibold text-white">What is controlled here</h2>
               <div className="mt-4 space-y-3 text-sm leading-7 text-[var(--app-text-soft)]">

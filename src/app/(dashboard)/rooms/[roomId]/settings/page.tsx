@@ -180,7 +180,7 @@ export default function RoomSettingsPage({ params }: { params: { roomId: string 
           ) : null}
 
           <div className="mt-6 grid gap-6 xl:grid-cols-2">
-            <section className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
+            <section className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-5">
               <h2 className="text-lg font-semibold text-white">Metadata</h2>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <Field label="Room name" error={validationError}>
@@ -274,7 +274,7 @@ export default function RoomSettingsPage({ params }: { params: { roomId: string 
               </div>
             </section>
 
-            <section className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
+            <section className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-5">
               <h2 className="text-lg font-semibold text-white">Policy controls</h2>
               <p className="mt-1 text-sm leading-6 text-[var(--app-text-muted)]">
                 These controls affect composer behavior, invite paths, room discovery, and AI visibility immediately after a successful save.
@@ -345,7 +345,7 @@ function Toggle({ label, help, checked, disabled, onChange }: { label: string; h
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[20px] border border-[var(--app-line)] bg-black/20 p-4">
+    <div className="rounded-[20px] border border-[var(--app-line)] bg-white/5 p-4">
       <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">{label}</p>
       <p className="mt-2 text-sm font-semibold text-white">{value}</p>
     </div>

@@ -16,6 +16,7 @@ import {
   Search,
   Trophy
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { api } from "../../../convex/_generated/api";
@@ -26,6 +27,40 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getRoomIcon } from "@/lib/ui-icons";
 import { cn } from "@/lib/utils";
 import type { Room } from "@/types";
+
+type SidebarNavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  badgeKey?: "notifications";
+};
+
+const navGroups: ReadonlyArray<{ label: string; items: ReadonlyArray<SidebarNavItem> }> = [
+  {
+    label: "Workspace",
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: Home },
+      { href: "/search", label: "Search", icon: Search },
+      { href: "/notifications", label: "Notifications", icon: Bell, badgeKey: "notifications" as const },
+      { href: "/saved", label: "Saved", icon: Bookmark }
+    ]
+  },
+  {
+    label: "Planning and AI",
+    items: [
+      { href: "/knowledge-base", label: "Knowledge base", icon: BookOpen },
+      { href: "/planner", label: "Planner", icon: BrainCircuit },
+      { href: "/analytics", label: "Analytics", icon: BarChart3 }
+    ]
+  },
+  {
+    label: "Standing",
+    items: [
+      { href: "/leaderboard", label: "Leaderboard", icon: Crown },
+      { href: "/reputation", label: "Reputation", icon: Trophy }
+    ]
+  }
+];
 
 export function Sidebar() {
   useCurrentUser();
@@ -56,22 +91,30 @@ export function Sidebar() {
         </Link>
       </div>
 
-      <nav className="space-y-1 px-3 py-3">
-        <NavItem href="/dashboard" active={pathname === "/dashboard"} icon={<Home size={17} />} label="Dashboard" />
-        <NavItem href="/search" active={pathname === "/search"} icon={<Search size={17} />} label="Search" />
-        <NavItem
-          href="/notifications"
-          active={pathname === "/notifications"}
-          icon={<Bell size={17} />}
-          label="Notifications"
-          badge={unreadNotifications ?? 0}
-        />
-        <NavItem href="/saved" active={pathname === "/saved"} icon={<Bookmark size={17} />} label="Saved" />
-        <NavItem href="/knowledge-base" active={pathname === "/knowledge-base"} icon={<BookOpen size={17} />} label="Knowledge base" />
-        <NavItem href="/planner" active={pathname === "/planner"} icon={<BrainCircuit size={17} />} label="Planner" />
-        <NavItem href="/analytics" active={pathname === "/analytics"} icon={<BarChart3 size={17} />} label="Analytics" />
-        <NavItem href="/leaderboard" active={pathname === "/leaderboard"} icon={<Crown size={17} />} label="Leaderboard" />
-        <NavItem href="/reputation" active={pathname === "/reputation"} icon={<Trophy size={17} />} label="Reputation" />
+      <nav className="space-y-4 px-3 py-3">
+        {navGroups.map((group) => (
+          <section key={group.label} className="space-y-1.5">
+            <div className="px-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">{group.label}</p>
+            </div>
+            <div className="space-y-1">
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const badge = item.badgeKey === "notifications" ? unreadNotifications ?? 0 : undefined;
+                return (
+                  <NavItem
+                    key={item.href}
+                    href={item.href}
+                    active={pathname === item.href}
+                    icon={<Icon size={17} />}
+                    label={item.label}
+                    badge={badge}
+                  />
+                );
+              })}
+            </div>
+          </section>
+        ))}
       </nav>
 
       <div className="flex items-center justify-between px-5 pt-2">
@@ -150,7 +193,7 @@ function NavItem({
         "flex min-h-[3rem] items-center gap-3 rounded-[18px] px-4 py-3 text-sm transition",
         active
           ? "border border-[rgba(109,140,255,0.18)] bg-[rgba(77,117,255,0.14)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-          : "text-[var(--app-text-muted)] hover:bg-white/5 hover:text-white"
+          : "text-[var(--app-text-muted)] hover:bg-white/5 hover:text-[var(--app-text)]"
       )}
     >
       {icon}
