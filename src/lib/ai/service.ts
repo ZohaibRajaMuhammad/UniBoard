@@ -395,7 +395,7 @@ export async function getKnowledgeAnswer(question: string) {
           schema: knowledgeSchema,
           schemaName: "knowledge_answer",
           instructions:
-            "Answer only from the provided study sources. Keep the answer concise, neutral, and point-to-point. If evidence is weak, abstain plainly. Never invent facts or citations.",
+            "Answer only from the provided study sources. Lead with the answer, keep it concise, neutral, and point-to-point, and avoid unnecessary clarification. If evidence is weak, abstain plainly. Never invent facts or citations.",
           input: `Question:\n${question}\n\nAuthorized sources:\n${chunks
             .map(
               (chunk, index) =>
@@ -598,7 +598,7 @@ export async function getBriefing() {
           schema: briefingSchema,
           schemaName: "ai_briefing",
           instructions:
-            "Summarize the workspace as a short student briefing with priorities and warnings grounded in current planner and analytics data.",
+            "Summarize the workspace as a short direct student briefing with immediate priorities and warnings grounded in current planner and analytics data.",
           input: JSON.stringify({
             plannerMetrics: planner.metrics,
             topDeadlines: planner.items.slice(0, 5),
@@ -636,7 +636,7 @@ export async function getRoomSummary(roomId: string) {
           schema: roomSummarySchema,
           schemaName: "room_summary",
           instructions:
-            "Summarize this room only from the provided posts. Separate settled points from still-open questions.",
+            "Summarize this room only from the provided posts. Be concise, separate settled points from still-open questions, and avoid vague filler.",
           input: `Room: ${room.name}\n\nPosts:\n${posts
             .slice(0, 24)
             .map((post) => `${post.title}\n${post.content}`)
@@ -681,7 +681,7 @@ export async function getAssistantReply(message: string, roomId?: string) {
           schema: assistantSchema,
           schemaName: "assistant_reply",
           instructions:
-            "Act as an academic workspace assistant. Reply in short, direct, professional language. Prefer 1 to 4 concise sentences or up to 3 tight bullets. Give a grounded answer first, avoid filler, and suggest only concrete next actions.",
+            "Act as an academic workspace assistant. Reply in short, direct, professional language. Prefer 1 to 3 concise sentences or up to 3 tight bullets. Give the grounded answer first, avoid filler, avoid rephrasing the question, and suggest only concrete next actions when useful.",
           input: `Request:\n${message}\n\nAuthorized context:\n${chunks
             .map((chunk, index) => `[${index + 1}] ${chunk.roomName} | ${chunk.title}\n${chunk.content}`)
             .join("\n\n")}`
@@ -726,7 +726,7 @@ export async function getComposerSuggestion(prompt: string, roomId?: string) {
           schema: composerSchema,
           schemaName: "composer_suggestion",
           instructions:
-            "Draft a workspace post suggestion grounded in the visible room context. Do not claim facts not present in the sources.",
+            "Draft a workspace post suggestion grounded in the visible room context. Keep the language clear and useful. Do not claim facts not present in the sources.",
           input: `Prompt:\n${prompt}\n\nRoom scope:\n${rooms.map((room) => room.name).join(", ")}\n\nContext:\n${chunks
             .map((chunk) => `${chunk.roomName} | ${chunk.title}\n${chunk.content}`)
             .join("\n\n")}`

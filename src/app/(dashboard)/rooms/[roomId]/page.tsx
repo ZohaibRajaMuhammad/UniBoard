@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { PlusSquare, Sparkles } from "lucide-react";
+import { PanelRightClose, PanelRightOpen, PlusSquare, ShieldCheck, Sparkles, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
@@ -26,6 +26,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   const searchParams = useSearchParams();
   const currentUser = useCurrentUser();
   const [activeFilter, setActiveFilter] = useState<(typeof FEED_FILTERS)[number]>("all");
+  const [teacherPanelOpen, setTeacherPanelOpen] = useState(false);
   const room = useQuery(api.rooms.getById, { roomId });
   const posts = useQuery(api.posts.getByRoom, {
     roomId,
@@ -94,6 +95,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
     ];
   }, [room]);
 
+  const canModerateRoom = currentUser?.role === "teacher" || currentUser?.role === "super_admin";
+
   if (room === undefined) {
     return <div className="m-4 h-48 animate-pulse rounded-[28px] bg-white/5 sm:m-6" />;
   }
@@ -103,24 +106,24 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 overflow-hidden">
+    <div className="relative flex min-h-0 flex-1 overflow-hidden">
       <div className="grid min-h-0 flex-1 grid-rows-[auto_auto_auto_auto_minmax(0,1fr)_auto] overflow-hidden">
         <RoomHeader room={room} />
         <PresenceBar roomId={roomId} />
 
-        <div className="border-b border-[var(--app-line)] bg-white/5 backdrop-blur">
+        <div className="border-b border-[var(--app-line)] bg-[rgba(255,255,255,0.56)] backdrop-blur">
           <div className="page-wrap py-4">
             <div className="grid gap-3 sm:grid-cols-3">
               {roomStats.map((item) => (
                 <div key={item.label} className="stat-card">
                   <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">{item.label}</p>
-                  <p className="mt-2 text-lg font-semibold text-white">{item.value}</p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--app-text)]">{item.value}</p>
                 </div>
               ))}
             </div>
 
             {room.aiEnabled ? (
-              <div className="mt-4 rounded-[24px] border border-[rgba(154,140,255,0.18)] bg-[rgba(154,140,255,0.08)] p-4">
+              <div className="mt-4 rounded-[24px] border border-[rgba(154,140,255,0.16)] bg-[linear-gradient(180deg,rgba(255,255,255,0.8),rgba(245,241,255,0.9))] p-4 shadow-[0_18px_36px_rgba(112,88,214,0.08)]">
                 <div className="flex items-center gap-2">
                   <Sparkles size={15} className="text-[var(--app-violet)]" />
                   <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-soft)]">AI room summary</p>
@@ -131,7 +134,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                   <div className="mt-3 h-16 animate-pulse rounded-2xl bg-white/5" />
                 ) : (
                   <>
-                    <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">{summary.data?.summary}</p>
+                    <p className="mt-3 text-sm leading-7 text-[var(--app-text)]">{summary.data?.summary}</p>
                     {(summary.data?.keyPoints?.length ?? 0) > 0 ? (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {summary.data?.keyPoints.slice(0, 4).map((item) => (
@@ -147,9 +150,27 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
             <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Feed controls</p>
-                <h2 className="mt-1 text-lg font-semibold text-white">Filter the conversation by signal</h2>
+                <h2 className="mt-1 text-lg font-semibold text-[var(--app-text)]">Filter the conversation by signal</h2>
               </div>
               <div className="flex flex-wrap gap-2 lg:justify-end">
+                {canModerateRoom ? (
+                  <button
+                    type="button"
+                    onClick={() => setTeacherPanelOpen((current) => !current)}
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition",
+                      teacherPanelOpen
+                        ? "border-[rgba(49,92,243,0.18)] bg-[rgba(49,92,243,0.12)] text-[var(--app-primary-strong)]"
+                        : "border-[var(--app-line)] bg-white/70 text-[var(--app-text-soft)] hover:border-[var(--app-line-strong)] hover:bg-white"
+                    )}
+                    aria-expanded={teacherPanelOpen}
+                    aria-controls="teacher-panel"
+                  >
+                    <ShieldCheck size={14} />
+                    {teacherPanelOpen ? "Hide teacher panel" : "Open teacher panel"}
+                    {teacherPanelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+                  </button>
+                ) : null}
                 <button
                   onClick={() => document.getElementById("room-composer")?.scrollIntoView({ behavior: "smooth", block: "center" })}
                   className="inline-flex items-center gap-2 rounded-full border border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.12)] px-4 py-2 text-sm font-medium text-[var(--app-text-soft)] transition hover:bg-[rgba(77,117,255,0.18)]"
@@ -166,8 +187,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                       className={cn(
                         "rounded-full border px-4 py-2 text-sm font-medium transition",
                         activeFilter === filter
-                          ? "border-[rgba(109,140,255,0.28)] bg-[rgba(77,117,255,0.14)] text-white"
-                          : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10"
+                          ? "border-[rgba(109,140,255,0.28)] bg-[rgba(77,117,255,0.14)] text-[var(--app-primary-strong)]"
+                          : "border-[var(--app-line)] bg-white/70 text-[var(--app-text-soft)] hover:bg-white"
                       )}
                     >
                       <span className="inline-flex items-center gap-2">
@@ -184,7 +205,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
         {pinnedPosts && pinnedPosts.length > 0 ? <PinnedPostsBanner posts={pinnedPosts} /> : null}
 
-        <div className="min-h-0 overflow-y-auto overscroll-contain pb-4">
+        <div className="min-h-0 overflow-y-auto overscroll-contain px-1 pb-4">
           <PostFeed
             posts={posts}
             roomId={roomId}
@@ -193,15 +214,43 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
           />
         </div>
 
-        <div id="room-composer" className="sticky bottom-0 border-t border-white/10 bg-[var(--app-panel-strong)] backdrop-blur">
+        <div id="room-composer" className="sticky bottom-0 border-t border-[var(--app-line)] bg-[color-mix(in_srgb,var(--app-panel-strong)_88%,white_12%)] backdrop-blur">
           <PostComposer roomId={roomId} />
         </div>
       </div>
 
-      {currentUser?.role === "teacher" || currentUser?.role === "super_admin" ? (
-        <aside className="hidden w-[20rem] 2xl:flex">
-          <TeacherPanel roomId={roomId} />
-        </aside>
+      {canModerateRoom ? (
+        <>
+          {teacherPanelOpen ? (
+            <button
+              type="button"
+              className="fixed inset-0 z-30 bg-[rgba(7,17,26,0.18)] backdrop-blur-[2px] xl:hidden"
+              onClick={() => setTeacherPanelOpen(false)}
+              aria-label="Close teacher panel backdrop"
+            />
+          ) : null}
+
+          <aside
+            id="teacher-panel"
+            className={cn(
+              "fixed inset-y-0 right-0 z-40 flex w-full max-w-[24rem] shrink-0 border-l border-[var(--app-line)] bg-white shadow-[0_28px_80px_rgba(41,57,90,0.18)] transition-transform duration-300 xl:absolute 2xl:relative 2xl:inset-auto 2xl:max-w-[23rem] 2xl:shadow-none",
+              teacherPanelOpen ? "translate-x-0" : "translate-x-full 2xl:hidden"
+            )}
+          >
+            <TeacherPanel roomId={roomId} onClose={() => setTeacherPanelOpen(false)} />
+          </aside>
+
+          {!teacherPanelOpen ? (
+            <button
+              type="button"
+              onClick={() => setTeacherPanelOpen(true)}
+              className="fixed bottom-28 right-6 z-20 hidden items-center gap-2 rounded-full border border-[rgba(49,92,243,0.16)] bg-white/92 px-4 py-3 text-sm font-semibold text-[var(--app-primary-strong)] shadow-[0_18px_44px_rgba(37,76,227,0.16)] backdrop-blur xl:inline-flex"
+            >
+              <ShieldCheck size={16} />
+              Teacher tools
+            </button>
+          ) : null}
+        </>
       ) : null}
     </div>
   );

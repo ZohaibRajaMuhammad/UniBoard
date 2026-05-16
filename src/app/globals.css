@@ -177,6 +177,10 @@ h6 {
   scrollbar-color: rgba(163, 163, 188, 0.2) transparent;
 }
 
+.theme-light * {
+  scrollbar-color: rgba(92, 116, 166, 0.38) rgba(255, 255, 255, 0.16);
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -189,6 +193,14 @@ h6 {
 ::-webkit-scrollbar-thumb {
   background: rgba(163, 163, 188, 0.18);
   border-radius: 999px;
+}
+
+.theme-light ::-webkit-scrollbar-thumb {
+  background: rgba(92, 116, 166, 0.32);
+}
+
+.theme-light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(77, 99, 150, 0.44);
 }
 
 :focus-visible {
@@ -311,6 +323,7 @@ h6 {
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
   position: relative;
+  isolation: isolate;
 }
 
 .app-scroll {
@@ -318,9 +331,10 @@ h6 {
   flex: 1 1 auto;
   overflow-y: auto;
   overflow-x: hidden;
-  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   scrollbar-gutter: stable;
+  scroll-padding-block: 1rem;
 }
 
 .page-wrap {
@@ -605,6 +619,10 @@ h6 {
 .theme-light .app-shell,
 .theme-light .sidebar-theme-surface {
   background: var(--app-sidebar-bg);
+}
+
+.sidebar-theme-surface {
+  min-height: 0;
 }
 
 @media (max-width: 1023px) {
