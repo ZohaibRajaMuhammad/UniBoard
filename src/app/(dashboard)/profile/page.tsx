@@ -53,13 +53,13 @@ export default function ProfilePage() {
 
   return (
     <div className="app-scroll">
-      <div className="page-wrap page-stack">
+      <div className="page-wrap page-stack shell-content-column">
         <section className="spotlight-ring glass-panel page-hero">
           <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
             <div>
               <p className="section-eyebrow text-[var(--app-primary-strong)]">Profile</p>
               <div className="mt-3 flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[var(--app-primary-strong)]">
+                <div className="app-surface-muted flex h-16 w-16 items-center justify-center rounded-full text-[var(--app-primary-strong)]">
                   <UserCircle2 size={34} />
                 </div>
                 <div>
@@ -138,7 +138,7 @@ export default function ProfilePage() {
             <div className="mt-5 space-y-3">
               <InfoCard label="Email" value={user?.email ?? "Loading"} />
               <InfoCard label="Badges" value={user?.badges?.join(", ") || "None yet"} />
-              <div className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-5">
+              <div className="app-surface-muted rounded-[24px] p-5">
                 <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">AI profile note</p>
                 <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">
                   Profile identity is direct user data. AI-driven learning inference appears in the reputation surfaces where confidence labeling is available.
@@ -155,7 +155,7 @@ export default function ProfilePage() {
             {savedPosts === undefined ? (
               Array.from({ length: 2 }).map((_, index) => <div key={index} className="h-32 animate-pulse rounded-[24px] bg-white/5" />)
             ) : savedPosts.length === 0 ? (
-              <div className="rounded-2xl border border-[var(--app-line)] bg-white/5 p-4 text-sm text-[var(--app-text-muted)]">No saved posts yet.</div>
+              <div className="app-surface-muted rounded-2xl p-4 text-sm text-[var(--app-text-muted)]">No saved posts yet.</div>
             ) : (
               savedPosts.map((post) => <PostCard key={post._id} post={post} roomId={post.roomId} />)
             )}
@@ -177,7 +177,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-5">
+    <div className="app-surface-muted rounded-[24px] p-5">
       <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">{label}</p>
       <p className="mt-2 text-lg font-semibold text-white">{value}</p>
     </div>

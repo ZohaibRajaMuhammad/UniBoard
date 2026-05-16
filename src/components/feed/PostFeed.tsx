@@ -68,7 +68,7 @@ export function PostFeed({
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4 p-4 sm:p-6">
+    <div className="feed-column mx-auto space-y-4 p-4 sm:p-6">
       {posts.map((post) => (
         <PostCard key={post._id} post={post} roomId={roomId} highlighted={highlightedPostId === post._id} />
       ))}

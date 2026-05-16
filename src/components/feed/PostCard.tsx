@@ -116,13 +116,13 @@ export function PostCard({
     <article
       id={`post-${post._id}`}
       className={cn(
-        "glass-panel rounded-[30px] p-5",
+        "glass-panel rounded-[30px] p-5 sm:p-6",
         post.isPinned && "border-amber-400/30 shadow-[0_0_0_1px_rgba(245,158,11,0.08),0_25px_70px_rgba(4,8,18,0.48)]",
         highlighted && "border-brand-400/40 shadow-[0_0_0_1px_rgba(63,115,255,0.18),0_30px_80px_rgba(10,20,48,0.42)]"
       )}
     >
-      <div className="flex items-start gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-white">
+      <div className="flex items-start gap-4 sm:gap-5">
+        <div className="app-surface-muted flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white">
           {post.author.imageUrl ? (
             <Image
               src={post.author.imageUrl}
@@ -147,11 +147,11 @@ export function PostCard({
 
             {canOpenMenu ? (
               <div className="relative">
-                <button onClick={() => setMenuOpen((current) => !current)} className="rounded-xl p-2 text-gray-500 transition hover:bg-white/5 hover:text-white">
+                <button onClick={() => setMenuOpen((current) => !current)} className="rounded-xl p-2 text-gray-500 transition hover:bg-white/5 hover:text-[var(--app-text)]">
                   <MoreHorizontal size={16} />
                 </button>
                 {menuOpen ? (
-                  <div className="absolute right-0 top-10 z-20 min-w-[220px] rounded-2xl border border-white/10 bg-gray-900 p-1 shadow-2xl">
+                  <div className="app-surface-soft absolute right-0 top-10 z-20 min-w-[220px] rounded-2xl p-1 shadow-2xl">
                     {canEdit ? (
                       <ActionButton
                         icon={<PenSquare size={14} />}
@@ -250,7 +250,7 @@ export function PostCard({
           ) : null}
 
           {isEditing ? (
-            <div className="mt-4 space-y-3 rounded-3xl border border-white/10 bg-black/20 p-4">
+            <div className="app-surface-muted mt-4 space-y-3 rounded-3xl p-4">
               <textarea
                 value={draftContent}
                 onChange={(event) => setDraftContent(event.target.value)}
@@ -288,7 +288,7 @@ export function PostCard({
               {post.type === "poll" && pollOptions.length > 0 ? (
                 <div className="mt-4 space-y-2 rounded-2xl border border-fuchsia-400/20 bg-fuchsia-500/5 p-4">
                   {pollOptions.map((option) => (
-                    <div key={option} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-gray-100">
+                    <div key={option} className="app-surface-soft rounded-2xl px-4 py-3 text-sm text-gray-100">
                       {option}
                     </div>
                   ))}

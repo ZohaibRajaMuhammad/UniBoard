@@ -44,7 +44,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="app-scroll">
-      <div className="page-wrap page-stack">
+      <div className="page-wrap page-stack shell-content-column">
         <section className="spotlight-ring glass-panel page-hero">
           <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
             <div>
@@ -111,7 +111,7 @@ export default function AnalyticsPage() {
                 <div className="mt-6 grid grid-cols-7 gap-3">
                   {analytics.last28Days.map((item) => (
                     <div key={item.day} className="space-y-2">
-                      <div className="rounded-[18px] border border-[var(--app-line)] bg-white/5 p-2">
+                      <div className="app-surface-soft rounded-[18px] p-2">
                         <div
                           className="h-16 rounded-[14px]"
                           style={{
@@ -150,7 +150,7 @@ export default function AnalyticsPage() {
                     </div>
                   ) : (
                     riskResult.data?.map((risk) => (
-                      <div key={risk.postId} className="rounded-[22px] border border-[var(--app-line)] bg-white/5 p-4">
+                      <div key={risk.postId} className="app-surface-muted rounded-[22px] p-4">
                         <div className="flex items-start justify-between gap-4">
                           <div>
                             <p className="font-semibold text-white">{risk.title}</p>
@@ -258,7 +258,7 @@ function MetricCard({
 
 function InsightCard({ title, copy }: { title: string; copy: string }) {
   return (
-    <div className="rounded-[22px] border border-[var(--app-line)] bg-white/5 p-4">
+    <div className="app-surface-muted rounded-[22px] p-4">
       <p className="text-sm font-semibold text-white">{title}</p>
       <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">{copy}</p>
     </div>

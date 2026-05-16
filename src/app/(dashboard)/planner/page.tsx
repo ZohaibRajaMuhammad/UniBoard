@@ -122,7 +122,7 @@ export default function PlannerPage() {
 
   return (
     <div className="app-scroll">
-      <div className="page-wrap page-stack">
+      <div className="page-wrap page-stack shell-content-column">
         <section className="spotlight-ring glass-panel page-hero">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-3xl">
@@ -207,7 +207,7 @@ export default function PlannerPage() {
                     const dayEvents = planner.items.filter((item) => new Date(item.dueDate).toDateString() === date.toDateString());
                     const daySessions = planner.sessions.filter((item) => new Date(item.startAt).toDateString() === date.toDateString());
                     return (
-                      <div key={date.toISOString()} className="min-h-[8rem] rounded-[24px] border border-[var(--app-line)] bg-black/20 p-3">
+                      <div key={date.toISOString()} className="app-surface-muted min-h-[8rem] rounded-[24px] p-3">
                         <p className="text-sm font-medium text-white">{date.getDate()}</p>
                         <div className="mt-3 space-y-2">
                           {dayEvents.slice(0, 2).map((item) => (
@@ -237,12 +237,12 @@ export default function PlannerPage() {
                     ) : studyPlan === null ? (
                       Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-20 animate-pulse rounded-2xl bg-white/5" />)
                     ) : studyPlan.data?.sessions.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-[var(--app-line)] bg-black/20 p-4 text-sm text-[var(--app-text-muted)]">
+                      <div className="rounded-2xl border border-dashed border-[var(--app-line)] bg-white/5 p-4 text-sm text-[var(--app-text-muted)]">
                         Add or inherit deadlines first so the planner can allocate study blocks.
                       </div>
                     ) : (
                       studyPlan.data?.sessions.slice(0, 6).map((session) => (
-                        <div key={session.id} className="rounded-2xl border border-[var(--app-line)] bg-black/20 p-4">
+                        <div key={session.id} className="app-surface-muted rounded-2xl p-4">
                           <div className="flex items-start justify-between gap-4">
                             <div>
                               <p className="font-medium text-white">{session.title}</p>
@@ -264,12 +264,12 @@ export default function PlannerPage() {
                   <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Upcoming deadlines</p>
                   <div className="mt-5 space-y-3">
                     {planner.items.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-[var(--app-line)] bg-black/20 p-4 text-sm text-[var(--app-text-muted)]">
+                      <div className="rounded-2xl border border-dashed border-[var(--app-line)] bg-white/5 p-4 text-sm text-[var(--app-text-muted)]">
                         No deadlines are currently available.
                       </div>
                     ) : (
                       planner.items.slice(0, 8).map((item) => (
-                        <div key={item.id} className="rounded-2xl border border-[var(--app-line)] bg-black/20 p-4">
+                        <div key={item.id} className="app-surface-muted rounded-2xl p-4">
                           <div className="flex items-start justify-between gap-4">
                             <div>
                               <p className="font-medium text-white">{item.title}</p>

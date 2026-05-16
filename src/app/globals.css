@@ -481,7 +481,40 @@ h6 {
 }
 
 .feed-column {
-  width: min(100%, 48.75rem);
+  width: min(100%, 54rem);
+}
+
+.shell-content-column {
+  width: min(100%, 80rem);
+}
+
+.app-surface-muted {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--app-line);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)),
+    color-mix(in srgb, var(--app-panel) 84%, transparent);
+}
+
+.app-surface-soft {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--app-line);
+  background: color-mix(in srgb, var(--app-panel) 88%, transparent);
+}
+
+.app-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  border: 1px solid var(--app-line);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.38rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--app-text-soft);
 }
 
 .soft-divider {

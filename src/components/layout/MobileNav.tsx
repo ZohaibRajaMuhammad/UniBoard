@@ -14,7 +14,7 @@ export function MobileNav() {
 
   return (
     <nav className="fixed inset-x-3 bottom-3 z-40 md:hidden">
-      <div className="mx-auto max-w-xl rounded-[2rem] border border-[var(--app-line)] bg-[rgba(8,16,28,0.94)] px-2 pt-2 shadow-[0_20px_50px_rgba(4,8,18,0.45)] backdrop-blur">
+      <div className="mx-auto max-w-xl rounded-[2rem] border border-[var(--app-line)] bg-[var(--app-floating-nav)] px-2 pt-2 shadow-[0_20px_50px_rgba(4,8,18,0.22)] backdrop-blur">
         <div className="flex min-h-[4.25rem] items-center justify-around pb-[max(0.5rem,env(safe-area-inset-bottom))]">
           <MobileNavItem href="/dashboard" label="Home" icon={<Home size={20} />} active={pathname === "/dashboard"} />
           <MobileNavItem href="/rooms" label="Rooms" icon={<BookOpen size={20} />} active={pathname.startsWith("/rooms")} badge={totalUnread} />

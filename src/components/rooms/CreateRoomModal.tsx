@@ -56,7 +56,7 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
   return (
     <Dialog.Root open onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-[rgba(7,17,26,0.44)] backdrop-blur-sm" />
         <Dialog.Content className="glass-panel fixed inset-x-4 top-1/2 z-50 max-h-[calc(100dvh-2rem)] w-auto -translate-y-1/2 overflow-hidden rounded-[1.75rem] shadow-2xl sm:left-1/2 sm:w-[min(42rem,calc(100vw-2rem))] sm:-translate-x-1/2">
           <div className="flex items-start justify-between border-b border-[var(--app-line)] px-5 py-4 sm:px-6">
             <div className="pr-4">
@@ -139,7 +139,7 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
                         key={color}
                         type="button"
                         onClick={() => setForm((current) => ({ ...current, color }))}
-                        className={`touch-target rounded-xl border px-3 py-2 text-sm capitalize transition ${form.color === color ? "border-brand-400 bg-brand-500/20 text-white" : "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10"}`}
+                        className={`touch-target rounded-xl border px-3 py-2 text-sm capitalize transition ${form.color === color ? "border-brand-400 bg-brand-500/20 text-white" : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10"}`}
                       >
                         {color}
                       </button>
@@ -155,7 +155,7 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
                         key={option.value}
                         type="button"
                         onClick={() => setForm((current) => ({ ...current, emoji: option.value }))}
-                        className={`touch-target rounded-xl border transition ${form.emoji === option.value ? "border-brand-400 bg-brand-500/20 text-white" : "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10"}`}
+                        className={`touch-target rounded-xl border transition ${form.emoji === option.value ? "border-brand-400 bg-brand-500/20 text-white" : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10"}`}
                         title={option.label}
                       >
                         <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl">
@@ -193,7 +193,7 @@ function Field({
 }) {
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-semibold text-gray-200">{label}</span>
+      <span className="text-sm font-semibold text-[var(--app-text-soft)]">{label}</span>
       {children}
     </label>
   );

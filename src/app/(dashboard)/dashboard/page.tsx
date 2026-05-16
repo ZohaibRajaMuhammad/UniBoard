@@ -41,7 +41,7 @@ export default function DashboardRoutePage() {
 
   return (
     <div className="app-scroll">
-      <div className="page-wrap page-stack">
+      <div className="page-wrap page-stack shell-content-column">
         <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
           <div className="spotlight-ring glass-panel page-hero">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

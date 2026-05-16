@@ -33,7 +33,7 @@ export default function RoomsPage() {
 
   return (
     <div className="app-scroll">
-      <div className="page-wrap page-stack">
+      <div className="page-wrap page-stack shell-content-column">
         <div className="spotlight-ring glass-panel page-hero">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
