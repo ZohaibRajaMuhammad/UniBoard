@@ -13,7 +13,7 @@ export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const deferredQuery = useDeferredValue(searchQuery);
   const results = useQuery(api.posts.search, { searchQuery: deferredQuery });
-  const suggestions = useMemo(() => ["deadline", "OpenMP", "architecture", "normalization", "announcement"], []);
+  const suggestions = useQuery(api.posts.getSearchSuggestions) ?? [];
   const enrichedResults = useMemo(() => {
     const query = deferredQuery.trim().toLowerCase();
     if (!Array.isArray(results)) {

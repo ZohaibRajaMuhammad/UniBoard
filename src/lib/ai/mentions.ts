@@ -1,17 +1,26 @@
 import { ROOM_MENTION_AI, ROOM_MENTION_AI_ALIASES } from "../constants";
 
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function getAiMentionPattern() {
+  const variants = [...ROOM_MENTION_AI_ALIASES]
+    .sort((left, right) => right.length - left.length)
+    .map((alias) => escapeRegex(alias));
+
+  return new RegExp(`(^|\\s)(${variants.join("|")})(?=\\s|$|[.,!?;:])`, "gi");
+}
+
 export function containsAiMention(value: string) {
-  const lowered = value.toLowerCase();
-  return ROOM_MENTION_AI_ALIASES.some((alias) => lowered.includes(alias.toLowerCase()));
+  return getAiMentionPattern().test(value);
 }
 
 export function stripAiMentions(value: string) {
-  return [...ROOM_MENTION_AI_ALIASES]
-    .sort((left, right) => right.length - left.length)
-    .reduce(
-    (current, alias) => current.replaceAll(new RegExp(alias, "gi"), "").replace(/\s{2,}/g, " "),
-    value
-  ).trim();
+  return value
+    .replace(getAiMentionPattern(), (match, prefix) => (prefix ? " " : ""))
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }
 
 export function extractAssistantUserRequest(value: string) {

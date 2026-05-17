@@ -9,6 +9,22 @@ import { isClerkServerConfigured } from "@/lib/deployment";
 
 export const dynamic = "force-dynamic";
 
+const clerkAppearance = {
+  elements: {
+    footer: "hidden",
+    footerAction: "hidden",
+    logoBox: "hidden",
+    cardBox: "shadow-none",
+    formFieldInput:
+      "border !border-[var(--app-line)] !bg-white !text-[var(--app-text)] placeholder:!text-[var(--app-text-muted)] focus:!shadow-none",
+    formFieldLabel: "!text-[var(--app-text-soft)]",
+    formButtonPrimary: "!bg-[var(--app-primary)] hover:!bg-[var(--app-primary-strong)] !shadow-none",
+    socialButtonsBlockButton:
+      "!border !border-[var(--app-line)] !bg-[var(--app-panel-strong)] !text-[var(--app-text)] hover:!bg-white",
+    footerActionLink: "!text-[var(--app-primary-strong)]"
+  }
+} as const;
+
 export default async function SignUpPage() {
   if (!isClerkServerConfigured) {
     return (
@@ -88,18 +104,11 @@ export default async function SignUpPage() {
               Institutional onboarding with enough guidance to feel credible, not noisy.
             </p>
           </div>
-          <div className="[&_.cl-card]:!border-0 [&_.cl-card]:!bg-transparent [&_.cl-card]:!shadow-none [&_.cl-footerActionLink]:!text-[var(--app-primary-strong)] [&_.cl-formButtonPrimary]:!bg-[var(--app-primary)] [&_.cl-formButtonPrimary]:hover:!bg-[var(--app-primary-strong)] [&_.cl-formFieldInput]:!border-white/10 [&_.cl-formFieldInput]:!bg-white/5 [&_.cl-formFieldInput]:!text-[var(--app-text)] [&_.cl-formFieldLabel]:!text-[var(--app-text-soft)] [&_.cl-headerSubtitle]:!hidden [&_.cl-headerTitle]:!hidden [&_.cl-footer]:!hidden [&_.cl-logoBox]:!hidden">
+          <div className="[&_.cl-card]:!border-0 [&_.cl-card]:!bg-transparent [&_.cl-card]:!shadow-none [&_.cl-headerSubtitle]:!hidden [&_.cl-headerTitle]:!hidden [&_.cl-footer]:!hidden [&_.cl-logoBox]:!hidden">
             <SignUp
               routing="hash"
               redirectUrl="/dashboard"
-              appearance={{
-                elements: {
-                  footer: "hidden",
-                  footerAction: "hidden",
-                  logoBox: "hidden",
-                  cardBox: "shadow-none"
-                }
-              }}
+              appearance={clerkAppearance}
             />
           </div>
         </div>

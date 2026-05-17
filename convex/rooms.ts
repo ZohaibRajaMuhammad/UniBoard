@@ -161,10 +161,11 @@ export const join = mutation({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
+    const normalizedJoinCode = args.joinCode?.trim().toUpperCase();
     const room = args.joinCode
       ? await ctx.db
           .query("rooms")
-          .withIndex("by_joinCode", (query) => query.eq("joinCode", args.joinCode!.trim().toUpperCase()))
+          .withIndex("by_joinCode", (query) => query.eq("joinCode", normalizedJoinCode!))
           .unique()
       : args.roomId
         ? await ctx.db.get(args.roomId)
@@ -176,6 +177,10 @@ export const join = mutation({
 
     if (room.isArchived) {
       throw new Error("Room is archived");
+    }
+
+    if (!room.isPublic && !normalizedJoinCode) {
+      throw new Error("Private rooms require a valid join code.");
     }
 
     const existing = await getMembership(ctx, room._id, user._id);

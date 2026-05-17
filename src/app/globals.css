@@ -44,7 +44,7 @@
   --text-fluid-xl: clamp(1.35rem, 1.1rem + 1vw, 1.9rem);
   --text-fluid-2xl: clamp(1.8rem, 1.25rem + 2vw, 2.75rem);
   --text-fluid-hero: clamp(2.4rem, 1.5rem + 3.6vw, 4.8rem);
-  --app-sidebar-bg: linear-gradient(180deg, rgba(8, 15, 27, 0.98), rgba(5, 11, 20, 0.98));
+  --app-sidebar-bg: #08111b;
   --app-floating-nav: rgba(8, 16, 28, 0.94);
   --app-soft-surface: rgba(255, 255, 255, 0.03);
   --app-soft-surface-2: rgba(0, 0, 0, 0.2);
@@ -78,7 +78,7 @@
   --app-danger: #c6405f;
   --app-warning: #b96d11;
   --app-info: #2076d4;
-  --app-sidebar-bg: linear-gradient(180deg, rgba(249, 251, 255, 0.98), rgba(238, 244, 252, 0.98));
+  --app-sidebar-bg: #f7f9fc;
   --app-floating-nav: rgba(255, 255, 255, 0.94);
   --app-soft-surface: rgba(255, 255, 255, 0.64);
   --app-soft-surface-2: rgba(49, 92, 243, 0.04);
@@ -113,11 +113,7 @@ body {
   min-height: 100dvh;
   overflow-x: hidden;
   font-family: var(--font-sans);
-  background:
-    radial-gradient(circle at top left, color-mix(in srgb, var(--app-primary) 22%, transparent) 0%, transparent 24%),
-    radial-gradient(circle at top right, color-mix(in srgb, var(--app-gold) 14%, transparent) 0%, transparent 18%),
-    radial-gradient(circle at 50% -10%, color-mix(in srgb, var(--app-violet) 12%, transparent) 0%, transparent 20%),
-    linear-gradient(180deg, var(--app-bg-strong) 0%, var(--app-bg) 38%, color-mix(in srgb, var(--app-bg) 86%, #000 14%) 100%);
+  background: var(--app-bg);
   color: var(--app-text);
 }
 
@@ -232,20 +228,13 @@ h6 {
 
 .glass-panel {
   border: 1px solid var(--app-line);
-  background:
-    linear-gradient(180deg, var(--app-panel-strong), color-mix(in srgb, var(--app-panel) 92%, transparent)),
-    linear-gradient(135deg, rgba(var(--app-white-rgb), 0.12), transparent 42%);
+  background: var(--app-panel-strong);
   backdrop-filter: blur(22px);
-  box-shadow:
-    var(--app-elevated-shadow),
-    inset 0 1px 0 rgba(var(--app-white-rgb), 0.2);
+  box-shadow: 0 16px 36px rgba(30, 46, 78, 0.08);
 }
 
 .hero-grid {
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--app-primary) 12%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--app-primary) 12%, transparent) 1px, transparent 1px);
-  background-size: 78px 78px;
+  background-image: none;
 }
 
 .spotlight-ring {
@@ -254,12 +243,7 @@ h6 {
 }
 
 .spotlight-ring::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent 0%, color-mix(in srgb, var(--app-primary) 18%, transparent) 32%, transparent 58%);
-  opacity: 0.7;
-  pointer-events: none;
+  display: none;
 }
 
 .panel-chip {
@@ -305,16 +289,7 @@ h6 {
 }
 
 .ambient-orb::after {
-  content: "";
-  position: absolute;
-  right: -18%;
-  top: -26%;
-  height: 220px;
-  width: 220px;
-  border-radius: 999px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--app-primary) 24%, transparent), transparent 68%);
-  pointer-events: none;
-  filter: blur(4px);
+  display: none;
 }
 
 .app-shell {
@@ -388,14 +363,14 @@ h6 {
 }
 
 .app-button-primary {
-  background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-strong) 100%);
+  background: var(--app-primary);
   color: white;
-  box-shadow: 0 10px 28px rgba(63, 115, 255, 0.24);
+  box-shadow: none;
 }
 
 .app-button-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 16px 34px rgba(63, 115, 255, 0.32);
+  box-shadow: none;
 }
 
 .app-button-secondary {
@@ -415,7 +390,7 @@ h6 {
   width: 100%;
   border-radius: var(--radius-card);
   border: 1px solid var(--app-line);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.025));
+  background: rgba(255, 255, 255, 0.78);
   padding: 0.9rem 1rem;
   color: var(--app-text);
   outline: none;
@@ -437,11 +412,9 @@ h6 {
 .stat-card {
   border-radius: var(--radius-card);
   border: 1px solid var(--app-line);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.022)),
-    rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.72);
   padding: clamp(1rem, 0.85rem + 0.6vw, 1.35rem);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  box-shadow: none;
 }
 
 .surface-card {
@@ -491,15 +464,13 @@ h6 {
 .app-surface-muted {
   border-radius: var(--radius-card);
   border: 1px solid var(--app-line);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)),
-    color-mix(in srgb, var(--app-panel) 84%, transparent);
+  background: rgba(255, 255, 255, 0.76);
 }
 
 .app-surface-soft {
   border-radius: var(--radius-card);
   border: 1px solid var(--app-line);
-  background: color-mix(in srgb, var(--app-panel) 88%, transparent);
+  background: rgba(255, 255, 255, 0.66);
 }
 
 .app-chip {

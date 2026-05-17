@@ -107,7 +107,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
   return (
     <div className="relative flex min-h-0 flex-1 overflow-hidden">
-      <div className="grid min-h-0 flex-1 grid-rows-[auto_auto_auto_auto_minmax(0,1fr)_auto] overflow-hidden">
+      <div className="grid min-h-0 flex-1 grid-rows-[auto_auto_auto_auto_minmax(0,1fr)] overflow-hidden">
         <RoomHeader room={room} />
         <PresenceBar roomId={roomId} />
 
@@ -152,13 +152,13 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                 <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Feed controls</p>
                 <h2 className="mt-1 text-lg font-semibold text-[var(--app-text)]">Filter the conversation by signal</h2>
               </div>
-              <div className="flex flex-wrap gap-2 lg:justify-end">
+              <div className="smooth-x-scroll flex gap-2 pb-1 lg:flex-wrap lg:justify-end lg:pb-0">
                 {canModerateRoom ? (
                   <button
                     type="button"
                     onClick={() => setTeacherPanelOpen((current) => !current)}
                     className={cn(
-                      "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition",
+                      "inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition",
                       teacherPanelOpen
                         ? "border-[rgba(49,92,243,0.18)] bg-[rgba(49,92,243,0.12)] text-[var(--app-primary-strong)]"
                         : "border-[var(--app-line)] bg-white/70 text-[var(--app-text-soft)] hover:border-[var(--app-line-strong)] hover:bg-white"
@@ -173,7 +173,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                 ) : null}
                 <button
                   onClick={() => document.getElementById("room-composer")?.scrollIntoView({ behavior: "smooth", block: "center" })}
-                  className="inline-flex items-center gap-2 rounded-full border border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.12)] px-4 py-2 text-sm font-medium text-[var(--app-text-soft)] transition hover:bg-[rgba(77,117,255,0.18)]"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.12)] px-4 py-2 text-sm font-medium text-[var(--app-text-soft)] transition hover:bg-[rgba(77,117,255,0.18)]"
                 >
                   <PlusSquare size={14} />
                   Compose
@@ -185,7 +185,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                       key={filter}
                       onClick={() => setActiveFilter(filter)}
                       className={cn(
-                        "rounded-full border px-4 py-2 text-sm font-medium transition",
+                        "shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition",
                         activeFilter === filter
                           ? "border-[rgba(109,140,255,0.28)] bg-[rgba(77,117,255,0.14)] text-[var(--app-primary-strong)]"
                           : "border-[var(--app-line)] bg-white/70 text-[var(--app-text-soft)] hover:bg-white"
@@ -205,20 +205,22 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
         {pinnedPosts && pinnedPosts.length > 0 ? <PinnedPostsBanner posts={pinnedPosts} /> : null}
 
-        <div className="min-h-0 overflow-y-auto overscroll-contain px-1 pb-[20rem]">
-          <PostFeed
-            posts={posts}
-            roomId={roomId}
-            emptyStateLabel={activeFilter === "all" ? "No posts yet" : `No ${activeFilter} posts yet`}
-            highlightedPostId={highlightedPostId ?? undefined}
-          />
-        </div>
+        <div className="flex min-h-0 flex-col overflow-hidden">
+          <div className="app-scroll min-h-0 flex-1 px-1">
+            <PostFeed
+              posts={posts}
+              roomId={roomId}
+              emptyStateLabel={activeFilter === "all" ? "No posts yet" : `No ${activeFilter} posts yet`}
+              highlightedPostId={highlightedPostId ?? undefined}
+            />
+          </div>
 
-        <div
-          id="room-composer"
-          className="sticky bottom-0 max-h-[38vh] overflow-y-auto border-t border-[var(--app-line)] bg-[color-mix(in_srgb,var(--app-panel-strong)_88%,white_12%)] shadow-[0_-18px_36px_rgba(42,58,94,0.12)] backdrop-blur"
-        >
-          <PostComposer roomId={roomId} />
+          <div
+            id="room-composer"
+            className="shrink-0 border-t border-[var(--app-line)] bg-[color-mix(in_srgb,var(--app-panel-strong)_92%,white_8%)] shadow-[0_-18px_36px_rgba(42,58,94,0.08)] backdrop-blur"
+          >
+            <PostComposer roomId={roomId} />
+          </div>
         </div>
       </div>
 

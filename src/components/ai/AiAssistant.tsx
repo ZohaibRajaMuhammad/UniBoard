@@ -96,7 +96,7 @@ export function AiAssistant() {
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="ai-pulse fixed bottom-24 right-4 z-40 hidden min-h-[52px] min-w-[52px] items-center gap-3 rounded-full border border-[rgba(154,140,255,0.24)] bg-[linear-gradient(135deg,rgba(77,117,255,0.92),rgba(110,85,255,0.92))] px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_42px_rgba(30,38,88,0.42)] transition hover:-translate-y-0.5 md:flex"
+        className="ai-pulse fixed bottom-6 right-4 z-40 hidden min-h-[52px] min-w-[52px] items-center gap-3 rounded-full border border-[rgba(154,140,255,0.24)] bg-[linear-gradient(135deg,rgba(77,117,255,0.92),rgba(110,85,255,0.92))] px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_42px_rgba(30,38,88,0.42)] transition hover:-translate-y-0.5 md:flex"
         aria-expanded={open}
         aria-controls="ai-assistant-panel"
       >

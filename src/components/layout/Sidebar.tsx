@@ -91,57 +91,57 @@ export function Sidebar() {
         </Link>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col">
-        <nav className="space-y-4 px-3 py-3">
-          {navGroups.map((group) => (
-            <section key={group.label} className="space-y-1.5">
-              <div className="px-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">{group.label}</p>
-              </div>
-              <div className="space-y-1">
-                {group.items.map((item) => {
-                  const Icon = item.icon;
-                  const badge = item.badgeKey === "notifications" ? unreadNotifications ?? 0 : undefined;
-                  return (
-                    <NavItem
-                      key={item.href}
-                      href={item.href}
-                      active={pathname === item.href}
-                      icon={<Icon size={17} />}
-                      label={item.label}
-                      badge={badge}
-                    />
-                  );
-                })}
-              </div>
-            </section>
-          ))}
-        </nav>
-
-        <div className="flex items-center justify-between px-5 pt-2">
-          <p className="section-eyebrow">Rooms</p>
-          <button
-            onClick={() => setShowCreateRoom(true)}
-            className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-soft)] transition hover:bg-white/10"
-            aria-label="Create room"
-          >
-            <Plus size={16} />
-          </button>
-        </div>
-
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="app-scroll min-h-0 flex-1 px-3 py-3">
+          <nav className="space-y-4">
+            {navGroups.map((group) => (
+              <section key={group.label} className="space-y-1.5">
+                <div className="px-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">{group.label}</p>
+                </div>
+                <div className="space-y-1">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const badge = item.badgeKey === "notifications" ? unreadNotifications ?? 0 : undefined;
+                    return (
+                      <NavItem
+                        key={item.href}
+                        href={item.href}
+                        active={pathname === item.href}
+                        icon={<Icon size={17} />}
+                        label={item.label}
+                        badge={badge}
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </nav>
+
+          <div className="mt-5 flex items-center justify-between px-2">
+            <p className="section-eyebrow">Rooms</p>
+            <button
+              onClick={() => setShowCreateRoom(true)}
+              className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-soft)] transition hover:bg-white/10"
+              aria-label="Create room"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+
           {rooms === undefined ? (
-            <div className="space-y-2">
+            <div className="mt-3 space-y-2">
               {Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="h-12 animate-pulse rounded-2xl bg-white/5" />
               ))}
             </div>
           ) : rooms.length === 0 ? (
-            <div className="rounded-[1.25rem] border border-dashed border-[var(--app-line)] bg-white/[0.02] p-4 text-sm leading-6 text-[var(--app-text-muted)]">
+            <div className="mt-3 rounded-[1.25rem] border border-dashed border-[var(--app-line)] bg-white/[0.02] p-4 text-sm leading-6 text-[var(--app-text-muted)]">
               No rooms joined yet.
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="mt-3 space-y-2">
               {(rooms as Room[]).map((room) => (
                 <SidebarRoomItem key={room._id} roomId={room._id} name={room.name} emoji={room.emoji} active={pathname === `/rooms/${room._id}`} />
               ))}

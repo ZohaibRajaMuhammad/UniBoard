@@ -134,3 +134,34 @@ export const getWorkspaceAnalytics = query({
     };
   }
 });
+
+export const getPublicSnapshot = query({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const rooms = await ctx.db.query("rooms").collect();
+    const publicRooms = rooms.filter((room) => room.isPublic && !room.isArchived);
+    const publicRoomIds = new Set(publicRooms.map((room) => room._id));
+    const posts = await ctx.db.query("posts").collect();
+    const visiblePosts = posts.filter((post) => !post.isDeleted && !post.isHidden && publicRoomIds.has(post.roomId));
+    const upcomingDeadlines = visiblePosts.filter((post) => post.type === "deadline" && post.deadlineDate && post.deadlineDate > now);
+    const activeMemberCount = publicRooms.reduce((sum, room) => sum + (room.memberCount ?? 0), 0);
+    const busiestRoom = [...publicRooms].sort((left, right) => (right.postCount ?? 0) - (left.postCount ?? 0))[0] ?? null;
+
+    return {
+      publicRoomCount: publicRooms.length,
+      visiblePostCount: visiblePosts.length,
+      upcomingDeadlineCount: upcomingDeadlines.length,
+      activeMemberCount,
+      busiestRoom: busiestRoom
+        ? {
+            id: busiestRoom._id,
+            name: busiestRoom.name,
+            subject: busiestRoom.subject,
+            memberCount: busiestRoom.memberCount ?? 0,
+            postCount: busiestRoom.postCount ?? 0
+          }
+        : null
+    };
+  }
+});

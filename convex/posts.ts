@@ -242,6 +242,43 @@ export const search = query({
   }
 });
 
+export const getSearchSuggestions = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      return [];
+    }
+
+    const memberships = await ctx.db
+      .query("roomMembers")
+      .withIndex("by_userId", (query) => query.eq("userId", user._id))
+      .collect();
+    const allowedRoomIds = new Set(memberships.filter((membership) => !membership.isBanned).map((membership) => membership.roomId));
+    const posts = await ctx.db.query("posts").collect();
+    const tagCounts = new Map<string, number>();
+
+    for (const post of posts) {
+      if (post.isDeleted || post.isHidden || !allowedRoomIds.has(post.roomId)) {
+        continue;
+      }
+
+      for (const tag of post.tags ?? []) {
+        const normalized = tag.trim().toLowerCase();
+        if (normalized.length < 3) {
+          continue;
+        }
+        tagCounts.set(normalized, (tagCounts.get(normalized) ?? 0) + 1);
+      }
+    }
+
+    return [...tagCounts.entries()]
+      .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+      .slice(0, 6)
+      .map(([term]) => term);
+  }
+});
+
 export const create = mutation({
   args: {
     roomId: v.id("rooms"),

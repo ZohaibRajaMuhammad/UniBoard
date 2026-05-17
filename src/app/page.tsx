@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
 import { redirect } from "next/navigation";
+import { api } from "../../convex/_generated/api";
 import { UniBoardLogo } from "@/components/brand/UniBoardLogo";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
 import { isClerkServerConfigured } from "@/lib/deployment";
@@ -22,10 +24,11 @@ export default async function LandingPage() {
     redirect("/dashboard");
   }
 
+  const snapshot = await fetchQuery(api.analytics.getPublicSnapshot, {});
+
   return (
     <main className="relative min-h-screen overflow-hidden px-4 py-4 sm:px-5">
       <div className="hero-grid absolute inset-0 opacity-20" />
-      <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-[rgba(77,117,255,0.12)] to-transparent" />
       <div className="relative mx-auto flex min-h-screen w-full max-w-[82.5rem] flex-col">
         <header className="flex items-center justify-between gap-4 px-2 py-5 sm:px-4">
           <UniBoardLogo subtitle="Academic intelligence workspace" />
@@ -61,12 +64,12 @@ export default async function LandingPage() {
             </div>
             <div className="mt-10 grid gap-4 md:grid-cols-3">
               {[
-                { title: "Realtime", copy: "Live room activity with no refresh loop." },
-                { title: "Anonymous", copy: "Contribution without social drag where policy allows." },
-                { title: "Structured", copy: "Deadlines, resources, and decisions stay searchable." }
+                { title: `${snapshot.publicRoomCount}`, copy: "Public rooms currently available." },
+                { title: `${snapshot.visiblePostCount}`, copy: "Visible posts across public academic spaces." },
+                { title: `${snapshot.upcomingDeadlineCount}`, copy: "Upcoming public deadlines already tracked." }
               ].map((item) => (
-                <div key={item.title} className="stat-card">
-                  <p className="text-sm font-semibold text-white">{item.title}</p>
+                <div key={item.copy} className="stat-card">
+                  <p className="text-2xl font-bold text-white">{item.title}</p>
                   <p className="mt-2 text-sm leading-6 text-[var(--app-text-muted)]">{item.copy}</p>
                 </div>
               ))}
@@ -78,39 +81,41 @@ export default async function LandingPage() {
               <p className="text-xs uppercase tracking-[0.3em] text-[var(--app-primary-strong)]">Live room pulse</p>
               <div className="mt-5 flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-white">Parallel Computing • SP26</h2>
+                  <h2 className="text-2xl font-bold text-white">{snapshot.busiestRoom?.name ?? "Academic workspace"}</h2>
                   <p className="mt-2 text-sm leading-6 text-[var(--app-text-muted)]">
-                    Pinned deadlines, fast notes, and anonymous questions in one disciplined room.
+                    {snapshot.busiestRoom
+                      ? `${snapshot.busiestRoom.subject} currently leads public activity with ${snapshot.busiestRoom.postCount} visible posts.`
+                      : "Public room metrics will appear here as soon as rooms and posts are available."}
                   </p>
                 </div>
-                <div className="rounded-2xl bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-200">
-                  12 online now
+                <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-panel)] px-3 py-2 text-xs font-semibold text-[var(--app-text-soft)]">
+                  {snapshot.busiestRoom ? `${snapshot.busiestRoom.memberCount} members` : "No room data"}
                 </div>
               </div>
             </div>
             <div className="glass-panel rounded-[28px] p-6">
-              <p className="text-xs uppercase tracking-[0.3em] text-[var(--app-text-muted)]">Unread pull</p>
-              <p className="mt-5 text-4xl font-black tracking-tight text-white">27</p>
-              <p className="mt-2 text-sm text-[var(--app-text-muted)]">Unread updates across rooms</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-[var(--app-text-muted)]">Visible posts</p>
+              <p className="mt-5 text-4xl font-black tracking-tight text-white">{snapshot.visiblePostCount}</p>
+              <p className="mt-2 text-sm text-[var(--app-text-muted)]">Accessible public posts currently indexed.</p>
             </div>
             <div className="glass-panel rounded-[28px] p-6">
-              <p className="text-xs uppercase tracking-[0.3em] text-[var(--app-text-muted)]">Deadline pressure</p>
-              <p className="mt-5 text-lg font-semibold text-white">Assignment 3 due in 9h</p>
-              <p className="mt-2 text-sm text-[var(--app-text-muted)]">Pinned countdowns keep important work visible.</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-[var(--app-text-muted)]">Upcoming deadlines</p>
+              <p className="mt-5 text-lg font-semibold text-white">{snapshot.upcomingDeadlineCount} tracked items</p>
+              <p className="mt-2 text-sm text-[var(--app-text-muted)]">Public deadline signal updates continuously from live room data.</p>
             </div>
             <div className="glass-panel rounded-[28px] p-6 sm:col-span-2">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-[var(--app-text-muted)]">Posting modes</p>
-                  <h3 className="mt-3 text-xl font-semibold text-white">Visible or anonymous, same live stream.</h3>
+                  <p className="text-xs uppercase tracking-[0.3em] text-[var(--app-text-muted)]">Workspace scale</p>
+                  <h3 className="mt-3 text-xl font-semibold text-white">Live public activity, minimal presentation.</h3>
                 </div>
                 <div className="flex gap-2">
-                  <span className="panel-chip text-gray-200">Question</span>
-                  <span className="panel-chip text-gray-200">Deadline</span>
+                  <span className="panel-chip text-gray-200">{snapshot.publicRoomCount} rooms</span>
+                  <span className="panel-chip text-gray-200">{snapshot.activeMemberCount} members</span>
                 </div>
               </div>
               <p className="mt-4 text-sm leading-6 text-[var(--app-text-muted)]">
-                The interface stays restrained, but the activity layer stays fast and academically legible.
+                The interface stays restrained, while room counts, posts, and deadlines are pulled from live Convex data instead of placeholder marketing numbers.
               </p>
             </div>
           </section>

@@ -3,18 +3,25 @@
 import { useDeferredValue, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { Plus, Search, SearchX, Sparkles, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import { CreateRoomModal } from "@/components/rooms/CreateRoomModal";
 import { RoomCard } from "@/components/rooms/RoomCard";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import type { Room } from "@/types";
 
 export default function RoomsPage() {
+  const router = useRouter();
   const user = useCurrentUser();
   const publicRooms = useQuery(api.rooms.getPublicRooms, { batch: user?.batch });
   const joinRoom = useMutation(api.rooms.join);
   const [showModal, setShowModal] = useState(false);
   const [query, setQuery] = useState("");
+  const [joinCode, setJoinCode] = useState("");
+  const [joinStatus, setJoinStatus] = useState("");
+  const [isJoiningByCode, setIsJoiningByCode] = useState(false);
+  const [joiningRoomId, setJoiningRoomId] = useState<string | null>(null);
   const deferredQuery = useDeferredValue(query);
 
   const filteredRooms = useMemo(() => {
@@ -30,6 +37,38 @@ export default function RoomsPage() {
         .some((value) => value!.toLowerCase().includes(normalized))
     );
   }, [publicRooms, deferredQuery]);
+
+  async function handleJoinPublicRoom(roomId: Id<"rooms">) {
+    setJoiningRoomId(roomId);
+    setJoinStatus("");
+    try {
+      const joinedRoomId = await joinRoom({ roomId });
+      router.push(`/rooms/${joinedRoomId}`);
+    } catch (error) {
+      setJoinStatus(error instanceof Error ? error.message : "Unable to join this room.");
+    } finally {
+      setJoiningRoomId(null);
+    }
+  }
+
+  async function handleJoinByCode() {
+    if (!joinCode.trim() || isJoiningByCode) {
+      return;
+    }
+
+    setIsJoiningByCode(true);
+    setJoinStatus("");
+    try {
+      const joinedRoomId = await joinRoom({ joinCode });
+      setJoinCode("");
+      setJoinStatus("Private room joined successfully.");
+      router.push(`/rooms/${joinedRoomId}`);
+    } catch (error) {
+      setJoinStatus(error instanceof Error ? error.message : "Unable to join private room.");
+    } finally {
+      setIsJoiningByCode(false);
+    }
+  }
 
   return (
     <div className="app-scroll">
@@ -69,6 +108,35 @@ export default function RoomsPage() {
             </div>
           </div>
 
+          <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)]">
+            <div className="panel-chip rounded-2xl px-4 py-3 text-sm">
+              <Users size={14} />
+              Public rooms can be joined from the grid. Private rooms require a join code shared by the room owner or teacher.
+            </div>
+
+            <div className="rounded-[24px] border border-[var(--app-line)] bg-white/70 p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-[var(--app-text-muted)]">Join private room</p>
+              <div className="mt-3 flex flex-col gap-3 sm:flex-row xl:flex-col">
+                <input
+                  value={joinCode}
+                  onChange={(event) => setJoinCode(event.target.value.toUpperCase())}
+                  placeholder="Enter private room code"
+                  className="app-input"
+                  maxLength={12}
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleJoinByCode()}
+                  disabled={!joinCode.trim() || isJoiningByCode}
+                  className="app-button app-button-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isJoiningByCode ? "Joining..." : "Join by code"}
+                </button>
+              </div>
+              {joinStatus ? <p className="mt-3 text-sm text-[var(--app-text-soft)]">{joinStatus}</p> : null}
+            </div>
+          </div>
+
           <div className="mt-5 flex flex-wrap gap-3 text-sm text-[var(--app-text-soft)]">
             <div className="panel-chip rounded-2xl px-4 py-2">
               <Users size={14} />
@@ -105,10 +173,11 @@ export default function RoomsPage() {
               <div key={room._id} className="space-y-3">
                 <RoomCard room={room} />
                 <button
-                  onClick={() => void joinRoom({ roomId: room._id })}
-                  className="app-button app-button-secondary w-full"
+                  onClick={() => void handleJoinPublicRoom(room._id)}
+                  disabled={joiningRoomId === room._id}
+                  className="app-button app-button-secondary w-full disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Join room
+                  {joiningRoomId === room._id ? "Joining..." : "Join room"}
                 </button>
               </div>
             ))}

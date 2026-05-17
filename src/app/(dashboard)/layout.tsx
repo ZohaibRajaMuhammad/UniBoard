@@ -3,6 +3,7 @@ import nextDynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
 import { AiAssistant } from "@/components/ai/AiAssistant";
+import { MobileSidebar } from "@/components/layout/MobileSidebar";
 import { isClerkServerConfigured } from "@/lib/deployment";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +36,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <aside className="hidden h-full w-[18rem] shrink-0 lg:flex xl:w-[19.5rem]">
         <Sidebar />
       </aside>
-      <main id="main-content" className="flex min-w-0 flex-1 flex-col overflow-hidden pb-24 md:pb-0">
+      <MobileSidebar />
+      <main id="main-content" className="flex min-w-0 flex-1 flex-col overflow-hidden pb-28 md:pb-0">
         {children}
       </main>
       <MobileNav />
