@@ -5,6 +5,7 @@ import { Sparkles, X } from "lucide-react";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { useNotifier } from "@/components/providers/NotificationProvider";
 import { BATCHES, ROOM_COLORS } from "@/lib/constants";
 import { ROOM_ICON_OPTIONS } from "@/lib/ui-icons";
 
@@ -19,6 +20,7 @@ type CreateRoomForm = {
 };
 
 export function CreateRoomModal({ onClose }: { onClose: () => void }) {
+  const { notify } = useNotifier();
   const createRoom = useMutation(api.rooms.create);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState<CreateRoomForm>({
@@ -47,7 +49,21 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
         color: form.color,
         emoji: form.emoji
       });
+      notify({
+        title: "Room created",
+        message: `${form.name} is ready for collaboration.`,
+        tone: "success",
+        tag: "room-created"
+      });
       onClose();
+    } catch (error) {
+      notify({
+        title: "Room creation failed",
+        message: error instanceof Error ? error.message : "Unable to create the room.",
+        tone: "error",
+        priority: "high",
+        tag: "room-created-error"
+      });
     } finally {
       setIsSubmitting(false);
     }

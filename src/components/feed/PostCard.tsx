@@ -116,7 +116,7 @@ export function PostCard({
     <article
       id={`post-${post._id}`}
       className={cn(
-        "glass-panel rounded-[30px] p-5 sm:p-6",
+        "feed-post-card overflow-hidden p-5 sm:p-6",
         post.isPinned && "border-amber-400/30 shadow-[0_0_0_1px_rgba(245,158,11,0.08),0_25px_70px_rgba(4,8,18,0.48)]",
         highlighted && "border-brand-400/40 shadow-[0_0_0_1px_rgba(63,115,255,0.18),0_30px_80px_rgba(10,20,48,0.42)]"
       )}
@@ -230,7 +230,7 @@ export function PostCard({
           </div>
 
           {post.tags?.length ? (
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {post.tags.map((tag) => (
                 <span key={tag} className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-gray-300">
                   #{tag}
@@ -271,7 +271,7 @@ export function PostCard({
             </div>
           ) : (
             <>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-gray-200">
+              <p className="mt-4 whitespace-pre-wrap text-[15px] leading-8 text-[var(--app-text-soft)]">
                 {post.type === "poll" ? post.content.split("\n\nPoll options:\n")[0] : post.content}
               </p>
 
@@ -304,7 +304,7 @@ export function PostCard({
 
           {actionError ? <p className="mt-3 text-sm text-red-300">{actionError}</p> : null}
 
-          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
+          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
             <UpvoteButton postId={post._id} upvoteCount={post.upvoteCount} label={post.type === "poll" ? "Vote" : "Upvote"} />
             <button
               onClick={() => setShowComments((current) => !current)}

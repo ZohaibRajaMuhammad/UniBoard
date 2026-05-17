@@ -32,10 +32,10 @@ export function ReactionBar({ postId }: { postId: Id<"posts"> }) {
           key={reaction.emoji}
           onClick={() => void handleReact(reaction.emoji)}
           className={cn(
-            "flex items-center gap-1 rounded-full border px-2 py-1 text-xs transition-colors",
+            "app-action-button min-h-[2.1rem] gap-1 rounded-full px-2 py-1 text-xs",
             reaction.userIds.includes(currentUser?._id ?? "")
-              ? "border-brand-400/40 bg-brand-500/10 text-brand-100"
-              : "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10"
+              ? "app-action-button-active"
+              : ""
           )}
           >
           <ReactionIcon size={13} />
@@ -48,7 +48,7 @@ export function ReactionBar({ postId }: { postId: Id<"posts"> }) {
       <div className="relative">
         <button
           onClick={() => setShowPicker((current) => !current)}
-          className="rounded-xl p-2 text-gray-400 transition hover:bg-white/5 hover:text-white"
+          className="app-action-button min-h-[2.35rem] rounded-2xl px-2 py-2"
         >
           <Smile size={14} />
         </button>

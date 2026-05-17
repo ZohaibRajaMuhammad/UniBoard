@@ -149,7 +149,7 @@ export default function LeaderboardPage() {
 
 function FilterButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} className={active ? "app-filter-pill app-filter-pill-active" : "app-filter-pill"}>
+    <button onClick={onClick} className={active ? "app-segmented-button app-segmented-button-active" : "app-segmented-button"}>
       {active ? <Sparkles size={12} /> : null}
       {label}
     </button>

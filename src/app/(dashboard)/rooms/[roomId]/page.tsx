@@ -9,6 +9,7 @@ import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 import { PinnedPostsBanner } from "@/components/feed/PinnedPostsBanner";
 import { PostComposer } from "@/components/feed/PostComposer";
+import { useNotifier } from "@/components/providers/NotificationProvider";
 import { PostFeed } from "@/components/feed/PostFeed";
 import { PresenceBar } from "@/components/rooms/PresenceBar";
 import { RoomHeader } from "@/components/rooms/RoomHeader";
@@ -23,6 +24,7 @@ import { cn } from "@/lib/utils";
 const FEED_FILTERS = ["all", ...POST_TYPES] as const;
 
 export default function RoomPage({ params }: { params: { roomId: string } }) {
+  const { notify } = useNotifier();
   const roomId = params.roomId as Id<"rooms">;
   const searchParams = useSearchParams();
   const currentUser = useCurrentUser();
@@ -72,18 +74,36 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         if (!cancelled) {
           setSummary(payload);
           setSummaryError("");
+          if (payload.meta.mode === "fallback") {
+            notify({
+              title: "Room summary updated",
+              message: "The summary was generated using deterministic room context.",
+              tone: "warning",
+              desktop: false,
+              priority: "low",
+              tag: "room-summary-fallback"
+            });
+          }
         }
       })
       .catch((error) => {
         if (!cancelled) {
-          setSummaryError(error instanceof Error ? error.message : "Unable to load room summary.");
+          const message = error instanceof Error ? error.message : "Unable to load room summary.";
+          setSummaryError(message);
+          notify({
+            title: "Room summary failed",
+            message,
+            tone: "error",
+            priority: "high",
+            tag: "room-summary-error"
+          });
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [room?.aiEnabled, roomId]);
+  }, [notify, room?.aiEnabled, roomId]);
 
   const roomStats = useMemo(() => {
     if (!room) {
@@ -125,10 +145,18 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
             </div>
 
             {room.aiEnabled ? (
-              <div className="mt-4 rounded-[24px] border border-[rgba(154,140,255,0.16)] bg-[linear-gradient(180deg,rgba(255,255,255,0.8),rgba(245,241,255,0.9))] p-4 shadow-[0_18px_36px_rgba(112,88,214,0.08)]">
-                <div className="flex items-center gap-2">
-                  <Sparkles size={15} className="text-[var(--app-violet)]" />
-                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-soft)]">AI room summary</p>
+              <div className="mt-4 rounded-[28px] border border-[rgba(109,140,255,0.18)] bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(246,248,252,0.88))] p-5 shadow-[0_18px_36px_rgba(79,96,151,0.08)] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))]">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Sparkles size={15} className="text-[var(--app-violet)]" />
+                      <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-soft)]">AI room summary</p>
+                    </div>
+                    <h3 className="mt-2 text-lg font-semibold text-[var(--app-text)] dark:text-white">Live room intelligence</h3>
+                  </div>
+                  <span className={summary?.meta.mode === "fallback" ? "app-chip border-amber-400/20 bg-amber-500/10 text-amber-100" : "app-chip"}>
+                    {summary?.meta.mode === "fallback" ? "Deterministic mode" : "AI grounded"}
+                  </span>
                 </div>
                 {summaryError ? (
                   <p className="mt-3 text-sm text-red-200">{summaryError}</p>
@@ -136,12 +164,22 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                   <div className="mt-3 h-16 animate-pulse rounded-2xl bg-white/5" />
                 ) : (
                   <>
-                    <p className="mt-3 text-sm leading-7 text-[var(--app-text)]">{summary.data?.summary}</p>
+                    <p className="mt-4 text-sm leading-7 text-[var(--app-text)] dark:text-[var(--app-text-soft)]">{summary.data?.summary}</p>
                     {(summary.data?.keyPoints?.length ?? 0) > 0 ? (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {summary.data?.keyPoints.slice(0, 4).map((item) => (
                           <span key={item} className="panel-chip rounded-2xl px-3 py-2 text-xs">{item}</span>
                         ))}
+                      </div>
+                    ) : null}
+                    {(summary.data?.openQuestions?.length ?? 0) > 0 ? (
+                      <div className="mt-4 rounded-[22px] border border-[var(--app-line)] bg-white/50 p-4 dark:bg-white/[0.03]">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Open questions</p>
+                        <div className="mt-3 space-y-2">
+                          {summary.data?.openQuestions.slice(0, 3).map((item) => (
+                            <p key={item} className="text-sm leading-6 text-[var(--app-text-soft)]">• {item}</p>
+                          ))}
+                        </div>
                       </div>
                     ) : null}
                   </>
@@ -160,10 +198,10 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     type="button"
                     onClick={() => setTeacherPanelOpen((current) => !current)}
                     className={cn(
-                      "inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition",
+                      "app-segmented-button shrink-0",
                       teacherPanelOpen
-                        ? "border-[rgba(49,92,243,0.18)] bg-[rgba(49,92,243,0.12)] text-[var(--app-primary-strong)]"
-                        : "border-[var(--app-line)] bg-white/70 text-[var(--app-text-soft)] hover:border-[var(--app-line-strong)] hover:bg-white"
+                        ? "app-segmented-button-active"
+                        : ""
                     )}
                     aria-expanded={teacherPanelOpen}
                     aria-controls="teacher-panel"
@@ -176,7 +214,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                 <button
                   type="button"
                   onClick={() => setComposerOpen(true)}
-                  className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.12)] px-4 py-2 text-sm font-medium text-[var(--app-text-soft)] transition hover:bg-[rgba(77,117,255,0.18)]"
+                  className="app-segmented-button app-segmented-button-active shrink-0"
                 >
                   <PlusSquare size={14} />
                   Compose
@@ -188,10 +226,10 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                       key={filter}
                       onClick={() => setActiveFilter(filter)}
                       className={cn(
-                        "shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition",
+                        "app-segmented-button shrink-0",
                         activeFilter === filter
-                          ? "border-[rgba(109,140,255,0.28)] bg-[rgba(77,117,255,0.14)] text-[var(--app-primary-strong)]"
-                          : "border-[var(--app-line)] bg-white/70 text-[var(--app-text-soft)] hover:bg-white"
+                          ? "app-segmented-button-active"
+                          : ""
                       )}
                     >
                       <span className="inline-flex items-center gap-2">

@@ -2,6 +2,7 @@
 
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Bot, Loader2, Send, Sparkles, X } from "lucide-react";
+import { useNotifier } from "@/components/providers/NotificationProvider";
 import { postAi } from "@/lib/ai/client";
 import type { AiEnvelope, AssistantReply } from "@/lib/ai/contracts";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ const quickActions = [
 ];
 
 export function AiAssistant() {
+  const { notify, permission, requestPermission } = useNotifier();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -38,6 +40,12 @@ export function AiAssistant() {
   useEffect(() => {
     scrollerRef.current?.scrollTo({ top: scrollerRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, open]);
+
+  useEffect(() => {
+    if (open && permission === "default") {
+      void requestPermission();
+    }
+  }, [open, permission, requestPermission]);
 
   async function sendMessage(message: string) {
     const trimmed = message.trim();
@@ -70,12 +78,26 @@ export function AiAssistant() {
           degraded: payload.meta.mode !== "openai"
         }
       ]);
+      notify({
+        title: "AI response ready",
+        message: reply,
+        tone: "ai",
+        priority: "normal",
+        tag: "assistant-reply"
+      });
       setStatus("idle");
     } catch (requestError) {
       const messageText =
         requestError instanceof Error ? requestError.message : "The AI assistant is temporarily unavailable.";
       setError(messageText);
       setStatus(messageText.toLowerCase().includes("timeout") ? "timeout" : "unavailable");
+      notify({
+        title: "AI assistant unavailable",
+        message: messageText,
+        tone: "error",
+        priority: "high",
+        tag: "assistant-error"
+      });
     }
   }
 

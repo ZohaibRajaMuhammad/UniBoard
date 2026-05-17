@@ -5,6 +5,7 @@ import { ChevronDown, Eye, EyeOff, Plus, Send, Sparkles, Tags } from "lucide-rea
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
+import { useNotifier } from "@/components/providers/NotificationProvider";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { POST_TYPE_CONFIG, POST_TYPES, ROOM_MENTION_AI } from "@/lib/constants";
 import { postAi } from "@/lib/ai/client";
@@ -20,6 +21,7 @@ const postTypes = POST_TYPES.map((type) => ({
 }));
 
 export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onSubmitted?: () => void }) {
+  const { notify } = useNotifier();
   const user = useCurrentUser();
   const room = useQuery(api.rooms.getById, { roomId });
   const members = useQuery(api.rooms.getMembers, { roomId });
@@ -163,7 +165,14 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
               postId,
               content: formatAssistantComment(payload.data?.reply ?? "I could not ground a reliable answer for that mention.", payload.data?.suggestions)
             })
-          )
+          ).then(() => {
+            notify({
+              title: "AI mention answered",
+              message: "UniBoard AI replied inside the discussion thread.",
+              tone: "ai",
+              tag: "post-ai-reply"
+            });
+          })
           .catch(() => null);
       }
 
@@ -176,9 +185,23 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
       setTagInput("");
       setIsAnonymous(false);
       setShowTypes(false);
+      notify({
+        title: "Post published",
+        message: `${selectedType.label} shared successfully.`,
+        tone: "success",
+        tag: "post-published"
+      });
       onSubmitted?.();
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Unable to create post.");
+      const message = error instanceof Error ? error.message : "Unable to create post.";
+      setSubmitError(message);
+      notify({
+        title: "Post failed",
+        message,
+        tone: "error",
+        priority: "high",
+        tag: "post-published-error"
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -203,8 +226,23 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
         setTagInput(payload.data.tags.join(", "));
       }
       setAiDraftStatus(payload.data?.disclaimer ?? "AI draft inserted.");
+      notify({
+        title: "AI draft ready",
+        message: "Draft content was inserted into the composer.",
+        tone: "ai",
+        desktop: false,
+        tag: "post-ai-draft"
+      });
     } catch (error) {
-      setAiDraftStatus(error instanceof Error ? error.message : "AI draft suggestion is unavailable.");
+      const message = error instanceof Error ? error.message : "AI draft suggestion is unavailable.";
+      setAiDraftStatus(message);
+      notify({
+        title: "AI draft unavailable",
+        message,
+        tone: "error",
+        priority: "high",
+        tag: "post-ai-draft-error"
+      });
     } finally {
       setIsAiDrafting(false);
     }

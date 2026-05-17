@@ -46,8 +46,8 @@ export function UpvoteButton({
     <button
       onClick={() => void handleVote()}
       className={cn(
-        "inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium transition",
-        hasVoted ? "border-brand-400/40 bg-brand-500/10 text-brand-100" : "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10"
+        "app-action-button",
+        hasVoted ? "app-action-button-active" : ""
       )}
     >
       <ArrowUp size={14} />

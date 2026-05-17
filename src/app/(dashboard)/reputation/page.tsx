@@ -111,12 +111,14 @@ export default function ReputationPage() {
                         key={achievement.label}
                         className={
                           achievement.unlocked
-                            ? "rounded-[24px] border border-emerald-400/25 bg-emerald-500/10 p-4 text-emerald-100"
+                            ? "rounded-[24px] border border-emerald-400/25 bg-emerald-500/12 p-4 text-emerald-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
                             : "rounded-[24px] border border-[var(--app-line)] bg-white/5 p-4 text-[var(--app-text-muted)]"
                         }
                       >
-                        <p className="font-medium">{achievement.label}</p>
-                        <p className="mt-2 text-xs uppercase tracking-[0.18em]">{achievement.unlocked ? "Unlocked" : "Locked"}</p>
+                        <p className={achievement.unlocked ? "font-semibold text-emerald-50" : "font-medium text-white"}>{achievement.label}</p>
+                        <p className={achievement.unlocked ? "mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100/90" : "mt-2 text-xs uppercase tracking-[0.18em] text-[var(--app-text-muted)]"}>
+                          {achievement.unlocked ? "Unlocked" : "Locked"}
+                        </p>
                       </div>
                     ))}
                   </div>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/providers/ConvexClientProvider";
+import { NotificationProvider } from "@/components/providers/NotificationProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
 import { appEnv, isAppConfigured } from "@/lib/deployment";
@@ -27,7 +28,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {isAppConfigured ? (
           <ClerkProvider publishableKey={appEnv.clerkPublishableKey}>
             <ThemeProvider>
-              <ConvexClientProvider>{children}</ConvexClientProvider>
+              <NotificationProvider>
+                <ConvexClientProvider>{children}</ConvexClientProvider>
+              </NotificationProvider>
             </ThemeProvider>
           </ClerkProvider>
         ) : (

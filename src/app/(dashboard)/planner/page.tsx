@@ -2,16 +2,19 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { CalendarDays, Download, Plus, RefreshCcw } from "lucide-react";
+import { CalendarDays, ChevronDown, Download, FileSpreadsheet, FileText, Plus, RefreshCcw } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Doc, Id } from "../../../../convex/_generated/dataModel";
+import { useNotifier } from "@/components/providers/NotificationProvider";
 import { getAi } from "@/lib/ai/client";
 import type { AiEnvelope, StudyPlan } from "@/lib/ai/contracts";
+import { buildPlannerDoc, buildPlannerWorkbook, downloadBlob } from "@/lib/planner-export";
 import { formatDeadline } from "@/lib/utils";
 
 type CalendarView = "month" | "week";
 
 export default function PlannerPage() {
+  const { notify } = useNotifier();
   const planner = useQuery(api.planner.getSnapshot);
   const rooms = useQuery(api.rooms.getMyRooms);
   const createManualDeadline = useMutation(api.planner.createManualDeadline);
@@ -22,6 +25,7 @@ export default function PlannerPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReplanning, setIsReplanning] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [status, setStatus] = useState("");
   const [studyPlan, setStudyPlan] = useState<AiEnvelope<StudyPlan> | null>(null);
   const [studyPlanError, setStudyPlanError] = useState("");
@@ -47,17 +51,35 @@ export default function PlannerPage() {
         if (!cancelled) {
           setStudyPlan(payload);
           setStudyPlanError("");
+          if (payload.meta.mode === "fallback") {
+            notify({
+              title: "Planner AI degraded",
+              message: "Study plan data loaded in fallback mode.",
+              tone: "warning",
+              desktop: false,
+              priority: "low",
+              tag: "planner-ai-fallback"
+            });
+          }
         }
       })
       .catch((error) => {
         if (!cancelled) {
-          setStudyPlanError(error instanceof Error ? error.message : "Unable to load the AI study planner.");
+          const message = error instanceof Error ? error.message : "Unable to load the AI study planner.";
+          setStudyPlanError(message);
+          notify({
+            title: "AI planner unavailable",
+            message,
+            tone: "error",
+            priority: "high",
+            tag: "planner-ai-error"
+          });
         }
       });
     return () => {
       cancelled = true;
     };
-  }, [planner?.generatedAt]);
+  }, [notify, planner?.generatedAt]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -78,30 +100,78 @@ export default function PlannerPage() {
       setDraft({ title: "", dueDate: "", estimatedMinutes: "120", roomId: "", notes: "" });
       setShowForm(false);
       setStatus("Manual deadline added.");
+      notify({
+        title: "Deadline added",
+        message: "Manual planner deadline created successfully.",
+        tone: "success",
+        tag: "planner-deadline-added"
+      });
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Unable to add deadline.");
+      const message = error instanceof Error ? error.message : "Unable to add deadline.";
+      setStatus(message);
+      notify({
+        title: "Deadline creation failed",
+        message,
+        tone: "error",
+        priority: "high",
+        tag: "planner-deadline-error"
+      });
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function handleExport() {
+  async function handleExport(format: "xlsx" | "docx") {
+    if (!planner) {
+      return;
+    }
     setIsExporting(true);
     setStatus("");
     try {
       const result = await exportCalendar({});
-      const blob = new Blob([result.content], { type: "text/calendar;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = result.filename;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      URL.revokeObjectURL(url);
-      setStatus("Planner calendar exported.");
+      const exportItems = planner.items.map((item) => ({
+        id: item.id,
+        title: item.title,
+        roomName: item.roomName,
+        dueDate: item.dueDate,
+        riskScore: item.riskScore,
+        urgency: item.urgency,
+        explanation: item.explanation,
+        estimatedMinutes: item.estimatedMinutes
+      }));
+      const sessions = planner.sessions.map((session) => ({
+        id: session.id,
+        title: session.title,
+        startAt: session.startAt,
+        endAt: session.endAt,
+        urgency: session.urgency as "low" | "medium" | "high",
+        reasoning: session.reasoning
+      }));
+      const officeBlob =
+        format === "xlsx"
+          ? await buildPlannerWorkbook(exportItems, sessions)
+          : await buildPlannerDoc(exportItems, sessions);
+      const filenameDate = new Date(planner.generatedAt).toISOString().slice(0, 10);
+      downloadBlob(officeBlob, `uniboard-planner-${filenameDate}.${format}`);
+      downloadBlob(new Blob([result.content], { type: "text/calendar;charset=utf-8" }), result.filename);
+      setStatus(format === "xlsx" ? "Planner exported to Excel and calendar." : "Planner exported to Word and calendar.");
+      notify({
+        title: "Planner exported",
+        message: format === "xlsx" ? "Excel and calendar files downloaded." : "Word and calendar files downloaded.",
+        tone: "success",
+        tag: `planner-export-${format}`
+      });
+      setShowExportMenu(false);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Unable to export calendar.");
+      const message = error instanceof Error ? error.message : "Unable to export planner files.";
+      setStatus(message);
+      notify({
+        title: "Planner export failed",
+        message,
+        tone: "error",
+        priority: "high",
+        tag: "planner-export-error"
+      });
     } finally {
       setIsExporting(false);
     }
@@ -113,8 +183,22 @@ export default function PlannerPage() {
     try {
       await replan({});
       setStatus("Planner sessions were recalculated.");
+      notify({
+        title: "Planner recalculated",
+        message: "Study sessions were refreshed successfully.",
+        tone: "success",
+        tag: "planner-replan"
+      });
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Unable to refresh the plan.");
+      const message = error instanceof Error ? error.message : "Unable to refresh the plan.";
+      setStatus(message);
+      notify({
+        title: "Planner refresh failed",
+        message,
+        tone: "error",
+        priority: "high",
+        tag: "planner-replan-error"
+      });
     } finally {
       setIsReplanning(false);
     }
@@ -136,15 +220,30 @@ export default function PlannerPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => void handleExport()}
-                disabled={isExporting}
-                className="app-button app-button-secondary"
-              >
-                <Download size={14} />
-                {isExporting ? "Exporting..." : "Export"}
-              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowExportMenu((current) => !current)}
+                  disabled={isExporting}
+                  className="app-button app-button-secondary"
+                >
+                  <Download size={14} />
+                  {isExporting ? "Exporting..." : "Export"}
+                  <ChevronDown size={14} />
+                </button>
+                {showExportMenu ? (
+                  <div className="glass-panel absolute right-0 top-[calc(100%+0.75rem)] z-20 min-w-[16rem] rounded-[24px] p-2 shadow-2xl">
+                    <button type="button" onClick={() => void handleExport("xlsx")} className="app-action-button w-full justify-start border-transparent bg-transparent text-left">
+                      <FileSpreadsheet size={15} />
+                      Export Excel (.xlsx)
+                    </button>
+                    <button type="button" onClick={() => void handleExport("docx")} className="app-action-button mt-1 w-full justify-start border-transparent bg-transparent text-left">
+                      <FileText size={15} />
+                      Export Word (.docx)
+                    </button>
+                  </div>
+                ) : null}
+              </div>
               <button type="button" onClick={() => void handleReplan()} disabled={isReplanning} className="app-button app-button-secondary">
                 <RefreshCcw size={14} />
                 {isReplanning ? "Re-planning..." : "Re-plan"}
@@ -188,7 +287,7 @@ export default function PlannerPage() {
                         key={value}
                         type="button"
                         onClick={() => setCalendarView(value)}
-                        className={calendarView === value ? "rounded-2xl bg-[var(--app-primary)] px-4 py-2 text-sm font-medium text-white" : "rounded-2xl border border-[var(--app-line)] bg-white/5 px-4 py-2 text-sm text-[var(--app-text-soft)]"}
+                        className={calendarView === value ? "app-segmented-button app-segmented-button-active" : "app-segmented-button"}
                       >
                         {value}
                       </button>

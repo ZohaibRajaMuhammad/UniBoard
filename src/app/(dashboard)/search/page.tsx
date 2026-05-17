@@ -13,7 +13,8 @@ export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const deferredQuery = useDeferredValue(searchQuery);
   const results = useQuery(api.posts.search, { searchQuery: deferredQuery });
-  const suggestions = useQuery(api.posts.getSearchSuggestions) ?? [];
+  const rawSuggestions = useQuery(api.posts.getSearchSuggestions);
+  const suggestions = Array.isArray(rawSuggestions) ? rawSuggestions : [];
   const enrichedResults = useMemo(() => {
     const query = deferredQuery.trim().toLowerCase();
     if (!Array.isArray(results)) {
@@ -22,8 +23,8 @@ export default function SearchPage() {
 
     return (results as Array<FeedPost & { room?: Room | null }>).map((result) => {
       const title = (result.deadlineTitle || result.resourceTitle || "").toLowerCase();
-      const body = result.content.toLowerCase();
-      const tagLine = (result.tags ?? []).join(" ").toLowerCase();
+      const body = (result.content ?? "").toLowerCase();
+      const tagLine = Array.isArray(result.tags) ? result.tags.join(" ").toLowerCase() : "";
 
       const relevance = title.includes(query)
         ? "Title match"
@@ -34,9 +35,9 @@ export default function SearchPage() {
       return {
         ...result,
         relevance,
-        snippet: buildSnippet(result.content, query)
+        snippet: buildSnippet(result.content ?? "", query)
       };
-    });
+    }).filter((result) => typeof result._id === "string" && typeof result.roomId === "string");
   }, [deferredQuery, results]);
 
   return (
@@ -116,7 +117,7 @@ export default function SearchPage() {
                     </div>
                     <p className="mt-3 text-base font-semibold text-white">{result.deadlineTitle || result.resourceTitle || "Search result"}</p>
                     <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">{result.snippet}</p>
-                    <p className="mt-3 text-xs text-[var(--app-text-muted)]">by {result.author.name}</p>
+                    <p className="mt-3 text-xs text-[var(--app-text-muted)]">by {result.author?.name ?? "Unknown author"}</p>
                   </div>
                   <div className="shrink-0 text-right">
                     <span className="text-xs text-[var(--app-text-muted)]">{formatRelativeTime(result.createdAt)}</span>

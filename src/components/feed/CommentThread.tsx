@@ -9,6 +9,7 @@ import { postAi } from "@/lib/ai/client";
 import type { AssistantReply } from "@/lib/ai/contracts";
 import { buildAssistantPrompt, containsAiMention, formatAssistantComment } from "@/lib/ai/mentions";
 import { ROOM_MENTION_AI } from "@/lib/constants";
+import { useNotifier } from "@/components/providers/NotificationProvider";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
@@ -30,6 +31,7 @@ type Comment = {
 };
 
 export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId: Id<"rooms"> }) {
+  const { notify } = useNotifier();
   const comments = useQuery(api.comments.getByPost, { postId }) as Comment[] | undefined;
   const post = useQuery(api.posts.getById, { postId });
   const currentUser = useQuery(api.users.getCurrentUser);
@@ -99,15 +101,37 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
               postId,
               content: formatAssistantComment(payload.data?.reply ?? "I could not ground a reliable answer for that mention.", payload.data?.suggestions)
             })
-          )
+          ).then(() => {
+            notify({
+              title: "AI replied",
+              message: "UniBoard AI added a follow-up comment.",
+              tone: "ai",
+              tag: "comment-ai-reply"
+            });
+          })
           .catch(() => null);
       }
 
       setContent("");
       setReplyTo(undefined);
       setIsAnonymous(false);
+      notify({
+        title: "Comment posted",
+        message: "Your discussion update is now live.",
+        tone: "success",
+        desktop: false,
+        tag: "comment-posted"
+      });
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Unable to comment.");
+      const message = error instanceof Error ? error.message : "Unable to comment.";
+      setSubmitError(message);
+      notify({
+        title: "Comment failed",
+        message,
+        tone: "error",
+        priority: "high",
+        tag: "comment-posted-error"
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -121,7 +145,7 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
   }
 
   return (
-    <div className="rounded-[24px] border border-white/10 bg-black/15 p-4">
+    <div className="rounded-[28px] border border-[var(--app-line)] bg-white/[0.03] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
       <div className="mb-4 flex items-center gap-2 text-sm font-medium text-white">
         <MessageSquare size={15} />
         Discussion
@@ -164,7 +188,7 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
         )}
       </div>
 
-      <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3">
+      <div className="mt-4 rounded-[24px] border border-[var(--app-line)] bg-white/[0.04] p-4">
         {replyTo ? <p className="mb-2 text-xs text-brand-200">Replying to a comment</p> : null}
 
         <div className="mb-3 flex flex-wrap gap-2">
@@ -177,7 +201,7 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
               key={mention}
               type="button"
               onClick={() => insertMention(mention)}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-200 transition hover:bg-white/10"
+            className="app-action-button min-h-[2rem] rounded-full px-3 py-1 text-xs"
             >
               {mention}
             </button>
@@ -199,10 +223,7 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
         <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             onClick={() => setIsAnonymous((current) => !current)}
-            className={cn(
-              "rounded-full border px-3 py-1 text-xs transition",
-              isAnonymous ? "border-brand-400/40 bg-brand-500/10 text-brand-100" : "border-white/10 text-gray-400"
-            )}
+            className={cn("app-action-button min-h-[2rem] rounded-full px-3 py-1 text-xs", isAnonymous ? "app-action-button-active" : "")}
           >
             {isAnonymous ? "Anonymous" : "Visible"}
           </button>
@@ -215,7 +236,7 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
             <button
               onClick={() => void handleSubmit()}
               disabled={!content.trim() || isSubmitting}
-              className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-brand-400 disabled:opacity-60"
+              className="app-button app-button-primary min-h-[2.4rem] rounded-2xl px-3 py-2 text-xs disabled:opacity-60"
             >
               <Send size={12} />
               {isSubmitting ? "Posting..." : "Comment"}
@@ -241,7 +262,7 @@ function CommentCard({
   onReply?: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+    <div className="rounded-[22px] border border-[var(--app-line)] bg-white/[0.03] p-4">
       <div className="flex items-start gap-3">
         <ProfileAvatar name={comment.author.name} imageUrl={comment.author.imageUrl} size="sm" />
         <div className="min-w-0 flex-1">
