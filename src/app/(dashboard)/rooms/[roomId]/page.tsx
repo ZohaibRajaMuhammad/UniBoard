@@ -108,8 +108,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   }
 
   return (
-    <div className="relative flex min-h-0 flex-1 overflow-hidden">
-      <div className="grid min-h-0 flex-1 grid-rows-[auto_auto_auto_auto_minmax(0,1fr)] overflow-hidden">
+    <div className="relative flex h-full min-h-0 flex-1 overflow-hidden">
+      <div className="grid h-full min-h-0 flex-1 grid-rows-[auto_auto_auto_auto_minmax(0,1fr)] overflow-hidden">
         <RoomHeader room={room} />
         <PresenceBar roomId={roomId} />
 
@@ -209,7 +209,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         {pinnedPosts && pinnedPosts.length > 0 ? <PinnedPostsBanner posts={pinnedPosts} /> : null}
 
         <div className="flex min-h-0 flex-col overflow-hidden">
-          <div className="app-scroll min-h-0 flex-1 px-1">
+          <div className="app-scroll min-h-0 flex-1 px-1 pb-5">
             <PostFeed
               posts={posts}
               roomId={roomId}

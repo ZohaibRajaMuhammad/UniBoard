@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import { useMutation, useQuery } from "convex/react";
 import {
   Bookmark,
@@ -23,7 +22,8 @@ import { DeadlineCountdown } from "./DeadlineCountdown";
 import type { FeedPost } from "./PostFeed";
 import { ReactionBar } from "./ReactionBar";
 import { UpvoteButton } from "./UpvoteButton";
-import { cn, formatRelativeTime, initials } from "@/lib/utils";
+import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
+import { cn, formatRelativeTime } from "@/lib/utils";
 
 const typeConfig: Record<string, string> = {
   note: "bg-blue-500/10 text-blue-200",
@@ -122,17 +122,7 @@ export function PostCard({
       )}
     >
       <div className="flex items-start gap-4 sm:gap-5">
-        <div className="app-surface-muted flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white">
-          {post.author.imageUrl ? (
-            <Image
-              src={post.author.imageUrl}
-              alt={`${post.author.name} avatar`}
-              width={44}
-              height={44}
-              className="h-11 w-11 rounded-full object-cover"
-            />
-          ) : initials(post.author.name)}
-        </div>
+        <ProfileAvatar name={post.author.name} imageUrl={post.author.imageUrl} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-semibold text-white">{post.author.name}</p>

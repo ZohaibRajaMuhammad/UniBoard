@@ -1,7 +1,6 @@
 "use client";
 
 import { KeyboardEvent, useMemo, useState } from "react";
-import Image from "next/image";
 import { useMutation, useQuery } from "convex/react";
 import { MessageSquare, Send, Sparkles, Trash2 } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
@@ -10,7 +9,8 @@ import { postAi } from "@/lib/ai/client";
 import type { AssistantReply } from "@/lib/ai/contracts";
 import { buildAssistantPrompt, containsAiMention, formatAssistantComment } from "@/lib/ai/mentions";
 import { ROOM_MENTION_AI } from "@/lib/constants";
-import { cn, formatRelativeTime, initials } from "@/lib/utils";
+import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
+import { cn, formatRelativeTime } from "@/lib/utils";
 
 type Comment = {
   _id: Id<"comments">;
@@ -243,19 +243,7 @@ function CommentCard({
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-xs font-semibold text-white">
-          {comment.author.imageUrl ? (
-            <Image
-              src={comment.author.imageUrl}
-              alt={`${comment.author.name} avatar`}
-              width={36}
-              height={36}
-              className="h-9 w-9 rounded-full object-cover"
-            />
-          ) : (
-            initials(comment.author.name)
-          )}
-        </div>
+        <ProfileAvatar name={comment.author.name} imageUrl={comment.author.imageUrl} size="sm" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-semibold text-white">{comment.author.name}</p>

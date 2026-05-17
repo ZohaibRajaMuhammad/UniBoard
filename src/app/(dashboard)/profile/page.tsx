@@ -5,6 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import { BookOpenCheck, UserCircle2 } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { PostCard } from "@/components/feed/PostCard";
+import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export default function ProfilePage() {
@@ -59,8 +60,11 @@ export default function ProfilePage() {
             <div>
               <p className="section-eyebrow text-[var(--app-primary-strong)]">Profile</p>
               <div className="mt-3 flex items-center gap-4">
-                <div className="app-surface-muted flex h-16 w-16 items-center justify-center rounded-full text-[var(--app-primary-strong)]">
-                  <UserCircle2 size={34} />
+                <div className="relative">
+                  <ProfileAvatar name={user?.name ?? "UniBoard User"} imageUrl={user?.imageUrl ?? null} size="lg" />
+                  <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border border-[var(--app-line)] bg-[var(--app-panel-strong)] text-[var(--app-primary-strong)] shadow-[0_10px_24px_rgba(9,16,28,0.2)]">
+                    <UserCircle2 size={14} />
+                  </div>
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold text-white">{user?.name ?? "Loading profile..."}</h1>

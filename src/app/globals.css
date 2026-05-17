@@ -117,6 +117,12 @@ body {
   color: var(--app-text);
 }
 
+html:has(.app-shell),
+body:has(.app-shell) {
+  height: 100dvh;
+  overflow: hidden;
+}
+
 img,
 video,
 svg,
@@ -633,6 +639,16 @@ h6 {
 
 .sidebar-theme-surface {
   min-height: 0;
+}
+
+.icon-frame {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--app-line);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--app-text-soft);
 }
 
 @media (max-width: 1023px) {

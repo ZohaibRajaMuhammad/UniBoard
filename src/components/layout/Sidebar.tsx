@@ -23,6 +23,7 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { UniBoardLogo } from "@/components/brand/UniBoardLogo";
 import { CreateRoomModal } from "@/components/rooms/CreateRoomModal";
+import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getRoomIcon } from "@/lib/ui-icons";
 import { cn } from "@/lib/utils";
@@ -63,7 +64,7 @@ const navGroups: ReadonlyArray<{ label: string; items: ReadonlyArray<SidebarNavI
 ];
 
 export function Sidebar() {
-  useCurrentUser();
+  const currentUser = useCurrentUser();
   const pathname = usePathname();
   const rooms = useQuery(api.rooms.getMyRooms);
   const unreadNotifications = useQuery(api.notifications.getUnreadNotificationCount);
@@ -152,7 +153,15 @@ export function Sidebar() {
 
       <div className="border-t border-[var(--app-line)] px-5 py-4">
         <div className="flex items-center gap-3 rounded-[1.25rem] border border-[var(--app-line)] bg-white/[0.03] p-3">
-          <UserButton afterSignOutUrl="/" />
+          <div className="relative">
+            <ProfileAvatar
+              name={currentUser?.name ?? "UniBoard User"}
+              imageUrl={currentUser?.imageUrl ?? null}
+            />
+            <div className="absolute -bottom-0.5 -right-0.5 rounded-full border border-[var(--app-line)] bg-[var(--app-panel-strong)] p-0.5">
+              <UserButton afterSignOutUrl="/" />
+            </div>
+          </div>
           <div className="min-w-0 flex-1">
             <Link href="/profile" className="truncate text-sm font-semibold text-white transition hover:text-[var(--app-primary-strong)]">
               Your profile
@@ -160,11 +169,11 @@ export function Sidebar() {
             <p className="truncate text-xs text-[var(--app-text-muted)]">Personal workspace controls</p>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/profile" className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-soft)] transition hover:bg-white/10" aria-label="Open profile">
+            <Link href="/profile" className="icon-frame touch-target transition hover:bg-white/10 hover:text-white" aria-label="Open profile">
               <Crown size={16} />
             </Link>
-            <Link href="/settings" className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-soft)] transition hover:bg-white/10" aria-label="Open settings">
-            <Settings size={16} />
+            <Link href="/settings" className="icon-frame touch-target transition hover:bg-white/10 hover:text-white" aria-label="Open settings">
+              <Settings size={16} />
             </Link>
           </div>
         </div>
@@ -228,8 +237,8 @@ function SidebarRoomItem({
           ? "border-[rgba(213,178,122,0.2)] bg-[rgba(213,178,122,0.08)] text-white"
           : "border-transparent text-[var(--app-text-muted)] hover:bg-white/5 hover:text-white"
       )}
-    >
-      <span className="flex h-8 w-8 items-center justify-center rounded-2xl border border-[var(--app-line)] bg-white/5 text-[var(--app-primary-strong)]">
+      >
+      <span className="icon-frame h-8 w-8 rounded-2xl text-[var(--app-primary-strong)]">
         <RoomIcon size={15} />
       </span>
       <span className="min-w-0 flex-1 truncate">{name}</span>

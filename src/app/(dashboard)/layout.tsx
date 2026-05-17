@@ -32,12 +32,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="app-shell flex h-[100dvh] overflow-hidden">
+    <div className="app-shell flex h-[100dvh] max-h-[100dvh] overflow-hidden">
       <aside className="hidden h-full w-[18rem] shrink-0 lg:flex xl:w-[19.5rem]">
         <Sidebar />
       </aside>
       <MobileSidebar />
-      <main id="main-content" className="flex min-w-0 flex-1 flex-col overflow-hidden pb-28 md:pb-0">
+      <main id="main-content" className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden pb-28 md:pb-0">
         {children}
       </main>
       <MobileNav />

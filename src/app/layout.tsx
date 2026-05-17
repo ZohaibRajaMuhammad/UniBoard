@@ -1,23 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { ConvexClientProvider } from "@/components/providers/ConvexClientProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
 import { appEnv, isAppConfigured } from "@/lib/deployment";
 import "./globals.css";
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap"
-});
-
-const jetBrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  display: "swap"
-});
 
 export const metadata: Metadata = {
   title: "UniBoard",
@@ -32,12 +19,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`theme-light ${plusJakarta.variable} ${jetBrainsMono.variable}`}
-      data-theme="light"
-      suppressHydrationWarning
-    >
+    <html lang="en" className="theme-light" data-theme="light" suppressHydrationWarning>
       <body className="min-h-screen font-sans antialiased">
         <a href="#main-content" className="skip-link">
           Skip to content
