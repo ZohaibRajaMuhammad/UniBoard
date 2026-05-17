@@ -19,7 +19,7 @@ const postTypes = POST_TYPES.map((type) => ({
   emoji: POST_TYPE_CONFIG[type].emoji
 }));
 
-export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
+export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onSubmitted?: () => void }) {
   const user = useCurrentUser();
   const room = useQuery(api.rooms.getById, { roomId });
   const members = useQuery(api.rooms.getMembers, { roomId });
@@ -175,6 +175,8 @@ export function PostComposer({ roomId }: { roomId: Id<"rooms"> }) {
       setPollOptions("Option 1\nOption 2");
       setTagInput("");
       setIsAnonymous(false);
+      setShowTypes(false);
+      onSubmitted?.();
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Unable to create post.");
     } finally {

@@ -103,9 +103,9 @@ export function buildPublicAuthor(
     return {
       authorId: undefined,
       author: {
-        name: "Anonymous",
+        name: isAnonymous ? "Anonymous" : "UniBoard AI",
         imageUrl: null,
-        role: "student"
+        role: isAnonymous ? "student" : "admin"
       }
     };
   }

@@ -1,5 +1,6 @@
 "use client";
 
+import * as Dialog from "@radix-ui/react-dialog";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { PanelRightClose, PanelRightOpen, PlusSquare, ShieldCheck, Sparkles, X } from "lucide-react";
@@ -27,6 +28,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   const currentUser = useCurrentUser();
   const [activeFilter, setActiveFilter] = useState<(typeof FEED_FILTERS)[number]>("all");
   const [teacherPanelOpen, setTeacherPanelOpen] = useState(false);
+  const [composerOpen, setComposerOpen] = useState(false);
   const room = useQuery(api.rooms.getById, { roomId });
   const posts = useQuery(api.posts.getByRoom, {
     roomId,
@@ -172,7 +174,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                   </button>
                 ) : null}
                 <button
-                  onClick={() => document.getElementById("room-composer")?.scrollIntoView({ behavior: "smooth", block: "center" })}
+                  type="button"
+                  onClick={() => setComposerOpen(true)}
                   className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.12)] px-4 py-2 text-sm font-medium text-[var(--app-text-soft)] transition hover:bg-[rgba(77,117,255,0.18)]"
                 >
                   <PlusSquare size={14} />
@@ -214,15 +217,30 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
               highlightedPostId={highlightedPostId ?? undefined}
             />
           </div>
-
-          <div
-            id="room-composer"
-            className="shrink-0 border-t border-[var(--app-line)] bg-[color-mix(in_srgb,var(--app-panel-strong)_92%,white_8%)] shadow-[0_-18px_36px_rgba(42,58,94,0.08)] backdrop-blur"
-          >
-            <PostComposer roomId={roomId} />
-          </div>
         </div>
       </div>
+
+      <Dialog.Root open={composerOpen} onOpenChange={setComposerOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-40 bg-[rgba(7,17,26,0.36)] backdrop-blur-[2px]" />
+          <Dialog.Content className="fixed inset-x-4 top-1/2 z-50 max-h-[calc(100dvh-2rem)] w-auto -translate-y-1/2 overflow-y-auto rounded-[1.75rem] sm:left-1/2 sm:w-[min(68rem,calc(100vw-2rem))] sm:-translate-x-1/2">
+            <div className="glass-panel overflow-hidden rounded-[1.75rem]">
+              <div className="flex items-center justify-between border-b border-[var(--app-line)] px-5 py-4">
+                <div>
+                  <Dialog.Title className="text-lg font-semibold text-white">Compose update</Dialog.Title>
+                  <Dialog.Description className="mt-1 text-sm text-[var(--app-text-muted)]">
+                    Create a new room post without covering the feed.
+                  </Dialog.Description>
+                </div>
+                <Dialog.Close className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-muted)] transition hover:bg-white/10">
+                  <X size={16} />
+                </Dialog.Close>
+              </div>
+              <PostComposer roomId={roomId} onSubmitted={() => setComposerOpen(false)} />
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       {canModerateRoom ? (
         <>

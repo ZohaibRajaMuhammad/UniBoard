@@ -128,10 +128,6 @@ export const createAiReply = mutation({
     }
 
     const aiUser = await ctx.db.query("users").withIndex("by_email", (query) => query.eq("email", AI_EMAIL)).unique();
-    if (!aiUser) {
-      throw new Error("AI user not found");
-    }
-
     const content = args.content.trim();
     if (!content) {
       throw new Error("AI reply is empty");
@@ -143,14 +139,14 @@ export const createAiReply = mutation({
       .order("desc")
       .take(3);
 
-    if (recentAiComment.some((comment) => comment.authorId === aiUser._id && comment.content === content)) {
+    if (recentAiComment.some((comment) => comment.content === content && (comment.authorId === aiUser?._id || !comment.authorId))) {
       return null;
     }
 
     await ctx.db.insert("comments", {
       postId: args.postId,
       roomId: post.roomId,
-      authorId: aiUser._id,
+      authorId: aiUser?._id,
       content,
       parentCommentId: undefined,
       isAnonymous: false,
