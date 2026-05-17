@@ -125,19 +125,19 @@ export function PostCard({
         <ProfileAvatar name={post.author.name} imageUrl={post.author.imageUrl} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="font-semibold text-white">{post.author.name}</p>
+            <p className="font-semibold text-[var(--app-text)]">{post.author.name}</p>
             <span className={cn("rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em]", typeConfig[post.type] ?? typeConfig.note)}>
               {post.type}
             </span>
             {post.isPinned ? <span className="inline-flex items-center gap-1 text-xs text-amber-300"><Pin size={12} />Pinned</span> : null}
             {post.isResolved ? <span className="inline-flex items-center gap-1 text-xs text-emerald-300"><CheckCircle2 size={12} />Resolved</span> : null}
-            {post.isHidden ? <span className="inline-flex items-center gap-1 text-xs text-gray-400"><EyeOff size={12} />Hidden</span> : null}
-            {post.isEdited ? <span className="text-xs text-gray-500">Edited</span> : null}
-            <span className="ml-auto text-xs text-gray-500">{formatRelativeTime(post.createdAt)}</span>
+            {post.isHidden ? <span className="inline-flex items-center gap-1 text-xs text-[var(--app-text-muted)]"><EyeOff size={12} />Hidden</span> : null}
+            {post.isEdited ? <span className="text-xs text-[var(--app-text-muted)]">Edited</span> : null}
+            <span className="ml-auto text-xs text-[var(--app-text-muted)]">{formatRelativeTime(post.createdAt)}</span>
 
             {canOpenMenu ? (
               <div className="relative">
-                <button onClick={() => setMenuOpen((current) => !current)} className="rounded-xl p-2 text-gray-500 transition hover:bg-white/5 hover:text-[var(--app-text)]">
+                <button onClick={() => setMenuOpen((current) => !current)} className="rounded-xl p-2 text-[var(--app-text-muted)] transition hover:bg-white/5 hover:text-[var(--app-text)]">
                   <MoreHorizontal size={16} />
                 </button>
                 {menuOpen ? (
@@ -232,7 +232,7 @@ export function PostCard({
           {post.tags?.length ? (
             <div className="mt-3 flex flex-wrap gap-2">
               {post.tags.map((tag) => (
-                <span key={tag} className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-gray-300">
+                <span key={tag} className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-[var(--app-text-soft)]">
                   #{tag}
                 </span>
               ))}
@@ -278,11 +278,11 @@ export function PostCard({
               {post.type === "poll" && pollOptions.length > 0 ? (
                 <div className="mt-4 space-y-2 rounded-2xl border border-fuchsia-400/20 bg-fuchsia-500/5 p-4">
                   {pollOptions.map((option) => (
-                    <div key={option} className="app-surface-soft rounded-2xl px-4 py-3 text-sm text-gray-100">
+                    <div key={option} className="app-surface-soft rounded-2xl px-4 py-3 text-sm text-[var(--app-text)]">
                       {option}
                     </div>
                   ))}
-                  <p className="text-xs text-gray-400">Use the vote button below to register support for this poll.</p>
+                  <p className="text-xs text-[var(--app-text-muted)]">Use the vote button below to register support for this poll.</p>
                 </div>
               ) : null}
             </>
@@ -308,14 +308,11 @@ export function PostCard({
             <UpvoteButton postId={post._id} upvoteCount={post.upvoteCount} label={post.type === "poll" ? "Vote" : "Upvote"} />
             <button
               onClick={() => setShowComments((current) => !current)}
-              className={cn(
-                "inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium transition",
-                showComments ? "border-brand-400/40 bg-brand-500/10 text-brand-100" : "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10"
-              )}
+              className={cn("app-action-button", showComments ? "app-action-button-active" : "")}
             >
               <MessageSquare size={14} />
               <span>Comments</span>
-              <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white">{post.commentCount ?? 0}</span>
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-[var(--app-text)]">{post.commentCount ?? 0}</span>
             </button>
             <ReactionBar postId={post._id} />
           </div>
@@ -347,7 +344,7 @@ function ActionButton({
       onClick={() => void onClick()}
       className={cn(
         "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm transition hover:bg-white/5",
-        tone === "danger" ? "text-red-300" : "text-gray-200"
+        tone === "danger" ? "text-red-300" : "text-[var(--app-text)]"
       )}
     >
       {icon}

@@ -9,8 +9,8 @@ import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 import { PinnedPostsBanner } from "@/components/feed/PinnedPostsBanner";
 import { PostComposer } from "@/components/feed/PostComposer";
-import { useNotifier } from "@/components/providers/NotificationProvider";
 import { PostFeed } from "@/components/feed/PostFeed";
+import { useNotifier } from "@/components/providers/NotificationProvider";
 import { PresenceBar } from "@/components/rooms/PresenceBar";
 import { RoomHeader } from "@/components/rooms/RoomHeader";
 import { TeacherPanel } from "@/components/teacher/TeacherPanel";
@@ -41,6 +41,10 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   const highlightedPostId = searchParams.get("post") as Id<"posts"> | null;
   const [summary, setSummary] = useState<AiEnvelope<RoomSummary> | null>(null);
   const [summaryError, setSummaryError] = useState("");
+  const summaryRefreshKey = useMemo(
+    () => (posts ?? []).slice(0, 12).map((post) => `${post._id}:${post.createdAt}:${post.commentCount ?? 0}`).join("|"),
+    [posts]
+  );
 
   useEffect(() => {
     void markSeen({ roomId });
@@ -77,7 +81,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
           if (payload.meta.mode === "fallback") {
             notify({
               title: "Room summary updated",
-              message: "The summary was generated using deterministic room context.",
+              message: "The summary was generated from live room activity while the model service was unavailable.",
               tone: "warning",
               desktop: false,
               priority: "low",
@@ -103,7 +107,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
     return () => {
       cancelled = true;
     };
-  }, [notify, room?.aiEnabled, roomId]);
+  }, [notify, room?.aiEnabled, roomId, summaryRefreshKey]);
 
   const roomStats = useMemo(() => {
     if (!room) {
@@ -129,7 +133,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
   return (
     <div className="relative flex h-full min-h-0 flex-1 overflow-hidden">
-      <div className="grid h-full min-h-0 flex-1 grid-rows-[auto_auto_auto_auto_minmax(0,1fr)] overflow-hidden">
+      <div className="grid h-full min-h-0 flex-1 grid-rows-[auto_auto_auto_minmax(0,1fr)] overflow-hidden">
         <RoomHeader room={room} />
         <PresenceBar roomId={roomId} />
 
@@ -144,6 +148,12 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
               ))}
             </div>
 
+            {pinnedPosts && pinnedPosts.length > 0 ? (
+              <div className="mt-4">
+                <PinnedPostsBanner posts={pinnedPosts} />
+              </div>
+            ) : null}
+
             {room.aiEnabled ? (
               <div className="mt-4 rounded-[28px] border border-[rgba(109,140,255,0.18)] bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(246,248,252,0.88))] p-5 shadow-[0_18px_36px_rgba(79,96,151,0.08)] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))]">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -154,7 +164,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     </div>
                     <h3 className="mt-2 text-lg font-semibold text-[var(--app-text)] dark:text-white">Live room intelligence</h3>
                   </div>
-                  <span className={summary?.meta.mode === "fallback" ? "app-chip border-amber-400/20 bg-amber-500/10 text-amber-100" : "app-chip"}>
+                  <span className={summary?.meta.mode === "fallback" ? "app-chip border-amber-400/20 bg-amber-500/10 text-[var(--app-text)]" : "app-chip"}>
                     {summary?.meta.mode === "fallback" ? "Deterministic mode" : "AI grounded"}
                   </span>
                 </div>
@@ -168,7 +178,9 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     {(summary.data?.keyPoints?.length ?? 0) > 0 ? (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {summary.data?.keyPoints.slice(0, 4).map((item) => (
-                          <span key={item} className="panel-chip rounded-2xl px-3 py-2 text-xs">{item}</span>
+                          <span key={item} className="panel-chip rounded-2xl px-3 py-2 text-xs">
+                            {item}
+                          </span>
                         ))}
                       </div>
                     ) : null}
@@ -177,7 +189,10 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Open questions</p>
                         <div className="mt-3 space-y-2">
                           {summary.data?.openQuestions.slice(0, 3).map((item) => (
-                            <p key={item} className="text-sm leading-6 text-[var(--app-text-soft)]">• {item}</p>
+                            <div key={item} className="flex items-start gap-2 text-sm leading-6 text-[var(--app-text-soft)]">
+                              <span className="mt-[0.45rem] h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--app-primary-strong)]" />
+                              <p>{item}</p>
+                            </div>
                           ))}
                         </div>
                       </div>
@@ -197,12 +212,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                   <button
                     type="button"
                     onClick={() => setTeacherPanelOpen((current) => !current)}
-                    className={cn(
-                      "app-segmented-button shrink-0",
-                      teacherPanelOpen
-                        ? "app-segmented-button-active"
-                        : ""
-                    )}
+                    className={cn("app-segmented-button shrink-0", teacherPanelOpen ? "app-segmented-button-active" : "")}
                     aria-expanded={teacherPanelOpen}
                     aria-controls="teacher-panel"
                   >
@@ -211,11 +221,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     {teacherPanelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                   </button>
                 ) : null}
-                <button
-                  type="button"
-                  onClick={() => setComposerOpen(true)}
-                  className="app-segmented-button app-segmented-button-active shrink-0"
-                >
+                <button type="button" onClick={() => setComposerOpen(true)} className="app-segmented-button app-segmented-button-active shrink-0">
                   <PlusSquare size={14} />
                   Compose
                 </button>
@@ -225,12 +231,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     <button
                       key={filter}
                       onClick={() => setActiveFilter(filter)}
-                      className={cn(
-                        "app-segmented-button shrink-0",
-                        activeFilter === filter
-                          ? "app-segmented-button-active"
-                          : ""
-                      )}
+                      className={cn("app-segmented-button shrink-0", activeFilter === filter ? "app-segmented-button-active" : "")}
                     >
                       <span className="inline-flex items-center gap-2">
                         {FilterIcon ? <FilterIcon size={14} /> : null}
@@ -244,10 +245,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
           </div>
         </div>
 
-        {pinnedPosts && pinnedPosts.length > 0 ? <PinnedPostsBanner posts={pinnedPosts} /> : null}
-
         <div className="flex min-h-0 flex-col overflow-hidden">
-          <div className="app-scroll min-h-0 flex-1 px-1 pb-5">
+          <div className="app-scroll min-h-0 flex-1 px-1 pb-8">
             <PostFeed
               posts={posts}
               roomId={roomId}

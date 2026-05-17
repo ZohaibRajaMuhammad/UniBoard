@@ -273,7 +273,7 @@ async function getRoomPosts(token: string, room: RoomRecord): Promise<SourcePost
   }));
 }
 
-async function getScopedPosts(token: string, roomId?: string) {
+async function getScopedPosts(token: string, roomId?: string, options?: { allowEmpty?: boolean }) {
   const rooms = await getAiScopedRooms(token);
   const scopedRooms = roomId ? rooms.filter((room) => room._id === roomId) : rooms;
 
@@ -282,13 +282,89 @@ async function getScopedPosts(token: string, roomId?: string) {
   }
 
   const posts = (await Promise.all(scopedRooms.map((room) => getRoomPosts(token, room)))).flat();
-  if (posts.length === 0) {
+  if (posts.length === 0 && !options?.allowEmpty) {
     throw new AiServiceError("no_authorized_sources", 422, "No authorized sources were found for this request.");
   }
 
   return {
     rooms: scopedRooms,
     posts
+  };
+}
+
+function summarizeDeterministically(posts: SourcePost[], roomName: string): RoomSummary {
+  const ordered = [...posts].sort((left, right) => right.createdAt - left.createdAt);
+  const latest = ordered.slice(0, 5);
+  const keyPoints = Array.from(
+    new Set(
+      ordered
+        .flatMap((post) => post.tags ?? [])
+        .filter(Boolean)
+        .map((tag) => tag.replace(/^#/, ""))
+    )
+  ).slice(0, 4);
+  const openQuestions = ordered
+    .filter((post) => post.type === "question" || post.content.includes("?"))
+    .slice(0, 3)
+    .map((post) => post.content.split("\n")[0].trim())
+    .filter(Boolean);
+
+  if (posts.length === 0) {
+    return {
+      roomId: "",
+      roomName,
+      summary: `${roomName} does not have enough visible discussion yet to generate a meaningful summary. Publish notes, questions, resources, or announcements and the summary will start reflecting real room activity.`,
+      keyPoints: [],
+      openQuestions: []
+    };
+  }
+
+  const summaryParts = [
+    `${roomName} currently has ${posts.length} visible posts in active context.`,
+    latest.length > 0
+      ? `Recent focus includes ${latest
+          .map((post) => post.title.trim() || post.type)
+          .slice(0, 3)
+          .join(", ")}.`
+      : "No recent discussion activity is available yet.",
+    keyPoints.length > 0 ? `Repeated themes include ${keyPoints.join(", ")}.` : "There are not enough repeated themes yet to infer stable topic patterns."
+  ];
+
+  return {
+    roomId: posts[0]?.roomId ?? ("" as string),
+    roomName,
+    summary: summaryParts.join(" "),
+    keyPoints,
+    openQuestions
+  };
+}
+
+function buildDeterministicStudyPlan(
+  planner: Awaited<ReturnType<typeof fetchQuery<typeof api.planner.getSnapshot>>>
+): StudyPlan {
+  const highestRisk = planner.items.slice(0, 3);
+  const sessions = planner.sessions.slice(0, 8).map((session) => ({
+    id: session.id,
+    title: session.title,
+    startAt: session.startAt,
+    endAt: session.endAt,
+    urgency: toConfidenceBand(session.urgency),
+    reasoning: session.reasoning
+  }));
+
+  const summary =
+    highestRisk.length === 0
+      ? "No deadlines are currently tracked, so the planner is waiting for new academic work to schedule."
+      : `Prioritize ${highestRisk.map((item) => item.title).join(", ")} first. ${planner.metrics.dueSoonCount} deadline${
+          planner.metrics.dueSoonCount === 1 ? "" : "s"
+        } need attention soon, and ${planner.metrics.highRiskCount} item${
+          planner.metrics.highRiskCount === 1 ? "" : "s"
+        } are currently marked high risk.`;
+
+  return {
+    summary,
+    confidenceBand: highestRisk.some((item) => item.urgency === "high") ? "high" : "medium",
+    sessions
   };
 }
 
@@ -703,6 +779,9 @@ export async function getStudyPlan() {
     actorId: userId,
     primary: async () => {
       const planner = await fetchQuery(api.planner.getSnapshot, {}, { token });
+      if (planner.items.length === 0 || planner.sessions.length === 0) {
+        return buildDeterministicStudyPlan(planner);
+      }
       return withTimeout(async (client, signal) => {
         const parsed = await parseStructured({
           client,
@@ -710,7 +789,7 @@ export async function getStudyPlan() {
           schema: studyPlanSchema,
           schemaName: "study_plan",
           instructions:
-            "Refine study sessions from the provided planner snapshot. Stay within the supplied sessions and make reasoning specific.",
+            "Refine study sessions from the provided planner snapshot. Stay within the supplied sessions, keep all dates and times unchanged, make reasoning specific, and produce a crisp operational summary that explains what should be tackled first.",
           input: JSON.stringify({
             metrics: planner.metrics,
             items: planner.items.slice(0, 12),
@@ -723,18 +802,7 @@ export async function getStudyPlan() {
     },
     fallback: async () => {
       const planner = await fetchQuery(api.planner.getSnapshot, {}, { token });
-      return {
-        summary: "The current study plan is running in deterministic fallback mode because the AI service is unavailable.",
-        confidenceBand: "medium",
-        sessions: planner.sessions.slice(0, 8).map((session) => ({
-          id: session.id,
-          title: session.title,
-          startAt: session.startAt,
-          endAt: session.endAt,
-          urgency: toConfidenceBand(session.urgency),
-          reasoning: session.reasoning
-        }))
-      };
+      return buildDeterministicStudyPlan(planner);
     }
   });
 }
@@ -787,8 +855,15 @@ export async function getRoomSummary(roomId: string) {
     route: "/api/v1/ai/room-summary",
     actorId: userId,
     primary: async () => {
-      const { rooms, posts } = await getScopedPosts(token, roomId);
+      const { rooms, posts } = await getScopedPosts(token, roomId, { allowEmpty: true });
       const room = rooms[0];
+      if (posts.length === 0) {
+        return {
+          ...summarizeDeterministically(posts, room.name),
+          roomId,
+          roomName: room.name
+        };
+      }
       return withTimeout(async (client, signal) => {
         const parsed = await parseStructured({
           client,
@@ -796,7 +871,7 @@ export async function getRoomSummary(roomId: string) {
           schema: roomSummarySchema,
           schemaName: "room_summary",
           instructions:
-            "Summarize this room only from the provided posts. Be concise, separate settled points from still-open questions, and avoid vague filler.",
+            "Summarize this room only from the provided posts. Be concise, direct, and concrete. Separate settled points from open questions, mention urgent deadlines or requests when present, and avoid vague filler.",
           input: `Room: ${room.name}\n\nPosts:\n${posts
             .slice(0, 24)
             .map((post) => `${post.title}\n${post.content}`)
@@ -813,13 +888,13 @@ export async function getRoomSummary(roomId: string) {
       });
     },
     fallback: async () => {
-      const { rooms } = await getScopedPosts(token, roomId);
+      const { rooms, posts } = await getScopedPosts(token, roomId, { allowEmpty: true });
+      const room = rooms[0];
+      const deterministic = summarizeDeterministically(posts, room?.name ?? "Room");
       return {
+        ...deterministic,
         roomId,
-        roomName: rooms[0]?.name ?? "Room",
-        summary: "The room summary is temporarily in fallback mode. Open the room timeline for the latest exact post context.",
-        keyPoints: [],
-        openQuestions: []
+        roomName: room?.name ?? deterministic.roomName
       };
     }
   });
@@ -878,10 +953,14 @@ export async function getAssistantReply(message: string, roomId?: string) {
       }
 
       const topSource = result.sources[0];
+      const directSourceAnswer =
+        topSource.title && topSource.title.trim().length > 20
+          ? topSource.title.trim()
+          : `The best grounded material I found is in ${topSource.roomName}.`;
       return {
-        reply: `I found relevant material in ${topSource.roomName}. The strongest grounded match is "${topSource.title}". Open that post or ask a narrower follow-up if you want a direct summary.`,
+        reply: directSourceAnswer,
         confidenceBand: toConfidenceBand(result.confidence),
-        suggestions: ["Open the cited room post before acting on this answer."],
+        suggestions: [`Open ${topSource.roomName} if you want the surrounding discussion and source context.`],
         sources: result.sources.map((source) => ({
           ...source,
           quote: source.title

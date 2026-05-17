@@ -41,11 +41,11 @@ function getToneIcon(tone: NotifyTone) {
 }
 
 function getToneClasses(tone: NotifyTone) {
-  if (tone === "success") return "border-emerald-400/25 bg-emerald-500/12 text-emerald-50";
-  if (tone === "error") return "border-red-400/25 bg-red-500/12 text-red-50";
-  if (tone === "warning") return "border-amber-400/25 bg-amber-500/12 text-amber-50";
-  if (tone === "ai") return "border-[rgba(109,140,255,0.24)] bg-[rgba(77,117,255,0.14)] text-white";
-  return "border-[var(--app-line)] bg-[var(--app-panel-strong)] text-white";
+  if (tone === "success") return "border-emerald-400/25 bg-emerald-500/12 text-[var(--app-text)]";
+  if (tone === "error") return "border-red-400/25 bg-red-500/12 text-[var(--app-text)]";
+  if (tone === "warning") return "border-amber-400/25 bg-amber-500/12 text-[var(--app-text)]";
+  if (tone === "ai") return "border-[rgba(109,140,255,0.24)] bg-[rgba(77,117,255,0.14)] text-[var(--app-text)]";
+  return "border-[var(--app-line)] bg-[var(--app-panel-strong)] text-[var(--app-text)]";
 }
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {

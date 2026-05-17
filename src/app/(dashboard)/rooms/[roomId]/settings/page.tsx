@@ -229,7 +229,7 @@ export default function RoomSettingsPage({ params }: { params: { roomId: string 
                         className={cn(
                           "rounded-xl border px-3 py-2 text-sm capitalize transition",
                           form.color === color
-                            ? "border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.14)] text-white"
+                            ? "border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.14)] text-[var(--app-text)]"
                             : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10",
                           isReadOnly && "cursor-not-allowed opacity-60 hover:bg-white/5"
                         )}
@@ -258,7 +258,7 @@ export default function RoomSettingsPage({ params }: { params: { roomId: string 
                         disabled={isReadOnly}
                         className={cn(
                           "rounded-xl border px-3 py-2 transition",
-                          form.emoji === option.value ? "border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.14)] text-white" : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10",
+                          form.emoji === option.value ? "border-[rgba(109,140,255,0.32)] bg-[rgba(77,117,255,0.14)] text-[var(--app-text)]" : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10",
                           isReadOnly && "cursor-not-allowed opacity-60 hover:bg-white/5"
                         )}
                         title={option.label}
@@ -336,7 +336,14 @@ function Toggle({ label, help, checked, disabled, onChange }: { label: string; h
         <span className="text-sm font-medium text-white">{label}</span>
         <p className="mt-1 text-xs leading-5 text-[var(--app-text-muted)]">{help}</p>
       </div>
-      <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", checked ? "bg-[var(--app-primary)] text-white" : "bg-white/10 text-[var(--app-text-muted)]")}>
+      <span
+        className={cn(
+          "rounded-full px-3 py-1 text-xs font-semibold",
+          checked
+            ? "border border-[rgba(77,117,255,0.24)] bg-[rgba(77,117,255,0.14)] text-[var(--app-text)]"
+            : "bg-white/10 text-[var(--app-text-muted)]"
+        )}
+      >
         {checked ? "On" : "Off"}
       </span>
     </button>

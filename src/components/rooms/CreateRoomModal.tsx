@@ -155,7 +155,7 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
                         key={color}
                         type="button"
                         onClick={() => setForm((current) => ({ ...current, color }))}
-                        className={`touch-target rounded-xl border px-3 py-2 text-sm capitalize transition ${form.color === color ? "border-brand-400 bg-brand-500/20 text-white" : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10"}`}
+                        className={`touch-target rounded-xl border px-3 py-2 text-sm capitalize transition ${form.color === color ? "border-brand-400 bg-brand-500/20 text-[var(--app-text)]" : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10"}`}
                       >
                         {color}
                       </button>
@@ -171,7 +171,7 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
                         key={option.value}
                         type="button"
                         onClick={() => setForm((current) => ({ ...current, emoji: option.value }))}
-                        className={`touch-target rounded-xl border transition ${form.emoji === option.value ? "border-brand-400 bg-brand-500/20 text-white" : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10"}`}
+                        className={`touch-target rounded-xl border transition ${form.emoji === option.value ? "border-brand-400 bg-brand-500/20 text-[var(--app-text)]" : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10"}`}
                         title={option.label}
                       >
                         <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl">

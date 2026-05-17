@@ -97,7 +97,7 @@ export default function LeaderboardPage() {
                   <p className="metric-kicker">Workspace standings</p>
                   <h2 className="mt-2 text-2xl font-semibold text-white">Full ranking</h2>
                 </div>
-                <Link href="/reputation" className="inline-flex items-center gap-2 text-sm font-medium text-[var(--app-primary-strong)] transition hover:text-white">
+                <Link href="/reputation" className="inline-flex items-center gap-2 text-sm font-medium text-[var(--app-primary-strong)] transition hover:text-[var(--app-text)]">
                   <TrendingUp size={14} />
                   Open my reputation
                 </Link>
@@ -167,8 +167,8 @@ function MiniMetric({ label, value }: { label: string; value: number }) {
 
 function MomentumChip({ momentum }: { momentum: string }) {
   const tones: Record<string, string> = {
-    surging: "bg-emerald-500/15 text-emerald-100 border-emerald-400/20",
-    steady: "bg-amber-500/15 text-amber-100 border-amber-400/20",
+    surging: "bg-emerald-500/15 text-[var(--app-text)] border-emerald-400/20",
+    steady: "bg-amber-500/15 text-[var(--app-text)] border-amber-400/20",
     quiet: "bg-white/10 text-[var(--app-text-soft)] border-white/10"
   };
 

@@ -47,7 +47,7 @@ export default function SavedPage() {
                 key={type}
                 type="button"
                 onClick={() => setActiveType(type)}
-                className={activeType === type ? "rounded-2xl bg-[var(--app-primary)] px-4 py-2 text-sm font-medium text-white" : "rounded-2xl border border-[var(--app-line)] bg-white/5 px-4 py-2 text-sm text-[var(--app-text-soft)]"}
+                className={activeType === type ? "app-segmented-button app-segmented-button-active" : "app-segmented-button"}
               >
                 {type === "all" ? "All saved" : type}
               </button>

@@ -68,11 +68,11 @@ export function PostFeed({
   }
 
   return (
-    <div className="feed-column mx-auto space-y-5 p-4 sm:p-6">
+    <div className="mx-auto w-full max-w-[60rem] space-y-6 px-4 py-5 sm:px-6 sm:py-7">
       {posts.map((post) => (
         <PostCard key={post._id} post={post} roomId={roomId} highlighted={highlightedPostId === post._id} />
       ))}
-      <div className="h-24" />
+      <div className="h-40" />
     </div>
   );
 }

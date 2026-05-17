@@ -210,7 +210,7 @@ export function AiAssistant() {
                   {message.role === "assistant" && message.confidenceBand ? (
                     <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[var(--app-text-muted)]">
                       <span>{message.confidenceBand} confidence</span>
-                      {message.degraded ? <span>fallback mode</span> : null}
+                      {message.degraded ? <span>live context mode</span> : null}
                     </div>
                   ) : null}
                 </div>

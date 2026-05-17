@@ -54,7 +54,7 @@ export default function PlannerPage() {
           if (payload.meta.mode === "fallback") {
             notify({
               title: "Planner AI degraded",
-              message: "Study plan data loaded in fallback mode.",
+              message: "Showing a live deterministic study plan while the model service is temporarily unavailable.",
               tone: "warning",
               desktop: false,
               priority: "low",
@@ -207,7 +207,7 @@ export default function PlannerPage() {
   return (
     <div className="app-scroll">
       <div className="page-wrap page-stack shell-content-column">
-        <section className="spotlight-ring glass-panel page-hero">
+        <section className="spotlight-ring glass-panel page-hero overflow-visible">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-3xl">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
@@ -232,7 +232,7 @@ export default function PlannerPage() {
                   <ChevronDown size={14} />
                 </button>
                 {showExportMenu ? (
-                  <div className="glass-panel absolute right-0 top-[calc(100%+0.75rem)] z-20 min-w-[16rem] rounded-[24px] p-2 shadow-2xl">
+                  <div className="dropdown-panel absolute right-0 top-[calc(100%+0.75rem)] z-30 min-w-[16rem] rounded-[24px] p-2 shadow-2xl">
                     <button type="button" onClick={() => void handleExport("xlsx")} className="app-action-button w-full justify-start border-transparent bg-transparent text-left">
                       <FileSpreadsheet size={15} />
                       Export Excel (.xlsx)
@@ -258,7 +258,7 @@ export default function PlannerPage() {
                 }}
                 className="app-button app-button-primary"
               >
-                <Plus size={14} />
+                <Plus size={14} className="shrink-0" />
                 Add deadline
               </button>
             </div>
@@ -355,7 +355,16 @@ export default function PlannerPage() {
                         </div>
                       ))
                     )}
-                    {studyPlan?.data?.summary ? <p className="text-sm text-[var(--app-text-muted)]">{studyPlan.data.summary}</p> : null}
+                    {studyPlan?.data?.summary ? (
+                      <div className="rounded-2xl border border-[var(--app-line)] bg-white/5 p-4">
+                        <p className="text-sm leading-7 text-[var(--app-text-soft)]">{studyPlan.data.summary}</p>
+                        {studyPlan.meta.mode === "fallback" ? (
+                          <p className="mt-2 text-xs font-medium uppercase tracking-[0.18em] text-[var(--app-text-muted)]">
+                            Deterministic planner mode
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 

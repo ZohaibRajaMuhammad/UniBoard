@@ -17,6 +17,10 @@ type PlannerItem = {
   explanation: string;
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+const MINUTE_MS = 60 * 1000;
+
 function startOfDay(timestamp: number) {
   const date = new Date(timestamp);
   date.setHours(0, 0, 0, 0);
@@ -95,18 +99,18 @@ async function buildPlannerSnapshot(ctx: any) {
         explanation: ""
       }))
   ]
-    .filter((item) => item.dueDate > now - 7 * 24 * 60 * 60 * 1000)
+    .filter((item) => item.dueDate > now)
     .sort((left, right) => left.dueDate - right.dueDate);
 
   const recentPosts = await ctx.db.query("posts").collect();
   const itemsWithRisk = deadlineItems.map((item) => {
-    const daysUntilDue = Math.max(0, Math.ceil((item.dueDate - now) / (24 * 60 * 60 * 1000)));
+    const daysUntilDue = Math.max(0, Math.ceil((item.dueDate - now) / DAY_MS));
     const roomActivity = item.roomId
       ? recentPosts.filter(
           (post: any) =>
             post.roomId === item.roomId &&
             !post.isDeleted &&
-            post.createdAt > now - 7 * 24 * 60 * 60 * 1000
+            post.createdAt > now - 7 * DAY_MS
         ).length
       : 0;
     const activityPenalty = item.kind === "room_deadline" ? clamp(12 - roomActivity * 2, 0, 12) : 6;
@@ -132,30 +136,34 @@ async function buildPlannerSnapshot(ctx: any) {
   const sessions = itemsWithRisk.flatMap((item, index) => {
     const segments = item.riskScore >= 70 ? 3 : item.riskScore >= 45 ? 2 : 1;
     const minutesPerSegment = Math.max(45, Math.round(item.estimatedMinutes / segments / 15) * 15);
-    const baseDay = Math.max(0, Math.min(segments, Math.ceil((item.dueDate - now) / (24 * 60 * 60 * 1000)) - 1));
+    const baseDay = Math.max(0, Math.min(segments, Math.ceil((item.dueDate - now) / DAY_MS) - 1));
 
     return Array.from({ length: segments }).map((_, segmentIndex) => {
       const dayOffset = Math.max(0, baseDay - (segments - segmentIndex - 1));
       const slotDate = new Date(startOfDay(addDays(now, dayOffset)));
       slotDate.setHours(18 + ((index + segmentIndex) % 2) * 2, 0, 0, 0);
-      const startAt = Math.min(slotDate.getTime(), item.dueDate - 60 * 60 * 1000);
+      const latestSafeStart = item.dueDate - HOUR_MS;
+      const earliestSafeStart = now + 15 * MINUTE_MS;
+      const preferredStart = slotDate.getTime();
+      const startAt = Math.max(earliestSafeStart, Math.min(preferredStart, latestSafeStart));
+      const endAt = Math.min(item.dueDate, startAt + minutesPerSegment * MINUTE_MS);
       return {
         id: `${item.id}-${segmentIndex}`,
         linkedDeadlineId: item.id,
         title: `${item.title} study block ${segmentIndex + 1}`,
         startAt,
-        endAt: startAt + minutesPerSegment * 60 * 1000,
+        endAt,
         urgency: item.urgency,
         reasoning:
           item.riskScore >= 70
             ? "Split across multiple sessions to reduce deadline compression."
             : "Single focused block keeps this deadline moving without over-scheduling."
       };
-    });
+    }).filter((session) => session.endAt > session.startAt);
   });
 
   const highRiskCount = itemsWithRisk.filter((item) => item.riskScore >= 70).length;
-  const dueSoonCount = itemsWithRisk.filter((item) => item.dueDate < now + 7 * 24 * 60 * 60 * 1000).length;
+  const dueSoonCount = itemsWithRisk.filter((item) => item.dueDate < now + 7 * DAY_MS).length;
   const plannedMinutes = sessions.reduce((total, session) => total + (session.endAt - session.startAt) / 60000, 0);
 
   return {

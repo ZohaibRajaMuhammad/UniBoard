@@ -111,12 +111,12 @@ export default function ReputationPage() {
                         key={achievement.label}
                         className={
                           achievement.unlocked
-                            ? "rounded-[24px] border border-emerald-400/25 bg-emerald-500/12 p-4 text-emerald-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                            ? "rounded-[24px] border border-[rgba(77,117,255,0.2)] bg-[rgba(77,117,255,0.1)] p-4 text-[var(--app-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
                             : "rounded-[24px] border border-[var(--app-line)] bg-white/5 p-4 text-[var(--app-text-muted)]"
                         }
                       >
-                        <p className={achievement.unlocked ? "font-semibold text-emerald-50" : "font-medium text-white"}>{achievement.label}</p>
-                        <p className={achievement.unlocked ? "mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100/90" : "mt-2 text-xs uppercase tracking-[0.18em] text-[var(--app-text-muted)]"}>
+                        <p className={achievement.unlocked ? "font-semibold text-[var(--app-text)]" : "font-medium text-[var(--app-text)]"}>{achievement.label}</p>
+                        <p className={achievement.unlocked ? "mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--app-primary-strong)]" : "mt-2 text-xs uppercase tracking-[0.18em] text-[var(--app-text-muted)]"}>
                           {achievement.unlocked ? "Unlocked" : "Locked"}
                         </p>
                       </div>

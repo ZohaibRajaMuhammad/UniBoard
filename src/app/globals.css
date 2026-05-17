@@ -285,8 +285,8 @@ h6 {
 
 .app-filter-pill-active {
   border-color: rgba(77, 117, 255, 0.58);
-  background: var(--app-primary);
-  color: white;
+  background: color-mix(in srgb, var(--app-primary) 22%, rgba(255, 255, 255, 0.92));
+  color: var(--app-text);
   box-shadow: 0 12px 28px rgba(38, 72, 168, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
@@ -316,8 +316,8 @@ h6 {
 
 .app-segmented-button-active {
   border-color: rgba(77, 117, 255, 0.56);
-  background: var(--app-primary);
-  color: white;
+  background: color-mix(in srgb, var(--app-primary) 20%, rgba(255, 255, 255, 0.92));
+  color: var(--app-text);
   box-shadow: 0 12px 24px rgba(31, 76, 210, 0.18);
 }
 
@@ -346,8 +346,8 @@ h6 {
 
 .app-action-button-active {
   border-color: rgba(77, 117, 255, 0.5);
-  background: rgba(77, 117, 255, 0.16);
-  color: var(--app-primary-strong);
+  background: color-mix(in srgb, var(--app-primary) 16%, rgba(255, 255, 255, 0.92));
+  color: var(--app-text);
 }
 
 .theme-light .app-filter-pill,
@@ -358,7 +358,7 @@ h6 {
 
 .theme-light .app-filter-pill-active,
 .theme-light .app-segmented-button-active {
-  color: white;
+  color: var(--app-text);
 }
 
 .alert-surface {
@@ -479,8 +479,8 @@ h6 {
 }
 
 .app-button-primary {
-  background: var(--app-primary);
-  color: white;
+  background: color-mix(in srgb, var(--app-primary) 22%, rgba(255, 255, 255, 0.96));
+  color: var(--app-text);
   box-shadow: none;
 }
 
@@ -491,7 +491,7 @@ h6 {
 
 .app-button-secondary {
   border: 1px solid var(--app-line);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--app-text);
 }
 
@@ -602,6 +602,22 @@ h6 {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--app-text-soft);
+}
+
+.app-button > svg,
+.app-segmented-button > svg,
+.app-action-button > svg,
+.app-filter-pill > svg {
+  flex: 0 0 auto;
+  display: block;
+}
+
+.dropdown-panel {
+  border-radius: 1.5rem;
+  border: 1px solid var(--app-line);
+  background: var(--app-panel-strong);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--app-elevated-shadow);
 }
 
 .soft-divider {

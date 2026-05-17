@@ -52,7 +52,7 @@ export function UpvoteButton({
     >
       <ArrowUp size={14} />
       <span>{label}</span>
-      <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white">{count}</span>
+      <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-[var(--app-text)]">{count}</span>
     </button>
   );
 }

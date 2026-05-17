@@ -216,7 +216,14 @@ function SettingToggle({
         </div>
         <p className="mt-1 text-xs leading-5 text-[var(--app-text-muted)]">{help}</p>
       </div>
-      <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", checked ? "bg-[var(--app-primary)] text-white" : "bg-white/10 text-[var(--app-text-muted)]")}>
+      <span
+        className={cn(
+          "rounded-full px-3 py-1 text-xs font-semibold",
+          checked
+            ? "border border-[rgba(77,117,255,0.24)] bg-[rgba(77,117,255,0.14)] text-[var(--app-text)]"
+            : "bg-white/10 text-[var(--app-text-muted)]"
+        )}
+      >
         {checked ? "On" : "Off"}
       </span>
     </button>

@@ -55,14 +55,14 @@ export function ReactionBar({ postId }: { postId: Id<"posts"> }) {
         {showPicker ? (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setShowPicker(false)} />
-            <div className="absolute bottom-10 left-0 z-20 flex gap-1 rounded-2xl border border-white/10 bg-gray-900 p-2 shadow-2xl">
+            <div className="dropdown-panel absolute bottom-10 left-0 z-20 flex gap-1 rounded-2xl p-2 shadow-2xl">
               {REACTION_OPTIONS.map((reaction) => {
                 const Icon = reaction.icon;
                 return (
                 <button
                   key={reaction.value}
                   onClick={() => void handleReact(reaction.value)}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl text-[var(--app-text-soft)] transition hover:scale-110 hover:bg-white/5 hover:text-white"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl text-[var(--app-text-soft)] transition hover:scale-110 hover:bg-white/5 hover:text-[var(--app-text)]"
                   aria-label={reaction.label}
                   title={reaction.label}
                 >
