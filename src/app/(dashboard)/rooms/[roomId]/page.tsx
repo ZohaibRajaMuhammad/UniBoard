@@ -3,7 +3,19 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { PanelRightClose, PanelRightOpen, PlusSquare, ShieldCheck, Sparkles, X } from "lucide-react";
+import {
+  ChevronRight,
+  LayoutPanelTop,
+  ListFilter,
+  MessageSquareText,
+  PanelRightClose,
+  PanelRightOpen,
+  PlusSquare,
+  ShieldCheck,
+  Sparkles,
+  Users2,
+  X
+} from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
@@ -22,6 +34,7 @@ import { getPostTypeIcon } from "@/lib/ui-icons";
 import { cn } from "@/lib/utils";
 
 const FEED_FILTERS = ["all", ...POST_TYPES] as const;
+const ROOM_VIEWS = ["overview", "split", "feed"] as const;
 
 export default function RoomPage({ params }: { params: { roomId: string } }) {
   const { notify } = useNotifier();
@@ -29,6 +42,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   const searchParams = useSearchParams();
   const currentUser = useCurrentUser();
   const [activeFilter, setActiveFilter] = useState<(typeof FEED_FILTERS)[number]>("all");
+  const [activeView, setActiveView] = useState<(typeof ROOM_VIEWS)[number]>("overview");
   const [teacherPanelOpen, setTeacherPanelOpen] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
   const room = useQuery(api.rooms.getById, { roomId });
@@ -54,6 +68,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
     if (!highlightedPostId || posts === undefined) {
       return;
     }
+
+    setActiveView("feed");
 
     const timeout = window.setTimeout(() => {
       document.getElementById(`post-${highlightedPostId}`)?.scrollIntoView({
@@ -122,6 +138,10 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   }, [room]);
 
   const canModerateRoom = currentUser?.role === "teacher" || currentUser?.role === "super_admin";
+  const hasPinnedPosts = (pinnedPosts?.length ?? 0) > 0;
+  const hasSummary = (room?.aiEnabled ?? false) && (summary !== null || Boolean(summaryError));
+  const showFeed = activeView !== "overview";
+  const activeFilterLabel = activeFilter === "all" ? "All posts" : POST_TYPE_CONFIG[activeFilter].label;
 
   if (room === undefined) {
     return <div className="m-4 h-48 animate-pulse rounded-[28px] bg-white/5 sm:m-6" />;
@@ -139,122 +159,272 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
         <div className="border-b border-[var(--app-line)] bg-[rgba(255,255,255,0.56)] backdrop-blur">
           <div className="page-wrap py-4">
-            <div className="grid gap-3 sm:grid-cols-3">
-              {roomStats.map((item) => (
-                <div key={item.label} className="stat-card">
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">{item.label}</p>
-                  <p className="mt-2 text-lg font-semibold text-[var(--app-text)]">{item.value}</p>
-                </div>
-              ))}
-            </div>
-
-            {pinnedPosts && pinnedPosts.length > 0 ? (
-              <div className="mt-4">
-                <PinnedPostsBanner posts={pinnedPosts} />
-              </div>
-            ) : null}
-
-            {room.aiEnabled ? (
-              <div className="mt-4 rounded-[28px] border border-[rgba(109,140,255,0.18)] bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(246,248,252,0.88))] p-5 shadow-[0_18px_36px_rgba(79,96,151,0.08)] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))]">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.8fr)]">
+              <section className="rounded-[32px] border border-[rgba(109,140,255,0.18)] bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(246,248,252,0.9))] p-5 shadow-[0_18px_36px_rgba(79,96,151,0.08)] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))]">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
+                  <div className="max-w-2xl">
                     <div className="flex items-center gap-2">
                       <Sparkles size={15} className="text-[var(--app-violet)]" />
-                      <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-soft)]">AI room summary</p>
+                      <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-soft)]">Room intelligence</p>
                     </div>
-                    <h3 className="mt-2 text-lg font-semibold text-[var(--app-text)] dark:text-white">Live room intelligence</h3>
+                    <h2 className="mt-2 text-2xl font-semibold text-[var(--app-text)] dark:text-white">Start with the room, not the noise.</h2>
+                    <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">
+                      Uniboard surfaces the current state of this room before opening the full thread stream, so members can orient themselves quickly.
+                    </p>
                   </div>
-                  <span className={summary?.meta.mode === "fallback" ? "app-chip border-amber-400/20 bg-amber-500/10 text-[var(--app-text)]" : "app-chip"}>
-                    {summary?.meta.mode === "fallback" ? "Deterministic mode" : "AI grounded"}
-                  </span>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={summary?.meta.mode === "fallback" ? "app-chip border-amber-400/20 bg-amber-500/10 text-[var(--app-text)]" : "app-chip"}>
+                      {room.aiEnabled ? (summary?.meta.mode === "fallback" ? "Deterministic mode" : "AI grounded") : "AI disabled"}
+                    </span>
+                    {hasPinnedPosts ? <span className="app-chip">{pinnedPosts?.length} pinned</span> : null}
+                  </div>
                 </div>
-                {summaryError ? (
-                  <p className="mt-3 text-sm text-red-200">{summaryError}</p>
-                ) : summary === null ? (
-                  <div className="mt-3 h-16 animate-pulse rounded-2xl bg-white/5" />
-                ) : (
-                  <>
-                    <p className="mt-4 text-sm leading-7 text-[var(--app-text)] dark:text-[var(--app-text-soft)]">{summary.data?.summary}</p>
-                    {(summary.data?.keyPoints?.length ?? 0) > 0 ? (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {summary.data?.keyPoints.slice(0, 4).map((item) => (
-                          <span key={item} className="panel-chip rounded-2xl px-3 py-2 text-xs">
-                            {item}
-                          </span>
-                        ))}
+
+                <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
+                  <div className="rounded-[26px] border border-[var(--app-line)] bg-white/50 p-5 dark:bg-white/[0.03]">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">AI-generated summary</p>
+                        <h3 className="mt-2 text-lg font-semibold text-[var(--app-text)] dark:text-white">What matters here right now</h3>
                       </div>
-                    ) : null}
-                    {(summary.data?.openQuestions?.length ?? 0) > 0 ? (
-                      <div className="mt-4 rounded-[22px] border border-[var(--app-line)] bg-white/50 p-4 dark:bg-white/[0.03]">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Open questions</p>
-                        <div className="mt-3 space-y-2">
-                          {summary.data?.openQuestions.slice(0, 3).map((item) => (
-                            <div key={item} className="flex items-start gap-2 text-sm leading-6 text-[var(--app-text-soft)]">
-                              <span className="mt-[0.45rem] h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--app-primary-strong)]" />
-                              <p>{item}</p>
+                      {room.aiEnabled ? null : <span className="app-chip">Manual mode</span>}
+                    </div>
+
+                    {room.aiEnabled ? (
+                      summaryError ? (
+                        <p className="mt-4 text-sm text-red-200">{summaryError}</p>
+                      ) : summary === null ? (
+                        <div className="mt-4 h-24 animate-pulse rounded-[22px] bg-white/5" />
+                      ) : (
+                        <>
+                          <p className="mt-4 text-sm leading-7 text-[var(--app-text)] dark:text-[var(--app-text-soft)]">{summary.data?.summary}</p>
+                          {(summary.data?.keyPoints?.length ?? 0) > 0 ? (
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              {summary.data?.keyPoints.slice(0, 5).map((item) => (
+                                <span key={item} className="panel-chip rounded-2xl px-3 py-2 text-xs">
+                                  {item}
+                                </span>
+                              ))}
                             </div>
-                          ))}
+                          ) : null}
+                        </>
+                      )
+                    ) : (
+                      <p className="mt-4 text-sm leading-7 text-[var(--app-text-soft)]">
+                        Room AI is disabled, so the overview relies on visible room metadata, presence, and manual filters.
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid gap-3">
+                    <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                      {roomStats.map((item) => (
+                        <div key={item.label} className="stat-card">
+                          <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">{item.label}</p>
+                          <p className="mt-2 text-lg font-semibold text-[var(--app-text)]">{item.value}</p>
                         </div>
+                      ))}
+                    </div>
+
+                    <div className="rounded-[26px] border border-[var(--app-line)] bg-white/50 p-4 dark:bg-white/[0.03]">
+                      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">
+                        <Users2 size={14} />
+                        Presence and tools
                       </div>
+                      <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">
+                        Keep the room summary, member activity, and moderation tools visible while deciding whether to expand into the full discussion stream.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {(summary?.data?.openQuestions?.length ?? 0) > 0 ? (
+                  <div className="mt-4 rounded-[24px] border border-[var(--app-line)] bg-white/50 p-4 dark:bg-white/[0.03]">
+                    <div className="flex items-center gap-2">
+                      <MessageSquareText size={15} className="text-[var(--app-primary-strong)]" />
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Open questions</p>
+                    </div>
+                    <div className="mt-3 grid gap-2">
+                      {summary?.data?.openQuestions?.slice(0, 3).map((item) => (
+                        <div key={item} className="flex items-start gap-2 rounded-[20px] border border-[var(--app-line)] bg-white/45 px-3 py-3 text-sm leading-6 text-[var(--app-text-soft)] dark:bg-white/[0.03]">
+                          <span className="mt-[0.45rem] h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--app-primary-strong)]" />
+                          <p>{item}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </section>
+
+              <aside className="grid gap-4">
+                <section className="glass-panel rounded-[30px] p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">View mode</p>
+                      <h3 className="mt-2 text-lg font-semibold text-white">Control room depth</h3>
+                    </div>
+                    <LayoutPanelTop size={18} className="text-[var(--app-primary-strong)]" />
+                  </div>
+                  <div className="mt-4 grid gap-2">
+                    {ROOM_VIEWS.map((view) => (
+                      <button
+                        key={view}
+                        type="button"
+                        onClick={() => setActiveView(view)}
+                        className={cn("flex items-center justify-between rounded-[20px] border px-4 py-3 text-left transition", activeView === view ? "border-[rgba(77,117,255,0.48)] bg-[rgba(77,117,255,0.14)] text-white" : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:bg-white/10")}
+                        aria-pressed={activeView === view}
+                      >
+                        <div>
+                          <p className="text-sm font-semibold capitalize">{view}</p>
+                          <p className="mt-1 text-xs text-[var(--app-text-muted)]">
+                            {view === "overview"
+                              ? "Summary, presence, and filters only"
+                              : view === "split"
+                                ? "Keep context visible while opening the feed"
+                                : "Focus directly on posts and comments"}
+                          </p>
+                        </div>
+                        <ChevronRight size={16} />
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="glass-panel rounded-[30px] p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Context controls</p>
+                      <h3 className="mt-2 text-lg font-semibold text-white">Filter before opening the feed</h3>
+                    </div>
+                    <ListFilter size={18} className="text-[var(--app-primary-strong)]" />
+                  </div>
+                  <div className="mt-4 smooth-x-scroll flex gap-2 pb-1">
+                    {canModerateRoom ? (
+                      <button
+                        type="button"
+                        onClick={() => setTeacherPanelOpen((current) => !current)}
+                        className={cn("app-segmented-button shrink-0", teacherPanelOpen ? "app-segmented-button-active" : "")}
+                        aria-expanded={teacherPanelOpen}
+                        aria-controls="teacher-panel"
+                      >
+                        <ShieldCheck size={14} />
+                        {teacherPanelOpen ? "Hide teacher panel" : "Teacher panel"}
+                        {teacherPanelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+                      </button>
                     ) : null}
-                  </>
-                )}
+                    <button
+                      type="button"
+                      onClick={() => setComposerOpen(true)}
+                      className="app-segmented-button app-segmented-button-active shrink-0"
+                    >
+                      <PlusSquare size={14} />
+                      Compose
+                    </button>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {FEED_FILTERS.map((filter) => {
+                      const FilterIcon = filter === "all" ? null : getPostTypeIcon(filter);
+                      return (
+                        <button
+                          key={filter}
+                          type="button"
+                          onClick={() => setActiveFilter(filter)}
+                          className={cn("app-filter-pill", activeFilter === filter ? "app-filter-pill-active" : "")}
+                        >
+                          {FilterIcon ? <FilterIcon size={14} /> : null}
+                          {filter === "all" ? "All posts" : POST_TYPE_CONFIG[filter].label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-4 rounded-[22px] border border-[var(--app-line)] bg-white/5 px-4 py-3 text-sm text-[var(--app-text-soft)]">
+                    Active filter: <span className="font-semibold text-white">{activeFilterLabel}</span>
+                  </div>
+                </section>
+
+                {hasPinnedPosts ? (
+                  <section className="glass-panel rounded-[30px] p-4">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Pinned context</p>
+                    <div className="mt-3">
+                      <PinnedPostsBanner posts={pinnedPosts ?? []} />
+                    </div>
+                  </section>
+                ) : null}
+              </aside>
+            </div>
+
+            {!showFeed ? (
+              <div className="mt-4 rounded-[28px] border border-dashed border-[var(--app-line-strong)] bg-white/40 px-5 py-5 text-sm text-[var(--app-text-soft)] dark:bg-white/[0.03]">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Feed hidden by default</p>
+                    <p className="mt-2 max-w-3xl leading-7">
+                      The room opens in overview mode to reduce cognitive load. Switch to split view or full feed when you are ready to inspect posts, comments, and uploads.
+                    </p>
+                  </div>
+                  <button type="button" onClick={() => setActiveView("split")} className="app-button app-button-secondary self-start">
+                    Expand feed
+                    <ChevronRight size={15} />
+                  </button>
+                </div>
               </div>
             ) : null}
+          </div>
+        </div>
 
-            <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Feed controls</p>
-                <h2 className="mt-1 text-lg font-semibold text-[var(--app-text)]">Filter the conversation by signal</h2>
-              </div>
-              <div className="smooth-x-scroll flex gap-2 pb-1 lg:flex-wrap lg:justify-end lg:pb-0">
-                {canModerateRoom ? (
-                  <button
-                    type="button"
-                    onClick={() => setTeacherPanelOpen((current) => !current)}
-                    className={cn("app-segmented-button shrink-0", teacherPanelOpen ? "app-segmented-button-active" : "")}
-                    aria-expanded={teacherPanelOpen}
-                    aria-controls="teacher-panel"
-                  >
-                    <ShieldCheck size={14} />
-                    {teacherPanelOpen ? "Hide teacher panel" : "Open teacher panel"}
-                    {teacherPanelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
-                  </button>
-                ) : null}
-                <button type="button" onClick={() => setComposerOpen(true)} className="app-segmented-button app-segmented-button-active shrink-0">
-                  <PlusSquare size={14} />
-                  Compose
-                </button>
-                {FEED_FILTERS.map((filter) => {
-                  const FilterIcon = filter === "all" ? null : getPostTypeIcon(filter);
-                  return (
-                    <button
-                      key={filter}
-                      onClick={() => setActiveFilter(filter)}
-                      className={cn("app-segmented-button shrink-0", activeFilter === filter ? "app-segmented-button-active" : "")}
-                    >
-                      <span className="inline-flex items-center gap-2">
-                        {FilterIcon ? <FilterIcon size={14} /> : null}
-                        {filter === "all" ? "All posts" : POST_TYPE_CONFIG[filter].label}
-                      </span>
-                    </button>
-                  );
-                })}
+        {showFeed ? (
+          <div className="flex min-h-0 flex-col overflow-hidden">
+            <div className={cn("grid min-h-0 flex-1 gap-0", activeView === "split" ? "2xl:grid-cols-[minmax(22rem,0.8fr)_minmax(0,1.4fr)]" : "")}>
+              {activeView === "split" ? (
+                <aside className="hidden border-r border-[var(--app-line)] bg-[rgba(255,255,255,0.42)] 2xl:block">
+                  <div className="app-scroll h-full">
+                    <div className="page-wrap py-5">
+                      <div className="glass-panel rounded-[28px] p-5">
+                        <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Split view context</p>
+                        <h3 className="mt-2 text-lg font-semibold text-white">Keep orientation while reviewing posts</h3>
+                        {hasSummary ? (
+                          summaryError ? (
+                            <p className="mt-4 text-sm text-red-200">{summaryError}</p>
+                          ) : (
+                            <p className="mt-4 text-sm leading-7 text-[var(--app-text-soft)]">{summary?.data?.summary}</p>
+                          )
+                        ) : (
+                          <p className="mt-4 text-sm leading-7 text-[var(--app-text-soft)]">
+                            Use the feed to inspect details while this panel preserves room-level context and the active filter.
+                          </p>
+                        )}
+                        {(summary?.data?.keyPoints?.length ?? 0) > 0 ? (
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {summary?.data?.keyPoints?.slice(0, 4).map((item) => (
+                              <span key={item} className="panel-chip rounded-2xl px-3 py-2 text-xs">
+                                {item}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+                        <div className="mt-5 rounded-[22px] border border-[var(--app-line)] bg-white/5 px-4 py-3 text-sm text-[var(--app-text-soft)]">
+                          Current feed filter: <span className="font-semibold text-white">{activeFilterLabel}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </aside>
+              ) : null}
+
+              <div className="min-h-0 overflow-hidden">
+                <div className="app-scroll min-h-0 h-full px-1 pb-8">
+                  <PostFeed
+                    posts={posts}
+                    roomId={roomId}
+                    emptyStateLabel={activeFilter === "all" ? "No posts yet" : `No ${activeFilter} posts yet`}
+                    highlightedPostId={highlightedPostId ?? undefined}
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="flex min-h-0 flex-col overflow-hidden">
-          <div className="app-scroll min-h-0 flex-1 px-1 pb-8">
-            <PostFeed
-              posts={posts}
-              roomId={roomId}
-              emptyStateLabel={activeFilter === "all" ? "No posts yet" : `No ${activeFilter} posts yet`}
-              highlightedPostId={highlightedPostId ?? undefined}
-            />
-          </div>
-        </div>
+        ) : null}
       </div>
 
       <Dialog.Root open={composerOpen} onOpenChange={setComposerOpen}>

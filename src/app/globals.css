@@ -777,6 +777,46 @@ h6 {
   color: var(--app-text-soft);
 }
 
+.auth-matrix-fade {
+  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.9) 12%, rgba(0, 0, 0, 0.9) 88%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.9) 12%, rgba(0, 0, 0, 0.9) 88%, transparent 100%);
+}
+
+.auth-matrix-column {
+  position: absolute;
+  top: -18rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  color: rgba(113, 255, 191, 0.55);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  animation-name: auth-matrix-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.auth-matrix-column span {
+  opacity: 0.92;
+  text-shadow: 0 0 18px rgba(98, 255, 189, 0.16);
+}
+
+.theme-light .auth-matrix-column {
+  color: rgba(35, 136, 93, 0.28);
+}
+
+@keyframes auth-matrix-fall {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, calc(100vh + 28rem), 0);
+  }
+}
+
 @media (max-width: 1023px) {
   .page-wrap {
     width: min(100%, 76rem);

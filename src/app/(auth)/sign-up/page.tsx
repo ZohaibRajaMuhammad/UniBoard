@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { UniBoardLogo } from "@/components/brand/UniBoardLogo";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
+import { AuthMatrixBackground } from "@/components/system/AuthMatrixBackground";
+import { ThemeToggle } from "@/components/system/ThemeToggle";
 import { isClerkServerConfigured } from "@/lib/deployment";
 
 export const dynamic = "force-dynamic";
@@ -16,11 +18,11 @@ const clerkAppearance = {
     logoBox: "hidden",
     cardBox: "shadow-none",
     formFieldInput:
-      "border !border-[var(--app-line)] !bg-white !text-[var(--app-text)] placeholder:!text-[var(--app-text-muted)] focus:!shadow-none",
+      "border !border-[var(--app-line)] !bg-white/5 !text-[var(--app-text)] placeholder:!text-[var(--app-text-muted)] focus:!shadow-none",
     formFieldLabel: "!text-[var(--app-text-soft)]",
     formButtonPrimary: "!bg-[var(--app-primary)] hover:!bg-[var(--app-primary-strong)] !shadow-none",
     socialButtonsBlockButton:
-      "!border !border-[var(--app-line)] !bg-[var(--app-panel-strong)] !text-[var(--app-text)] hover:!bg-white",
+      "!border !border-[var(--app-line)] !bg-[var(--app-panel-strong)] !text-[var(--app-text)] hover:!bg-white/10",
     footerActionLink: "!text-[var(--app-primary-strong)]"
   }
 } as const;
@@ -64,12 +66,16 @@ export default async function SignUpPage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
+      <AuthMatrixBackground />
       <div className="hero-grid absolute inset-0 opacity-20" />
+      <div className="absolute right-4 top-4 z-20 md:right-6 md:top-6">
+        <ThemeToggle elevated />
+      </div>
       <div className="relative grid w-full max-w-[66rem] gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <section className="glass-panel hidden rounded-[32px] p-8 lg:block">
           <UniBoardLogo size={60} />
           <p className="mt-8 section-eyebrow text-[var(--app-primary-strong)]">Account setup</p>
-          <h1 className="mt-3 text-4xl font-bold tracking-[-0.04em] text-white">Create a refined academic identity without clutter.</h1>
+          <h1 className="mt-3 text-4xl font-bold tracking-[-0.04em] text-white">Create an academic identity inside a controlled, enterprise-grade shell.</h1>
           <p className="mt-4 max-w-xl text-sm leading-8 text-[var(--app-text-soft)]">
             Join the workspace with clear access, readable controls, and a UI that keeps course operations disciplined from the first screen.
           </p>
@@ -88,6 +94,16 @@ export default async function SignUpPage() {
               </div>
               <p className="mt-2 text-sm leading-7 text-[var(--app-text-muted)]">Inputs, labels, and hierarchy are tuned for clarity on 1920 by 1080 laptops and smaller screens alike.</p>
             </div>
+          </div>
+          <div className="mt-8 rounded-[24px] border border-[rgba(49,196,141,0.18)] bg-[rgba(49,196,141,0.08)] p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--app-text-muted)]">Provisioning posture</p>
+            <p className="mt-2 font-mono text-sm leading-7 text-[#98f0c6]">
+              PROFILE: PENDING
+              <br />
+              ROOM ACCESS: SCOPED
+              <br />
+              WORKSPACE BOOT: READY
+            </p>
           </div>
         </section>
 

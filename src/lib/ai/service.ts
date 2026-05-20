@@ -631,7 +631,7 @@ export async function getKnowledgeAnswer(question: string) {
           schema: knowledgeSchema,
           schemaName: "knowledge_answer",
           instructions:
-            "Answer only from the provided study sources. Lead with the answer, keep it concise, neutral, and point-to-point, and avoid unnecessary clarification. If evidence is weak, abstain plainly. Never invent facts or citations.",
+            "Answer only from the provided study sources. Lead with the answer, keep it concise, structured, and professional, and avoid unnecessary clarification. If evidence is partial, say so directly. If evidence is weak, abstain plainly. Never invent facts, dates, or citations.",
           input: `Question:\n${question}\n\nAuthorized sources:\n${chunks
             .map(
               (chunk, index) =>
@@ -871,7 +871,7 @@ export async function getRoomSummary(roomId: string) {
           schema: roomSummarySchema,
           schemaName: "room_summary",
           instructions:
-            "Summarize this room only from the provided posts. Be concise, direct, and concrete. Separate settled points from open questions, mention urgent deadlines or requests when present, and avoid vague filler.",
+            "Summarize this room only from the provided posts. Be concise, direct, and concrete. Surface what changed, what matters now, and what still needs resolution. Separate settled points from open questions, mention urgent deadlines or requests when present, and avoid vague filler.",
           input: `Room: ${room.name}\n\nPosts:\n${posts
             .slice(0, 24)
             .map((post) => `${post.title}\n${post.content}`)
@@ -921,7 +921,7 @@ export async function getAssistantReply(message: string, roomId?: string) {
           schema: assistantSchema,
           schemaName: "assistant_reply",
           instructions:
-            "Act as an academic workspace assistant. Reply in short, direct, professional language. Prefer 1 to 3 concise sentences or up to 3 tight bullets. Give the grounded answer first, avoid filler, avoid rephrasing the question, and suggest only concrete next actions when useful.",
+            "Act as Uniboard's academic workspace assistant. Reply in short, direct, professional language with a familiar but refined tone. Prefer 1 to 3 concise sentences or up to 3 tight bullets. Give the grounded answer first, avoid filler, avoid rephrasing the question, state uncertainty cleanly, and suggest only concrete next actions when useful.",
           input: `Request:\n${normalizedMessage}\n\nAuthorized context:\n${chunks
             .map((chunk, index) => `[${index + 1}] ${chunk.roomName} | ${chunk.title}\n${chunk.content}`)
             .join("\n\n")}`

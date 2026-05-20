@@ -20,7 +20,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="theme-light" data-theme="light" suppressHydrationWarning>
+    <html lang="en" className="theme-dark" data-theme="dark" suppressHydrationWarning>
       <body className="min-h-screen font-sans antialiased">
         <a href="#main-content" className="skip-link">
           Skip to content

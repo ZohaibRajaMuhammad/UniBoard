@@ -108,6 +108,7 @@ export const create = mutation({
 export const createAiReply = mutation({
   args: {
     postId: v.id("posts"),
+    parentCommentId: v.optional(v.id("comments")),
     content: v.string()
   },
   handler: async (ctx, args) => {
@@ -125,6 +126,13 @@ export const createAiReply = mutation({
     const room = await ctx.db.get(post.roomId);
     if (!room?.aiEnabled) {
       throw new Error("AI is disabled in this room");
+    }
+
+    if (args.parentCommentId) {
+      const parentComment = await ctx.db.get(args.parentCommentId);
+      if (!parentComment || parentComment.postId !== args.postId || parentComment.parentCommentId) {
+        throw new Error("Invalid parent comment for AI reply");
+      }
     }
 
     const aiUser = await ctx.db.query("users").withIndex("by_email", (query) => query.eq("email", AI_EMAIL)).unique();
@@ -148,7 +156,7 @@ export const createAiReply = mutation({
       roomId: post.roomId,
       authorId: aiUser?._id,
       content,
-      parentCommentId: undefined,
+      parentCommentId: args.parentCommentId,
       isAnonymous: false,
       isDeleted: false,
       isEdited: false,

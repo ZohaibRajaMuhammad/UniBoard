@@ -78,7 +78,7 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
     setIsSubmitting(true);
     setSubmitError("");
     try {
-      await createComment({
+      const createdCommentId = await createComment({
         postId,
         content: content.trim(),
         isAnonymous,
@@ -99,6 +99,7 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
           .then((payload) =>
             createAiReply({
               postId,
+              parentCommentId: replyTo ?? createdCommentId,
               content: formatAssistantComment(payload.data?.reply ?? "I could not ground a reliable answer for that mention.", payload.data?.suggestions)
             })
           ).then(() => {

@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import nextDynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
+import { ThemeToggle } from "@/components/system/ThemeToggle";
 import { AiAssistant } from "@/components/ai/AiAssistant";
 import { MobileSidebar } from "@/components/layout/MobileSidebar";
 import { isClerkServerConfigured } from "@/lib/deployment";
@@ -38,6 +39,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </aside>
       <MobileSidebar />
       <main id="main-content" className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden pb-28 md:pb-0">
+        <div className="pointer-events-none absolute right-4 top-4 z-40 md:right-5 md:top-5">
+          <ThemeToggle className="pointer-events-auto" elevated />
+        </div>
         {children}
       </main>
       <MobileNav />

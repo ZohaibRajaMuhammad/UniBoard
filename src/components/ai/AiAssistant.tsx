@@ -1,10 +1,11 @@
 "use client";
 
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
-import { Bot, Loader2, Send, Sparkles, X } from "lucide-react";
+import Link from "next/link";
+import { Bot, Loader2, MoveUpRight, Send, Sparkles, X } from "lucide-react";
 import { useNotifier } from "@/components/providers/NotificationProvider";
 import { postAi } from "@/lib/ai/client";
-import type { AiEnvelope, AssistantReply } from "@/lib/ai/contracts";
+import type { AiEnvelope, AssistantReply, KnowledgeSource } from "@/lib/ai/contracts";
 import { cn } from "@/lib/utils";
 
 type Message = {
@@ -13,6 +14,8 @@ type Message = {
   text: string;
   confidenceBand?: "low" | "medium" | "high";
   degraded?: boolean;
+  suggestions?: string[];
+  sources?: KnowledgeSource[];
 };
 
 const quickActions = [
@@ -75,7 +78,9 @@ export function AiAssistant() {
           role: "assistant",
           text: reply,
           confidenceBand: payload.data?.confidenceBand,
-          degraded: payload.meta.mode !== "openai"
+          degraded: payload.meta.mode !== "openai",
+          suggestions: payload.data?.suggestions ?? [],
+          sources: payload.data?.sources ?? []
         }
       ]);
       notify({
@@ -211,6 +216,37 @@ export function AiAssistant() {
                     <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[var(--app-text-muted)]">
                       <span>{message.confidenceBand} confidence</span>
                       {message.degraded ? <span>live context mode</span> : null}
+                    </div>
+                  ) : null}
+                  {message.role === "assistant" && (message.suggestions?.length ?? 0) > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {message.suggestions?.slice(0, 2).map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          onClick={() => void sendMessage(suggestion)}
+                          className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-[var(--app-text-soft)] transition hover:bg-white/10"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                  {message.role === "assistant" && (message.sources?.length ?? 0) > 0 ? (
+                    <div className="mt-3 grid gap-2">
+                      {message.sources?.slice(0, 2).map((source) => (
+                        <Link
+                          key={`${message.id}-${source.postId}`}
+                          href={`/rooms/${source.roomId}?post=${source.postId}`}
+                          className="rounded-[18px] border border-white/10 bg-black/15 px-3 py-2 text-xs leading-5 text-[var(--app-text-soft)] transition hover:bg-white/10"
+                        >
+                          <span className="flex items-center justify-between gap-2 text-white">
+                            <span className="truncate">{source.roomName}</span>
+                            <MoveUpRight size={12} />
+                          </span>
+                          <span className="mt-1 block truncate text-[var(--app-text-muted)]">{source.title}</span>
+                        </Link>
+                      ))}
                     </div>
                   ) : null}
                 </div>

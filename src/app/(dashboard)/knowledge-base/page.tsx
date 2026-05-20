@@ -2,9 +2,17 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { BookOpen, Search, Sparkles } from "lucide-react";
+import { BookOpen, Compass, LibraryBig, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { postAi } from "@/lib/ai/client";
 import type { AiEnvelope, KnowledgeAnswer } from "@/lib/ai/contracts";
+import { cn } from "@/lib/utils";
+
+const promptSuggestions = [
+  "What changed in the database design?",
+  "Which deadline is closest?",
+  "Where was normalization explained?",
+  "Which room discussed API authentication tradeoffs?"
+];
 
 export default function KnowledgeBasePage() {
   const [draftQuestion, setDraftQuestion] = useState("");
@@ -41,44 +49,75 @@ export default function KnowledgeBasePage() {
     <div className="app-scroll">
       <div className="page-wrap page-stack content-column">
         <section className="spotlight-ring glass-panel page-hero ai-glow">
-          <div className="max-w-3xl">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
-              <BookOpen size={20} className="text-[var(--app-primary-strong)]" />
-            </div>
-            <p className="section-eyebrow text-[var(--app-violet)]">Knowledge Base</p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">Grounded course answers, not chat noise.</h1>
-            <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">
-              Ask a study question over the rooms you can access and inspect the grounded evidence before trusting the answer.
-            </p>
-          </div>
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
+            <div className="max-w-3xl">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
+                <BookOpen size={20} className="text-[var(--app-primary-strong)]" />
+              </div>
+              <p className="section-eyebrow text-[var(--app-violet)]">Knowledge Base</p>
+              <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">The central intelligence surface for Uniboard.</h1>
+              <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">
+                Ask grounded questions across your authorized rooms, inspect supporting evidence, and move from answer to action without leaving the knowledge layer.
+              </p>
 
-          <form onSubmit={handleSubmit} className="mt-6">
-            <div className="flex items-center gap-3 rounded-[24px] border border-[var(--app-line)] bg-white/[0.04] px-4 py-4">
-              <Search size={18} className="text-[var(--app-text-muted)]" />
-              <input
-                value={draftQuestion}
-                onChange={(event) => setDraftQuestion(event.target.value)}
-                placeholder="Ask about an assignment, concept, room decision, or resource..."
-                className="w-full bg-transparent text-sm text-white outline-none placeholder:text-[var(--app-text-muted)]"
-              />
+              <form onSubmit={handleSubmit} className="mt-6">
+                <div className="flex items-center gap-3 rounded-[24px] border border-[var(--app-line)] bg-white/[0.04] px-4 py-4">
+                  <Search size={18} className="text-[var(--app-text-muted)]" />
+                  <input
+                    value={draftQuestion}
+                    onChange={(event) => setDraftQuestion(event.target.value)}
+                    placeholder="Ask about an assignment, concept, room decision, or resource..."
+                    className="w-full bg-transparent text-sm text-white outline-none placeholder:text-[var(--app-text-muted)]"
+                  />
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {promptSuggestions.map((prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => {
+                        setDraftQuestion(prompt);
+                        void runQuestion(prompt);
+                      }}
+                      className="panel-chip rounded-2xl px-4 py-2 text-sm"
+                    >
+                      <Sparkles size={12} />
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
+              </form>
             </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {["What changed in the database design?", "Which deadline is closest?", "Where was normalization explained?"].map((prompt) => (
-                <button
-                  key={prompt}
-                  type="button"
-                  onClick={() => {
-                    setDraftQuestion(prompt);
-                    void runQuestion(prompt);
-                  }}
-                  className="panel-chip rounded-2xl px-4 py-2 text-sm"
-                >
-                  <Sparkles size={12} />
-                  {prompt}
-                </button>
-              ))}
+
+            <div className="grid gap-3">
+              <div className="rounded-[26px] border border-[var(--app-line)] bg-white/5 p-4">
+                <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">
+                  <LibraryBig size={14} />
+                  Knowledge posture
+                </div>
+                <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">
+                  Answers should be concise, evidence-backed, and source-aware. When confidence is low, the system should abstain clearly instead of improvising.
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                <div className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-4">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">
+                    <ShieldCheck size={14} />
+                    Grounding
+                  </div>
+                  <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">Sources are tied back to visible room material before the answer is trusted.</p>
+                </div>
+                <div className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-4">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">
+                    <Compass size={14} />
+                    Navigation
+                  </div>
+                  <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">Each answer should make the next action obvious: inspect, refine, or jump into the room thread.</p>
+                </div>
+              </div>
             </div>
-          </form>
+          </div>
         </section>
 
         {error ? (
@@ -115,32 +154,76 @@ export default function KnowledgeBasePage() {
               )}
             </div>
 
-            <div className="mt-5 rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
-              {isLoading ? (
-                <div className="h-32 animate-pulse rounded-[20px] bg-white/5" />
-              ) : (
-                <div className="space-y-3">
-                  <p className="whitespace-pre-wrap text-sm leading-8 text-[var(--app-text-soft)]">{result?.data?.answer}</p>
-                  {result?.data?.followUp ? (
-                    <p className="text-sm text-[var(--app-text-muted)]">Next best prompt: {result.data.followUp}</p>
-                  ) : null}
+            <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
+              <div className="rounded-[24px] border border-[var(--app-line)] bg-black/20 p-5">
+                {isLoading ? (
+                  <div className="h-32 animate-pulse rounded-[20px] bg-white/5" />
+                ) : (
+                  <div className="space-y-4">
+                    <p className="whitespace-pre-wrap text-sm leading-8 text-[var(--app-text-soft)]">{result?.data?.answer}</p>
+                    {result?.data?.followUp ? (
+                      <div className="rounded-[20px] border border-[var(--app-line)] bg-white/5 px-4 py-3 text-sm text-[var(--app-text-soft)]">
+                        <span className="font-semibold text-white">Next best prompt:</span> {result.data.followUp}
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+
+              <aside className="grid gap-4">
+                <div className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Answer quality</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {["high", "medium", "low"].map((band) => (
+                      <span
+                        key={band}
+                        className={cn(
+                          "rounded-full px-3 py-1 text-xs font-medium uppercase tracking-[0.16em]",
+                          result?.data?.confidenceBand === band
+                            ? band === "high"
+                              ? "bg-emerald-500/15 text-emerald-100"
+                              : band === "medium"
+                                ? "bg-amber-500/15 text-amber-100"
+                                : "bg-red-500/15 text-red-100"
+                            : "bg-white/5 text-[var(--app-text-muted)]"
+                        )}
+                      >
+                        {band}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">
+                    Strong answers should cite visible evidence. Lower-confidence answers should prompt refinement rather than false certainty.
+                  </p>
                 </div>
-              )}
+
+                <div className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">System behavior</p>
+                  <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">
+                    {result?.data?.abstained
+                      ? "The model abstained because accessible evidence was too weak or too narrow for a reliable answer."
+                      : "The response is optimized to stay concise, professional, and grounded in authorized room knowledge."}
+                  </p>
+                </div>
+              </aside>
             </div>
 
             {result?.data?.sources.length ? (
               <div className="mt-5">
                 <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Sources</p>
-                <div className="mt-3 flex flex-wrap gap-3">
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
                   {result.data.sources.map((source) => (
                     <Link
                       key={source.postId}
                       href={`/rooms/${source.roomId}?post=${source.postId}`}
-                      className="rounded-2xl border border-[var(--app-line)] bg-white/5 px-4 py-3 text-sm text-[var(--app-text-soft)] transition hover:bg-white/10"
+                      className="rounded-[24px] border border-[var(--app-line)] bg-white/5 px-4 py-4 text-sm text-[var(--app-text-soft)] transition hover:bg-white/10"
                     >
-                      <span className="font-medium text-white">{source.roomName}</span>
-                      <span className="ml-2 text-[var(--app-text-muted)]">{source.title}</span>
-                      <span className="mt-2 block text-xs text-[var(--app-text-muted)]">{source.quote}</span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium text-white">{source.roomName}</span>
+                        <span className="app-chip">{source.type}</span>
+                      </div>
+                      <span className="mt-3 block font-medium text-white">{source.title}</span>
+                      <span className="mt-2 block text-xs leading-6 text-[var(--app-text-muted)]">{source.quote}</span>
                     </Link>
                   ))}
                 </div>
