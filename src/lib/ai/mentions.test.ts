@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAssistantPrompt, containsAiMention, formatAssistantComment, stripAiMentions } from "./mentions";
+import { buildAssistantPrompt, containsAiMention, formatAssistantComment, parseAssistantPromptContext, stripAiMentions } from "./mentions";
 
 describe("ai mentions", () => {
   it("detects both supported AI mention aliases", () => {
@@ -30,5 +30,22 @@ describe("ai mentions", () => {
     expect(prompt).toContain("Do not default to a clarifying question");
     expect(prompt).toContain("Compliance sheet and supervisor approval form are due this weekend.");
     expect(prompt).toContain("what is the strongest evidence for this release blocker?");
+  });
+
+  it("parses structured prompt context for mention orchestration", () => {
+    const prompt = buildAssistantPrompt("@UniBoardAI summarize the real blocker", {
+      postType: "project",
+      postTitle: "Demo readiness",
+      postContent: "The deployment guide is incomplete and QA is blocked.",
+      parentCommentContent: "We need a concise status answer for the team."
+    });
+
+    const parsed = parseAssistantPromptContext(prompt);
+
+    expect(parsed.userRequest).toBe("summarize the real blocker");
+    expect(parsed.postType).toBe("project");
+    expect(parsed.postTitle).toBe("Demo readiness");
+    expect(parsed.postContent).toContain("deployment guide is incomplete");
+    expect(parsed.parentCommentContent).toContain("concise status answer");
   });
 });

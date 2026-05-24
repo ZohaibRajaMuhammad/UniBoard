@@ -1,5 +1,14 @@
 import { ROOM_MENTION_AI, ROOM_MENTION_AI_ALIASES } from "../constants";
 
+export type AssistantPromptContext = {
+  userRequest: string;
+  postType: string | null;
+  postTitle: string | null;
+  postContent: string | null;
+  parentCommentContent: string | null;
+  raw: string;
+};
+
 function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -31,6 +40,28 @@ export function extractAssistantUserRequest(value: string) {
     .replace(/@[a-z0-9_]+/gi, " ")
     .replace(/\s{2,}/g, " ")
     .trim();
+}
+
+function readSection(value: string, label: string) {
+  const escapedLabel = escapeRegex(label);
+  const match = value.match(new RegExp(`${escapedLabel}:\\s*([\\s\\S]*?)(?=\\n\\n[A-Z][^\\n:]{1,80}:|$)`, "i"));
+  return match?.[1]?.trim() || null;
+}
+
+export function parseAssistantPromptContext(value: string): AssistantPromptContext {
+  const postType = readSection(value, "Discussion post type");
+  const postTitle = readSection(value, "Discussion post title");
+  const postContent = readSection(value, "Discussion post content");
+  const parentCommentContent = readSection(value, "Parent comment context");
+
+  return {
+    userRequest: extractAssistantUserRequest(value),
+    postType,
+    postTitle,
+    postContent,
+    parentCommentContent,
+    raw: value
+  };
 }
 
 export function buildAssistantPrompt(

@@ -2,21 +2,31 @@
 
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { BookOpenCheck, UserCircle2 } from "lucide-react";
+import { BookOpenCheck, GraduationCap, UserCircle2 } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { PostCard } from "@/components/feed/PostCard";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { BATCHES, DEPARTMENTS } from "@/lib/constants";
 
 export default function ProfilePage() {
   const user = useCurrentUser();
   const savedPosts = useQuery(api.posts.getSavedPosts);
   const updateProfile = useMutation(api.users.updateProfile);
+  const completeOnboarding = useMutation(api.users.completeOnboarding);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSubmittingAccess, setIsSubmittingAccess] = useState(false);
   const [status, setStatus] = useState("");
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    name: string;
+    bio: string;
+    batch: string;
+    department: string;
+    studentId: string;
+  }>({
     name: "",
     bio: "",
+    batch: BATCHES[0],
     department: "",
     studentId: ""
   });
@@ -29,6 +39,7 @@ export default function ProfilePage() {
     setForm({
       name: user.name ?? "",
       bio: user.bio ?? "",
+      batch: user.batch ?? BATCHES[0],
       department: user.department ?? "",
       studentId: user.studentId ?? ""
     });
@@ -41,6 +52,7 @@ export default function ProfilePage() {
       await updateProfile({
         name: form.name,
         bio: form.bio,
+        batch: form.batch,
         department: form.department,
         studentId: form.studentId
       });
@@ -49,6 +61,25 @@ export default function ProfilePage() {
       setStatus(error instanceof Error ? error.message : "Unable to update profile.");
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleAccessSetup(role: "student" | "teacher") {
+    setIsSubmittingAccess(true);
+    setStatus("");
+    try {
+      await completeOnboarding({
+        role,
+        batch: form.batch,
+        department: form.department || undefined,
+        studentId: form.studentId || undefined,
+        bio: form.bio || undefined
+      });
+      setStatus(role === "teacher" ? "Teacher access request submitted for super-admin review." : "Student access activated.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Unable to update access.");
+    } finally {
+      setIsSubmittingAccess(false);
     }
   }
 
@@ -91,6 +122,66 @@ export default function ProfilePage() {
 
             {user ? (
               <div className="mt-6 space-y-4">
+                {user.role === "pending" ? (
+                  <div className="rounded-[24px] border border-[rgba(109,140,255,0.24)] bg-[rgba(77,117,255,0.08)] p-5">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[rgba(109,140,255,0.25)] bg-[rgba(77,117,255,0.1)] text-[var(--app-primary-strong)]">
+                        <GraduationCap size={18} />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">Finish access setup</h3>
+                        <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">
+                          Students can activate access immediately. Teacher access is reviewed by a super admin before elevated workspace controls are unlocked.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <Field label="Batch">
+                        <select
+                          value={form.batch}
+                          onChange={(event) => setForm((current) => ({ ...current, batch: event.target.value }))}
+                          className="app-select"
+                        >
+                          {BATCHES.map((batch) => (
+                            <option key={batch} value={batch}>
+                              {batch}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label="Department">
+                        <select
+                          value={form.department}
+                          onChange={(event) => setForm((current) => ({ ...current, department: event.target.value }))}
+                          className="app-select"
+                        >
+                          <option value="">Select department</option>
+                          {DEPARTMENTS.map((department) => (
+                            <option key={department} value={department}>
+                              {department}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                    </div>
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                      <button
+                        onClick={() => void handleAccessSetup("student")}
+                        disabled={isSubmittingAccess}
+                        className="app-button app-button-primary w-full sm:w-auto"
+                      >
+                        Continue as student
+                      </button>
+                      <button
+                        onClick={() => void handleAccessSetup("teacher")}
+                        disabled={isSubmittingAccess}
+                        className="app-button app-button-secondary w-full sm:w-auto"
+                      >
+                        Request teacher access
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
                 <Field label="Name">
                   <input
                     value={form.name}
@@ -106,6 +197,19 @@ export default function ProfilePage() {
                   />
                 </Field>
                 <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Batch">
+                    <select
+                      value={form.batch}
+                      onChange={(event) => setForm((current) => ({ ...current, batch: event.target.value }))}
+                      className="app-select"
+                    >
+                      {BATCHES.map((batch) => (
+                        <option key={batch} value={batch}>
+                          {batch}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
                   <Field label="Department">
                     <input
                       value={form.department}

@@ -56,7 +56,7 @@ export default function DashboardRoutePage() {
               </div>
               <Link href="/rooms" className="app-button app-button-primary w-full sm:w-auto">
                 <Plus size={16} />
-                Create or join room
+                {user?.role === "pending" ? "Complete access setup" : "Create or join room"}
               </Link>
             </div>
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -64,6 +64,11 @@ export default function DashboardRoutePage() {
               <StatCard label="Deadlines" value={String(deadlines?.length ?? 0)} detail="Upcoming time-sensitive posts" />
               <StatCard label="Momentum" value={rooms && rooms.length > 0 ? "Live" : "Idle"} detail="Workspace engagement status" />
             </div>
+            {user?.role === "pending" ? (
+              <div className="mt-6 rounded-[24px] border border-amber-400/20 bg-amber-500/10 p-4 text-sm leading-7 text-amber-100">
+                Your account is still in pending access mode. Open Profile to finish student setup or request teacher approval before using governed workspace actions.
+              </div>
+            ) : null}
           </div>
 
           <div className="glass-panel ai-glow rounded-[var(--radius-panel)] p-6">

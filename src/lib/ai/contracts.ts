@@ -31,6 +31,9 @@ export type KnowledgeSource = {
   type: string;
   quote: string;
   score?: number;
+  authorityBand?: "canonical" | "trusted" | "community";
+  freshnessBand?: "fresh" | "recent" | "stale";
+  sourceTier?: number;
 };
 
 export type KnowledgeAnswer = {

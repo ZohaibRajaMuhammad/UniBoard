@@ -4,6 +4,7 @@ import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Bot, Loader2, MoveUpRight, Send, Sparkles, X } from "lucide-react";
 import { useNotifier } from "@/components/providers/NotificationProvider";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { postAi } from "@/lib/ai/client";
 import type { AiEnvelope, AssistantReply, KnowledgeSource } from "@/lib/ai/contracts";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ const quickActions = [
 ];
 
 export function AiAssistant() {
+  const currentUser = useCurrentUser();
   const { notify, permission, requestPermission } = useNotifier();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
@@ -116,6 +118,10 @@ export function AiAssistant() {
       event.preventDefault();
       void sendMessage(draft);
     }
+  }
+
+  if (currentUser?.role === "pending") {
+    return null;
   }
 
   return (

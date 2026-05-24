@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import {
+  assertPortalAccess,
   canModerateRoom,
   createNotification,
   getCurrentUser,
@@ -294,6 +295,7 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
+    assertPortalAccess(user);
     const { room, membership } = await getRoomWithMembershipOrThrow(ctx, args.roomId, user._id);
 
     if (room.isArchived) {

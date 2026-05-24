@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getCurrentUser as getCurrentConvexUser } from "./lib";
+import { getCurrentUser as getCurrentConvexUser, isTeacherAccessRequested } from "./lib";
 
 export const getCurrentUser = query({
   args: {},
@@ -199,13 +199,108 @@ export const completeOnboarding = mutation({
       throw new Error("Unauthenticated");
     }
 
+    const nextBadges = new Set(user.badges ?? []);
+    nextBadges.add("early_adopter");
+    nextBadges.add("onboarding_complete");
+
+    if (args.role === "teacher") {
+      nextBadges.add("teacher_access_requested");
+    } else {
+      nextBadges.delete("teacher_access_requested");
+      nextBadges.add("student_verified");
+    }
+
     await ctx.db.patch(user._id, {
-      role: args.role,
+      role: args.role === "teacher" ? "pending" : "student",
       batch: args.batch,
       department: args.department,
       studentId: args.studentId,
       bio: args.bio,
-      badges: (user.badges ?? []).includes("early_adopter") ? (user.badges ?? []) : [...(user.badges ?? []), "early_adopter"]
+      badges: [...nextBadges]
+    });
+  }
+});
+
+export const listTeacherAccessRequests = query({
+  args: {},
+  handler: async (ctx) => {
+    const actor = await getCurrentConvexUser(ctx);
+    if (!actor || actor.role !== "super_admin") {
+      return [];
+    }
+
+    const users = await ctx.db.query("users").withIndex("by_role", (query) => query.eq("role", "pending")).collect();
+    return users
+      .filter((user) => isTeacherAccessRequested(user))
+      .sort((left, right) => right.joinedAt - left.joinedAt)
+      .map((user) => ({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        batch: user.batch ?? "",
+        department: user.department ?? "",
+        bio: user.bio ?? "",
+        joinedAt: user.joinedAt,
+        badges: user.badges ?? []
+      }));
+  }
+});
+
+export const listGovernanceUsers = query({
+  args: {},
+  handler: async (ctx) => {
+    const actor = await getCurrentConvexUser(ctx);
+    if (!actor || actor.role !== "super_admin") {
+      return [];
+    }
+
+    const users = await ctx.db.query("users").collect();
+    return users
+      .sort((left, right) => right.joinedAt - left.joinedAt)
+      .slice(0, 50)
+      .map((user) => ({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        batch: user.batch ?? "",
+        department: user.department ?? "",
+        joinedAt: user.joinedAt,
+        badges: user.badges ?? [],
+        theme: user.theme ?? "dark"
+      }));
+  }
+});
+
+export const setUserRoleBySuperAdmin = mutation({
+  args: {
+    userId: v.id("users"),
+    role: v.union(v.literal("student"), v.literal("teacher"))
+  },
+  handler: async (ctx, args) => {
+    const actor = await getCurrentConvexUser(ctx);
+    if (!actor || actor.role !== "super_admin") {
+      throw new Error("Super admin only");
+    }
+
+    const target = await ctx.db.get(args.userId);
+    if (!target) {
+      throw new Error("User not found");
+    }
+
+    const nextBadges = new Set(target.badges ?? []);
+    nextBadges.add("onboarding_complete");
+    nextBadges.delete("teacher_access_requested");
+
+    if (args.role === "teacher") {
+      nextBadges.add("teacher_verified");
+    } else {
+      nextBadges.add("student_verified");
+    }
+
+    await ctx.db.patch(target._id, {
+      role: args.role,
+      badges: [...nextBadges]
     });
   }
 });
@@ -216,6 +311,8 @@ export const updateProfile = mutation({
     bio: v.optional(v.string()),
     department: v.optional(v.string()),
     studentId: v.optional(v.string()),
+    batch: v.optional(v.string()),
+    theme: v.optional(v.union(v.literal("dark"), v.literal("light"))),
     notifPrefs: v.optional(
       v.object({
         newPost: v.boolean(),
@@ -237,6 +334,8 @@ export const updateProfile = mutation({
     if (args.bio !== undefined) updates.bio = args.bio.trim() || undefined;
     if (args.department !== undefined) updates.department = args.department.trim() || undefined;
     if (args.studentId !== undefined) updates.studentId = args.studentId.trim() || undefined;
+    if (args.batch !== undefined) updates.batch = args.batch.trim() || undefined;
+    if (args.theme !== undefined) updates.theme = args.theme;
     if (args.notifPrefs !== undefined) updates.notifPrefs = args.notifPrefs;
 
     await ctx.db.patch(user._id, updates);

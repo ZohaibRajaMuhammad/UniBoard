@@ -1,10 +1,13 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import {
+  ArrowDown,
   ChevronRight,
+  Eye,
   LayoutPanelTop,
   ListFilter,
   MessageSquareText,
@@ -42,9 +45,10 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   const searchParams = useSearchParams();
   const currentUser = useCurrentUser();
   const [activeFilter, setActiveFilter] = useState<(typeof FEED_FILTERS)[number]>("all");
-  const [activeView, setActiveView] = useState<(typeof ROOM_VIEWS)[number]>("overview");
+  const [activeView, setActiveView] = useState<(typeof ROOM_VIEWS)[number]>("split");
   const [teacherPanelOpen, setTeacherPanelOpen] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
+  const feedSectionRef = useRef<HTMLDivElement | null>(null);
   const room = useQuery(api.rooms.getById, { roomId });
   const posts = useQuery(api.posts.getByRoom, {
     roomId,
@@ -142,6 +146,18 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   const hasSummary = (room?.aiEnabled ?? false) && (summary !== null || Boolean(summaryError));
   const showFeed = activeView !== "overview";
   const activeFilterLabel = activeFilter === "all" ? "All posts" : POST_TYPE_CONFIG[activeFilter].label;
+  const previewPosts = (posts ?? []).slice(0, 3);
+
+  function openFeed(view: (typeof ROOM_VIEWS)[number] = "split") {
+    setActiveView(view);
+
+    window.setTimeout(() => {
+      feedSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }, 80);
+  }
 
   if (room === undefined) {
     return <div className="m-4 h-48 animate-pulse rounded-[28px] bg-white/5 sm:m-6" />;
@@ -167,9 +183,9 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                       <Sparkles size={15} className="text-[var(--app-violet)]" />
                       <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-soft)]">Room intelligence</p>
                     </div>
-                    <h2 className="mt-2 text-2xl font-semibold text-[var(--app-text)] dark:text-white">Start with the room, not the noise.</h2>
+                    <h2 className="mt-2 text-2xl font-semibold text-[var(--app-text)] dark:text-white">See the room state fast, then move straight into the feed.</h2>
                     <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">
-                      Uniboard surfaces the current state of this room before opening the full thread stream, so members can orient themselves quickly.
+                      Uniboard keeps the room summary and controls visible, but the post stream remains the main working surface for reading, commenting, and collaboration.
                     </p>
                   </div>
 
@@ -233,7 +249,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                         Presence and tools
                       </div>
                       <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">
-                        Keep the room summary, member activity, and moderation tools visible while deciding whether to expand into the full discussion stream.
+                        Use this side of the room to stay oriented while the discussion feed remains the primary reading and action surface.
                       </p>
                     </div>
                   </div>
@@ -355,32 +371,131 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
             </div>
 
             {!showFeed ? (
-              <div className="mt-4 rounded-[28px] border border-dashed border-[var(--app-line-strong)] bg-white/40 px-5 py-5 text-sm text-[var(--app-text-soft)] dark:bg-white/[0.03]">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)]">
+                <section className="rounded-[30px] border border-dashed border-[var(--app-line-strong)] bg-white/40 px-5 py-5 text-sm text-[var(--app-text-soft)] dark:bg-white/[0.03]">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Feed preview</p>
+                      <p className="mt-2 max-w-3xl leading-7">
+                        The room opens in overview mode to reduce cognitive load, but the post stream stays one action away. Preview the latest activity here, then expand into a scrollable feed when you need full discussion detail.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button type="button" onClick={() => openFeed("split")} className="app-button app-button-secondary self-start">
+                        Open split view
+                        <ChevronRight size={15} />
+                      </button>
+                      <button type="button" onClick={() => openFeed("feed")} className="app-button app-button-primary self-start">
+                        Full feed
+                        <ArrowDown size={15} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 grid gap-3">
+                    {posts === undefined ? (
+                      Array.from({ length: 3 }).map((_, index) => (
+                        <div key={index} className="h-24 animate-pulse rounded-[22px] bg-white/10" />
+                      ))
+                    ) : previewPosts.length > 0 ? (
+                      previewPosts.map((post) => (
+                        <button
+                          key={post._id}
+                          type="button"
+                          onClick={() => openFeed("feed")}
+                          className="text-left"
+                        >
+                          <div className="rounded-[24px] border border-[var(--app-line)] bg-white/60 px-4 py-4 transition hover:bg-white/80 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="app-chip">{POST_TYPE_CONFIG[post.type as keyof typeof POST_TYPE_CONFIG]?.label ?? post.type}</span>
+                              <span className="text-xs text-[var(--app-text-muted)]">{post.commentCount ?? 0} comments</span>
+                              {post.isPinned ? <span className="app-chip">Pinned</span> : null}
+                            </div>
+                            <p className="mt-3 line-clamp-3 text-sm leading-7 text-[var(--app-text)] dark:text-[var(--app-text-soft)]">{post.content}</p>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="rounded-[24px] border border-[var(--app-line)] bg-white/50 px-4 py-5 text-[var(--app-text-soft)] dark:bg-white/[0.03]">
+                        No visible posts yet. Open the composer to start the room feed.
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                <aside className="glass-panel rounded-[30px] p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">How scrolling works</p>
+                      <h3 className="mt-2 text-lg font-semibold text-white">Make the feed obvious</h3>
+                    </div>
+                    <Eye size={18} className="text-[var(--app-primary-strong)]" />
+                  </div>
+                  <div className="mt-4 space-y-3 text-sm leading-7 text-[var(--app-text-soft)]">
+                    <p>Use <span className="font-semibold text-white">split view</span> to keep the summary visible while scrolling posts.</p>
+                    <p>Use <span className="font-semibold text-white">full feed</span> when you want continuous reading through posts and comments.</p>
+                    <p>The latest activity preview above is clickable and takes you directly into the feed section.</p>
+                  </div>
+                  <div className="mt-4 rounded-[22px] border border-[var(--app-line)] bg-white/5 px-4 py-3 text-sm text-[var(--app-text-soft)]">
+                    Current room activity: <span className="font-semibold text-white">{room.postCount} posts</span>
+                  </div>
+                </aside>
+              </div>
+            ) : (
+              <div
+                ref={feedSectionRef}
+                className="room-feed-anchor mt-4 rounded-[26px] border border-[var(--app-line)] bg-white/45 px-5 py-4 dark:bg-white/[0.03]"
+              >
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Feed hidden by default</p>
-                    <p className="mt-2 max-w-3xl leading-7">
-                      The room opens in overview mode to reduce cognitive load. Switch to split view or full feed when you are ready to inspect posts, comments, and uploads.
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Room feed</p>
+                    <h3 className="mt-1 text-lg font-semibold text-[var(--app-text)] dark:text-white">
+                      The post stream is the main workspace here
+                    </h3>
+                    <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">
+                      {activeView === "split"
+                        ? "You are in split view. Posts remain the primary surface while room context stays available beside them."
+                        : "You are in full feed mode. Scroll continuously through posts, comments, and uploads."}
                     </p>
                   </div>
-                  <button type="button" onClick={() => setActiveView("split")} className="app-button app-button-secondary self-start">
-                    Expand feed
-                    <ChevronRight size={15} />
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" onClick={() => setActiveView("overview")} className="app-button app-button-secondary">
+                      Back to overview
+                    </button>
+                    {activeView === "split" ? (
+                      <button type="button" onClick={() => setActiveView("feed")} className="app-button app-button-primary">
+                        Full feed mode
+                      </button>
+                    ) : (
+                      <button type="button" onClick={() => setActiveView("split")} className="app-button app-button-primary">
+                        Split view mode
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[var(--app-line)] pt-4">
+                  <span className="app-chip">{activeFilterLabel}</span>
+                  <span className="app-chip">{room.postCount} posts in room</span>
+                  <span className="app-chip">{room.memberCount} members</span>
+                  {hasPinnedPosts ? <span className="app-chip">{pinnedPosts?.length} pinned</span> : null}
+                  <Link href="#room-post-list" className="app-button app-button-secondary ml-auto min-h-[2.5rem] rounded-2xl px-3 py-2 text-sm">
+                    Jump into posts
+                    <ArrowDown size={14} />
+                  </Link>
                 </div>
               </div>
-            ) : null}
+            )}
           </div>
         </div>
 
         {showFeed ? (
           <div className="flex min-h-0 flex-col overflow-hidden">
-            <div className={cn("grid min-h-0 flex-1 gap-0", activeView === "split" ? "2xl:grid-cols-[minmax(22rem,0.8fr)_minmax(0,1.4fr)]" : "")}>
+            <div className={cn("grid min-h-0 flex-1 gap-0", activeView === "split" ? "xl:grid-cols-[minmax(20rem,0.72fr)_minmax(0,1.45fr)]" : "")}>
               {activeView === "split" ? (
-                <aside className="hidden border-r border-[var(--app-line)] bg-[rgba(255,255,255,0.42)] 2xl:block">
+                <aside className="hidden border-r border-[var(--app-line)] bg-[rgba(255,255,255,0.42)] xl:block">
                   <div className="app-scroll h-full">
                     <div className="page-wrap py-5">
-                      <div className="glass-panel rounded-[28px] p-5">
+                      <div className="glass-panel sticky top-5 rounded-[28px] p-5">
                         <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Split view context</p>
                         <h3 className="mt-2 text-lg font-semibold text-white">Keep orientation while reviewing posts</h3>
                         {hasSummary ? (
@@ -414,6 +529,25 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
               <div className="min-h-0 overflow-hidden">
                 <div className="app-scroll min-h-0 h-full px-1 pb-8">
+                  <section id="room-post-list" className="mx-auto w-full max-w-[62rem] px-4 pt-5 sm:px-6">
+                    <div className="rounded-[26px] border border-[var(--app-line)] bg-white/45 px-4 py-4 dark:bg-white/[0.03]">
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Live discussion</p>
+                          <h4 className="mt-1 text-lg font-semibold text-[var(--app-text)] dark:text-white">Posts, comments, and uploads</h4>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <button type="button" onClick={() => setComposerOpen(true)} className="app-button app-button-primary min-h-[2.6rem] rounded-2xl px-4 py-2 text-sm">
+                            <PlusSquare size={14} />
+                            New post
+                          </button>
+                          <button type="button" onClick={() => setActiveView("overview")} className="app-button app-button-secondary min-h-[2.6rem] rounded-2xl px-4 py-2 text-sm">
+                            Room overview
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
                   <PostFeed
                     posts={posts}
                     roomId={roomId}

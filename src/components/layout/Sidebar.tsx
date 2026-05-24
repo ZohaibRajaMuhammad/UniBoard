@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
 import {
@@ -12,6 +12,7 @@ import {
   Crown,
   Home,
   Plus,
+  Shield,
   Settings,
   Search,
   Trophy
@@ -71,6 +72,20 @@ export function Sidebar() {
   const totalUnread = useQuery(api.rooms.getTotalUnreadCount);
   const [showCreateRoom, setShowCreateRoom] = useState(false);
 
+  const dynamicNavGroups = useMemo(() => {
+    if (currentUser?.role !== "super_admin") {
+      return navGroups;
+    }
+
+    return [
+      ...navGroups,
+      {
+        label: "Administration",
+        items: [{ href: "/admin", label: "Admin", icon: Shield }]
+      }
+    ];
+  }, [currentUser?.role]);
+
   return (
     <div className="sidebar-theme-surface flex h-full w-full flex-col border-r border-[var(--app-line)] backdrop-blur">
       <div className="flex min-h-[5.5rem] items-center gap-3 border-b border-[var(--app-line)] px-5">
@@ -95,7 +110,7 @@ export function Sidebar() {
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="app-scroll min-h-0 flex-1 px-3 py-3">
           <nav className="space-y-4">
-            {navGroups.map((group) => (
+            {dynamicNavGroups.map((group) => (
               <section key={group.label} className="space-y-1.5">
                 <div className="px-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">{group.label}</p>

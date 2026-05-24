@@ -27,11 +27,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         {isAppConfigured ? (
           <ClerkProvider publishableKey={appEnv.clerkPublishableKey}>
-            <ThemeProvider>
-              <NotificationProvider>
-                <ConvexClientProvider>{children}</ConvexClientProvider>
-              </NotificationProvider>
-            </ThemeProvider>
+            <ConvexClientProvider>
+              <ThemeProvider>
+                <NotificationProvider>{children}</NotificationProvider>
+              </ThemeProvider>
+            </ConvexClientProvider>
           </ClerkProvider>
         ) : (
           <DeploymentSetupNotice />

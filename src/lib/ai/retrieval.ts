@@ -11,6 +11,10 @@ export type SourcePost = {
   content: string;
   tags: string[];
   createdAt: number;
+  authorRole?: string | null;
+  isResolved?: boolean;
+  isPinned?: boolean;
+  commentCount?: number;
 };
 
 export type RetrievedChunk = {
@@ -23,6 +27,9 @@ export type RetrievedChunk = {
   quote: string;
   content: string;
   score: number;
+  authorityBand: "canonical" | "trusted" | "community";
+  freshnessBand: "fresh" | "recent" | "stale";
+  sourceTier: number;
 };
 
 const embeddingCache = new Map<string, number[]>();
@@ -54,6 +61,48 @@ function tokenize(value: string) {
     .filter((token) => token.length > 2);
 }
 
+function getAuthorityBand(post: SourcePost): RetrievedChunk["authorityBand"] {
+  const role = post.authorRole?.toLowerCase();
+  const isAuthority = role === "teacher" || role === "admin" || role === "super_admin";
+
+  if (isAuthority && (post.type === "announcement" || post.type === "deadline" || post.type === "resource" || post.isPinned)) {
+    return "canonical";
+  }
+
+  if (isAuthority || post.isResolved || post.isPinned) {
+    return "trusted";
+  }
+
+  return "community";
+}
+
+function getFreshnessBand(createdAt: number): RetrievedChunk["freshnessBand"] {
+  const ageMs = Date.now() - createdAt;
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  if (ageMs <= 7 * dayMs) {
+    return "fresh";
+  }
+
+  if (ageMs <= 45 * dayMs) {
+    return "recent";
+  }
+
+  return "stale";
+}
+
+function getSourceTier(authorityBand: RetrievedChunk["authorityBand"]) {
+  if (authorityBand === "canonical") {
+    return 1;
+  }
+
+  if (authorityBand === "trusted") {
+    return 2;
+  }
+
+  return 3;
+}
+
 function buildChunks(posts: SourcePost[]) {
   return posts.flatMap((post) => {
     const normalized = [post.title, post.content, ...post.tags].filter(Boolean).join("\n").trim();
@@ -64,6 +113,9 @@ function buildChunks(posts: SourcePost[]) {
     const chunkSize = 700;
     const overlap = 120;
     const chunks: RetrievedChunk[] = [];
+    const authorityBand = getAuthorityBand(post);
+    const freshnessBand = getFreshnessBand(post.createdAt);
+    const sourceTier = getSourceTier(authorityBand);
 
     for (let start = 0; start < normalized.length; start += chunkSize - overlap) {
       const content = normalized.slice(start, start + chunkSize).trim();
@@ -80,7 +132,10 @@ function buildChunks(posts: SourcePost[]) {
         type: post.type,
         quote: content.slice(0, 220),
         content,
-        score: 0
+        score: 0,
+        authorityBand,
+        freshnessBand,
+        sourceTier
       });
     }
 
@@ -108,12 +163,16 @@ export async function retrieveChunks({
   client,
   question,
   posts,
-  limit = AI_MAX_CHUNKS
+  limit = AI_MAX_CHUNKS,
+  strategy = "knowledge",
+  localContext
 }: {
   client: OpenAI;
   question: string;
   posts: SourcePost[];
   limit?: number;
+  strategy?: "knowledge" | "mention" | "composer";
+  localContext?: string;
 }) {
   const chunks = buildChunks(posts).slice(0, 120);
   if (chunks.length === 0) {
@@ -123,6 +182,7 @@ export async function retrieveChunks({
   assertContextBudget(chunks.map((chunk) => chunk.content));
 
   const queryTokens = new Set(tokenize(question));
+  const localContextTokens = new Set(tokenize(localContext ?? ""));
   const embeddings = await embedMany(client, [question, ...chunks.map((chunk) => chunk.content)]);
   const queryEmbedding = embeddings[0] ?? [];
 
@@ -133,9 +193,30 @@ export async function retrieveChunks({
         0
       );
       const semanticScore = cosineSimilarity(queryEmbedding, embeddings[index + 1] ?? []);
+      const localContextScore =
+        localContextTokens.size === 0
+          ? 0
+          : tokenize(chunk.content).reduce((sum, token) => sum + (localContextTokens.has(token) ? 0.07 : 0), 0);
+      const authorityScore =
+        chunk.authorityBand === "canonical" ? (strategy === "knowledge" ? 0.28 : 0.18) : chunk.authorityBand === "trusted" ? 0.14 : 0;
+      const isDeadlineQuery = /deadline|due|urgent|when/.test(question.toLowerCase());
+      const freshnessScore =
+        chunk.freshnessBand === "fresh" ? 0.09 : chunk.freshnessBand === "recent" ? 0.04 : isDeadlineQuery ? -0.04 : 0;
+      const structureScore =
+        (chunk.type === "deadline" && /deadline|due|urgent|when/.test(question.toLowerCase()) ? 0.18 : 0) +
+        (chunk.type === "question" && strategy === "mention" ? 0.06 : 0) +
+        (chunk.type === "announcement" && strategy === "knowledge" ? 0.04 : 0);
+
+      const totalScore =
+        strategy === "mention"
+          ? semanticScore + lexicalScore + localContextScore + authorityScore + freshnessScore + structureScore
+          : strategy === "composer"
+            ? semanticScore + lexicalScore + localContextScore * 0.5 + authorityScore * 0.8 + freshnessScore
+            : semanticScore + lexicalScore + authorityScore + freshnessScore + structureScore;
+
       return {
         ...chunk,
-        score: Number((semanticScore + lexicalScore).toFixed(4))
+        score: Number(totalScore.toFixed(4))
       };
     })
     .sort((left, right) => right.score - left.score)

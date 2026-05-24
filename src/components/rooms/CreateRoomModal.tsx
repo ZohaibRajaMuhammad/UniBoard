@@ -2,10 +2,11 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { Sparkles, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useNotifier } from "@/components/providers/NotificationProvider";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { BATCHES, ROOM_COLORS } from "@/lib/constants";
 import { ROOM_ICON_OPTIONS } from "@/lib/ui-icons";
 
@@ -21,6 +22,7 @@ type CreateRoomForm = {
 
 export function CreateRoomModal({ onClose }: { onClose: () => void }) {
   const { notify } = useNotifier();
+  const currentUser = useCurrentUser();
   const createRoom = useMutation(api.rooms.create);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState<CreateRoomForm>({
@@ -32,6 +34,12 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
     color: ROOM_COLORS[0],
     emoji: ROOM_ICON_OPTIONS[0].value
   });
+
+  useEffect(() => {
+    if (currentUser?.role === "student") {
+      setForm((current) => ({ ...current, isPublic: false }));
+    }
+  }, [currentUser?.role]);
 
   async function handleSubmit() {
     if (!form.name.trim() || !form.subject.trim()) {
@@ -93,7 +101,9 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
                   <Sparkles size={15} />
                   Room quality checklist
                 </div>
-                Keep the title short, the subject code precise, and the description specific enough that students know exactly what belongs here.
+                {currentUser?.role === "student"
+                  ? "Student-created rooms are kept private by policy. Use them for study groups, project coordination, and focused collaboration rather than official course broadcasting."
+                  : "Keep the title short, the subject code precise, and the description specific enough that students know exactly what belongs here."}
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -131,6 +141,7 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
                     value={String(form.isPublic)}
                     onChange={(event) => setForm((current) => ({ ...current, isPublic: event.target.value === "true" }))}
                     className="app-select"
+                    disabled={currentUser?.role === "student"}
                   >
                     <option value="true">Public to batch</option>
                     <option value="false">Private</option>

@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 
 export type AppTheme = "dark" | "light";
 
@@ -26,12 +28,17 @@ function applyTheme(theme: AppTheme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const currentUser = useQuery(api.users.getCurrentUser);
+  const updateProfile = useMutation(api.users.updateProfile);
   const [theme, setThemeState] = useState<AppTheme>("dark");
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
+    const userTheme = currentUser?.theme;
     const nextTheme: AppTheme =
-      stored === "light" || stored === "dark"
+      userTheme === "light" || userTheme === "dark"
+        ? userTheme
+        : stored === "light" || stored === "dark"
         ? stored
         : window.matchMedia("(prefers-color-scheme: light)").matches
           ? "light"
@@ -39,7 +46,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     setThemeState(nextTheme);
     applyTheme(nextTheme);
-  }, []);
+  }, [currentUser?.theme]);
 
   const value = useMemo<ThemeContextValue>(
     () => ({
@@ -48,15 +55,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setThemeState(nextTheme);
         window.localStorage.setItem(STORAGE_KEY, nextTheme);
         applyTheme(nextTheme);
+        if (currentUser && currentUser.theme !== nextTheme) {
+          void updateProfile({ theme: nextTheme }).catch(() => null);
+        }
       },
       toggleTheme: () => {
         const nextTheme = theme === "dark" ? "light" : "dark";
         setThemeState(nextTheme);
         window.localStorage.setItem(STORAGE_KEY, nextTheme);
         applyTheme(nextTheme);
+        if (currentUser && currentUser.theme !== nextTheme) {
+          void updateProfile({ theme: nextTheme }).catch(() => null);
+        }
       }
     }),
-    [theme]
+    [currentUser, theme, updateProfile]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

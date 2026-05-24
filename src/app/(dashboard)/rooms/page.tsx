@@ -82,7 +82,11 @@ export default function RoomsPage() {
                 Discover public spaces for your batch, join high-signal rooms, and create focused channels when the class needs a clean home.
               </p>
             </div>
-            <button onClick={() => setShowModal(true)} className="app-button app-button-primary w-full sm:w-auto">
+            <button
+              onClick={() => setShowModal(true)}
+              disabled={user?.role === "pending"}
+              className="app-button app-button-primary w-full disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
               <Plus size={16} />
               Create room
             </button>
@@ -127,7 +131,7 @@ export default function RoomsPage() {
                 <button
                   type="button"
                   onClick={() => void handleJoinByCode()}
-                  disabled={!joinCode.trim() || isJoiningByCode}
+                  disabled={!joinCode.trim() || isJoiningByCode || user?.role === "pending"}
                   className="app-button app-button-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isJoiningByCode ? "Joining..." : "Join by code"}
@@ -147,6 +151,11 @@ export default function RoomsPage() {
               Optimized for fast subject discovery
             </div>
           </div>
+          {user?.role === "pending" ? (
+            <div className="mt-5 rounded-[24px] border border-amber-400/20 bg-amber-500/10 p-4 text-sm leading-7 text-amber-100">
+              Pending accounts can browse room discovery, but joining rooms or creating governed spaces requires completed student setup or approved teacher access.
+            </div>
+          ) : null}
         </div>
 
         {publicRooms === undefined ? (
@@ -174,7 +183,7 @@ export default function RoomsPage() {
                 <RoomCard room={room} />
                 <button
                   onClick={() => void handleJoinPublicRoom(room._id)}
-                  disabled={joiningRoomId === room._id}
+                  disabled={joiningRoomId === room._id || user?.role === "pending"}
                   className="app-button app-button-secondary w-full disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {joiningRoomId === room._id ? "Joining..." : "Join room"}

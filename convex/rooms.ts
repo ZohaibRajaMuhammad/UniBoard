@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getCurrentUser, getCurrentUserOrThrow, getMembership, canModerateRoom, logModerationAction } from "./lib";
+import { getCurrentUser, getCurrentUserOrThrow, getMembership, canModerateRoom, logModerationAction, assertPortalAccess } from "./lib";
 
 function generateJoinCode() {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -112,7 +112,14 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
+    assertPortalAccess(user);
     const now = Date.now();
+
+    const isElevatedCreator = user.role === "teacher" || user.role === "super_admin";
+
+    if (args.isPublic && !isElevatedCreator) {
+      throw new Error("Only teachers and super admins can create public rooms.");
+    }
 
     const roomId = await ctx.db.insert("rooms", {
       name: args.name.trim(),
@@ -125,9 +132,9 @@ export const create = mutation({
       color: args.color,
       emoji: args.emoji,
       joinCode: args.isPublic ? undefined : generateJoinCode(),
-      allowStudentInvite: args.allowStudentInvite ?? false,
+      allowStudentInvite: isElevatedCreator ? args.allowStudentInvite ?? false : false,
       allowAnonymous: args.allowAnonymous ?? true,
-      aiEnabled: args.aiEnabled ?? false,
+      aiEnabled: isElevatedCreator ? args.aiEnabled ?? false : false,
       memberCount: 1,
       postCount: 0,
       lastPostAt: undefined,
@@ -161,6 +168,7 @@ export const join = mutation({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
+    assertPortalAccess(user);
     const normalizedJoinCode = args.joinCode?.trim().toUpperCase();
     const room = args.joinCode
       ? await ctx.db
@@ -179,7 +187,9 @@ export const join = mutation({
       throw new Error("Room is archived");
     }
 
-    if (!room.isPublic && !normalizedJoinCode) {
+    const canBypassPrivateCode = (user.role === "teacher" || user.role === "super_admin") && Boolean(args.roomId);
+
+    if (!room.isPublic && !normalizedJoinCode && !canBypassPrivateCode) {
       throw new Error("Private rooms require a valid join code.");
     }
 
@@ -271,6 +281,7 @@ export const updateSettings = mutation({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
+    assertPortalAccess(user);
     const membership = await getMembership(ctx, args.roomId, user._id);
     const room = await ctx.db.get(args.roomId);
 
@@ -285,6 +296,14 @@ export const updateSettings = mutation({
 
     if (room.isArchived) {
       throw new Error("Archived rooms are read-only.");
+    }
+
+    if (args.isPublic === true && user.role !== "teacher" && user.role !== "super_admin") {
+      throw new Error("Only teachers and super admins can expose a room publicly.");
+    }
+
+    if (args.aiEnabled === true && user.role !== "teacher" && user.role !== "super_admin") {
+      throw new Error("Only teachers and super admins can enable room AI.");
     }
 
     if (args.name !== undefined && !args.name.trim()) {
@@ -315,10 +334,11 @@ export const setMemberRole = mutation({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
+    assertPortalAccess(user);
     const actorMembership = await getMembership(ctx, args.roomId, user._id);
 
-    if (user.role !== "teacher" && actorMembership?.role !== "owner") {
-      throw new Error("Owner or teacher only");
+    if (user.role !== "teacher" && user.role !== "super_admin" && actorMembership?.role !== "owner") {
+      throw new Error("Owner, teacher, or super admin only");
     }
 
     const targetMembership = await getMembership(ctx, args.roomId, args.targetUserId);
@@ -346,6 +366,7 @@ export const muteOrBanMember = mutation({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
+    assertPortalAccess(user);
     const actorMembership = await getMembership(ctx, args.roomId, user._id);
 
     if (!canModerateRoom(user, actorMembership)) {
@@ -397,6 +418,68 @@ export const muteOrBanMember = mutation({
               ? "ban_member"
               : "unban_member",
       reason: args.reason?.trim() || undefined
+    });
+  }
+});
+
+export const getAdminRoomOverview = query({
+  args: {},
+  handler: async (ctx) => {
+    const actor = await getCurrentUser(ctx);
+    if (!actor || actor.role !== "super_admin") {
+      return [];
+    }
+
+    const rooms = await ctx.db.query("rooms").collect();
+    const enriched = await Promise.all(
+      rooms.map(async (room) => {
+        const ownerMembership = await ctx.db
+          .query("roomMembers")
+          .withIndex("by_roomId", (query) => query.eq("roomId", room._id))
+          .collect();
+        const owner = ownerMembership.find((member) => member.role === "owner");
+        const ownerUser = owner ? await ctx.db.get(owner.userId) : null;
+
+        return {
+          _id: room._id,
+          name: room.name,
+          subject: room.subject,
+          batch: room.batch,
+          isPublic: room.isPublic,
+          isArchived: room.isArchived ?? false,
+          aiEnabled: room.aiEnabled ?? false,
+          memberCount: room.memberCount,
+          postCount: room.postCount,
+          ownerName: ownerUser?.name ?? "Unknown",
+          ownerRole: ownerUser?.role ?? "student",
+          updatedAt: room.updatedAt ?? room.createdAt
+        };
+      })
+    );
+
+    return enriched.sort((left, right) => right.updatedAt - left.updatedAt).slice(0, 24);
+  }
+});
+
+export const setArchiveStateBySuperAdmin = mutation({
+  args: {
+    roomId: v.id("rooms"),
+    archived: v.boolean()
+  },
+  handler: async (ctx, args) => {
+    const actor = await getCurrentUserOrThrow(ctx);
+    if (actor.role !== "super_admin") {
+      throw new Error("Super admin only");
+    }
+
+    const room = await ctx.db.get(args.roomId);
+    if (!room) {
+      throw new Error("Room not found");
+    }
+
+    await ctx.db.patch(room._id, {
+      isArchived: args.archived,
+      updatedAt: Date.now()
     });
   }
 });

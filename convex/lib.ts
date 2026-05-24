@@ -77,6 +77,16 @@ export function canModerateRoom(user: Doc<"users">, membership: Doc<"roomMembers
   );
 }
 
+export function assertPortalAccess(user: Doc<"users">) {
+  if (user.role === "pending") {
+    throw new Error("Finish profile onboarding or wait for approval before using collaborative workspace actions.");
+  }
+}
+
+export function isTeacherAccessRequested(user: Doc<"users">) {
+  return (user.badges ?? []).includes("teacher_access_requested");
+}
+
 export async function createNotification(
   ctx: MutationCtx,
   notification: Omit<Doc<"notifications">, "_id" | "_creationTime">

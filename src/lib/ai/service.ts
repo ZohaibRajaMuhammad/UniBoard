@@ -18,7 +18,15 @@ import type {
   RoomSummary,
   StudyPlan
 } from "./contracts";
-import { extractAssistantUserRequest } from "./mentions";
+import {
+  buildAssistantInstructions,
+  buildAssistantSuggestions,
+  buildKnowledgeFollowUp,
+  buildKnowledgeInstructions,
+  classifyAssistantIntent,
+  classifyKnowledgeIntent
+} from "./intents";
+import { extractAssistantUserRequest, parseAssistantPromptContext } from "./mentions";
 import type { SourcePost } from "./retrieval";
 import { retrieveChunks } from "./retrieval";
 import { AiValidationError } from "./safety";
@@ -269,7 +277,11 @@ async function getRoomPosts(token: string, room: RoomRecord): Promise<SourcePost
     type: post.type,
     content: post.content,
     tags: post.tags ?? [],
-    createdAt: post.createdAt
+    createdAt: post.createdAt,
+    authorRole: post.author?.role ?? null,
+    isResolved: post.isResolved,
+    isPinned: post.isPinned,
+    commentCount: post.commentCount ?? 0
   }));
 }
 
@@ -383,8 +395,15 @@ function mapKnowledgeSources(postIds: string[], chunks: Awaited<ReturnType<typeo
     title: chunk.title,
     type: chunk.type,
     quote: chunk.quote,
-    score: chunk.score
+    score: chunk.score,
+    authorityBand: chunk.authorityBand,
+    freshnessBand: chunk.freshnessBand,
+    sourceTier: chunk.sourceTier
   }));
+}
+
+function buildMentionLocalContext(value: ReturnType<typeof parseAssistantPromptContext>) {
+  return [value.postTitle, value.postContent, value.parentCommentContent].filter(Boolean).join("\n\n");
 }
 
 function isJoinedClassesQuestion(value: string) {
@@ -617,6 +636,7 @@ async function runWithFallback<T>({
 
 export async function getKnowledgeAnswer(question: string) {
   const { userId, token } = await getConvexToken();
+  const knowledgeIntent = classifyKnowledgeIntent(question);
 
   return runWithFallback<KnowledgeAnswer>({
     route: "/api/v1/ai/knowledge/query",
@@ -624,18 +644,17 @@ export async function getKnowledgeAnswer(question: string) {
     primary: async () => {
       const { posts } = await getScopedPosts(token);
       return withTimeout(async (client, signal) => {
-        const chunks = await retrieveChunks({ client, question, posts });
+        const chunks = await retrieveChunks({ client, question, posts, strategy: "knowledge" });
         const parsed = await parseStructured({
           client,
           signal,
           schema: knowledgeSchema,
           schemaName: "knowledge_answer",
-          instructions:
-            "Answer only from the provided study sources. Lead with the answer, keep it concise, structured, and professional, and avoid unnecessary clarification. If evidence is partial, say so directly. If evidence is weak, abstain plainly. Never invent facts, dates, or citations.",
+          instructions: buildKnowledgeInstructions(knowledgeIntent),
           input: `Question:\n${question}\n\nAuthorized sources:\n${chunks
             .map(
               (chunk, index) =>
-                `[${index + 1}] ${chunk.roomName} | ${chunk.title}\n${chunk.content}`
+                `[${index + 1}] ${chunk.roomName} | ${chunk.title} | authority=${chunk.authorityBand} | freshness=${chunk.freshnessBand}\n${chunk.content}`
             )
             .join("\n\n")}`
         });
@@ -643,7 +662,7 @@ export async function getKnowledgeAnswer(question: string) {
         return {
           answer: parsed.answer,
           confidenceBand: parsed.confidenceBand,
-          followUp: parsed.followUp,
+          followUp: parsed.followUp ?? buildKnowledgeFollowUp(knowledgeIntent),
           abstained: parsed.abstained,
           sources: mapKnowledgeSources(parsed.sourcePostIds, chunks)
         };
@@ -654,7 +673,7 @@ export async function getKnowledgeAnswer(question: string) {
       return {
         answer: result.answer,
         confidenceBand: toConfidenceBand(result.confidence),
-        followUp: "Name the room, concept, or deadline more explicitly to improve grounding.",
+        followUp: buildKnowledgeFollowUp(knowledgeIntent),
         abstained: result.mode === "fallback",
         sources: result.sources.map((source) => ({
           ...source,
@@ -902,7 +921,10 @@ export async function getRoomSummary(roomId: string) {
 
 export async function getAssistantReply(message: string, roomId?: string) {
   const { userId, token } = await getConvexToken();
-  const normalizedMessage = extractAssistantUserRequest(message);
+  const mentionContext = parseAssistantPromptContext(message);
+  const normalizedMessage = mentionContext.userRequest || extractAssistantUserRequest(message);
+  const assistantIntent = classifyAssistantIntent(normalizedMessage, mentionContext);
+  const localMentionContext = buildMentionLocalContext(mentionContext);
 
   return runWithFallback<AssistantReply>({
     route: "/api/v1/ai/assistant",
@@ -914,23 +936,31 @@ export async function getAssistantReply(message: string, roomId?: string) {
       }
       const { posts } = await getScopedPosts(token, roomId);
       return withTimeout(async (client, signal) => {
-        const chunks = await retrieveChunks({ client, question: normalizedMessage, posts });
+        const retrievalQuery = [normalizedMessage, mentionContext.postTitle, mentionContext.postType, mentionContext.parentCommentContent]
+          .filter(Boolean)
+          .join("\n");
+        const chunks = await retrieveChunks({
+          client,
+          question: retrievalQuery || normalizedMessage,
+          posts,
+          strategy: "mention",
+          localContext: localMentionContext
+        });
         const parsed = await parseStructured({
           client,
           signal,
           schema: assistantSchema,
           schemaName: "assistant_reply",
-          instructions:
-            "Act as Uniboard's academic workspace assistant. Reply in short, direct, professional language with a familiar but refined tone. Prefer 1 to 3 concise sentences or up to 3 tight bullets. Give the grounded answer first, avoid filler, avoid rephrasing the question, state uncertainty cleanly, and suggest only concrete next actions when useful.",
-          input: `Request:\n${normalizedMessage}\n\nAuthorized context:\n${chunks
-            .map((chunk, index) => `[${index + 1}] ${chunk.roomName} | ${chunk.title}\n${chunk.content}`)
+          instructions: buildAssistantInstructions(assistantIntent),
+          input: `Request:\n${normalizedMessage}\n\nDiscussion context:\nPost type: ${mentionContext.postType ?? "unknown"}\nPost title: ${mentionContext.postTitle ?? "unknown"}\n${mentionContext.postContent ? `Post content:\n${mentionContext.postContent}\n` : ""}${mentionContext.parentCommentContent ? `Parent comment:\n${mentionContext.parentCommentContent}\n` : ""}\nAuthorized context:\n${chunks
+            .map((chunk, index) => `[${index + 1}] ${chunk.roomName} | ${chunk.title} | authority=${chunk.authorityBand} | freshness=${chunk.freshnessBand}\n${chunk.content}`)
             .join("\n\n")}`
         });
 
         return {
           reply: parsed.reply,
           confidenceBand: parsed.confidenceBand,
-          suggestions: parsed.suggestions,
+          suggestions: parsed.suggestions.length > 0 ? parsed.suggestions : buildAssistantSuggestions(assistantIntent, chunks[0]?.roomName ?? null),
           sources: mapKnowledgeSources(parsed.sourcePostIds, chunks)
         };
       });
@@ -960,7 +990,7 @@ export async function getAssistantReply(message: string, roomId?: string) {
       return {
         reply: directSourceAnswer,
         confidenceBand: toConfidenceBand(result.confidence),
-        suggestions: [`Open ${topSource.roomName} if you want the surrounding discussion and source context.`],
+        suggestions: buildAssistantSuggestions(assistantIntent, topSource.roomName),
         sources: result.sources.map((source) => ({
           ...source,
           quote: source.title
@@ -979,7 +1009,7 @@ export async function getComposerSuggestion(prompt: string, roomId?: string) {
     primary: async () => {
       const { posts, rooms } = await getScopedPosts(token, roomId);
       return withTimeout(async (client, signal) => {
-        const chunks = await retrieveChunks({ client, question: prompt, posts, limit: 4 });
+        const chunks = await retrieveChunks({ client, question: prompt, posts, limit: 4, strategy: "composer" });
         const parsed = await parseStructured({
           client,
           signal,

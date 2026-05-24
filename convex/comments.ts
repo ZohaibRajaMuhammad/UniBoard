@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { buildPublicAuthor, createNotification, getCurrentUserOrThrow, getMembership } from "./lib";
+import { assertPortalAccess, buildPublicAuthor, createNotification, getCurrentUserOrThrow, getMembership } from "./lib";
 
 const AI_EMAIL = "uniboard.ai@example.com";
 
@@ -36,6 +36,7 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
+    assertPortalAccess(user);
     const post = await ctx.db.get(args.postId);
     if (!post || post.isDeleted) {
       throw new Error("Post not found");
@@ -113,6 +114,7 @@ export const createAiReply = mutation({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
+    assertPortalAccess(user);
     const post = await ctx.db.get(args.postId);
     if (!post || post.isDeleted) {
       throw new Error("Post not found");
