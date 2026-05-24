@@ -160,12 +160,12 @@ export default function RoomSettingsPage({ params }: { params: { roomId: string 
           </div>
 
           {!canEdit ? (
-            <div className="mt-6 rounded-2xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm text-amber-100">
+            <div className="mt-6 rounded-2xl border border-amber-400/25 bg-amber-500/10 p-4 text-sm text-[var(--app-text)]">
               <div className="flex items-start gap-3">
                 <Lock size={16} className="mt-0.5 shrink-0" />
                 <div>
                   <p className="font-semibold">This room is viewable, but policy edits are restricted.</p>
-                  <p className="mt-1 text-amber-50/90">
+                  <p className="mt-1 text-[var(--app-text-soft)]">
                     The current backend contract allows room owners, teachers, and super admins to save changes. Members can still inspect the room configuration here.
                   </p>
                 </div>
@@ -174,7 +174,7 @@ export default function RoomSettingsPage({ params }: { params: { roomId: string 
           ) : null}
 
           {room.isArchived ? (
-            <div className="mt-6 rounded-2xl border border-red-400/25 bg-red-500/10 p-4 text-sm text-red-100">
+            <div className="mt-6 rounded-2xl border border-red-400/25 bg-red-500/10 p-4 text-sm text-[var(--app-text)]">
               Archived rooms are read-only. Unarchive the room from an administrative workflow before changing policy.
             </div>
           ) : null}
@@ -317,9 +317,9 @@ export default function RoomSettingsPage({ params }: { params: { roomId: string 
 function Field({ label, children, error, className }: { label: string; children: React.ReactNode; error?: string; className?: string }) {
   return (
     <label className={cn("grid gap-2", className)}>
-      <span className="text-sm font-semibold text-gray-200">{label}</span>
+      <span className="text-sm font-semibold text-[var(--app-text-soft)]">{label}</span>
       {children}
-      {error ? <span className="text-xs text-red-300">{error}</span> : null}
+      {error ? <span className="text-xs text-[var(--app-danger)]">{error}</span> : null}
     </label>
   );
 }

@@ -154,7 +154,7 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
 
       <div className="space-y-3">
         {topLevelComments.length === 0 ? (
-          <p className="text-sm text-gray-500">No comments yet.</p>
+          <p className="text-sm text-[var(--app-text-muted)]">No comments yet.</p>
         ) : (
           topLevelComments.map((comment) => (
             <div key={comment._id} className="space-y-2">
@@ -193,7 +193,7 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
         {replyTo ? <p className="mb-2 text-xs text-brand-200">Replying to a comment</p> : null}
 
         <div className="mb-3 flex flex-wrap gap-2">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-300">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-[var(--app-text-soft)]">
             <Sparkles size={12} />
             Quick mentions
           </div>
@@ -216,10 +216,10 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
           rows={3}
           maxLength={500}
           placeholder="Add a comment"
-          className="w-full resize-none rounded-xl bg-transparent text-sm text-white outline-none placeholder:text-gray-500"
+          className="w-full resize-none rounded-xl bg-transparent text-sm text-[var(--app-text)] outline-none placeholder:text-[var(--app-text-muted)]"
         />
 
-        {submitError ? <p className="mt-2 text-sm text-red-300">{submitError}</p> : null}
+        {submitError ? <p className="mt-2 text-sm text-[var(--app-danger)]">{submitError}</p> : null}
 
         <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
@@ -230,7 +230,7 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
           </button>
           <div className="flex flex-wrap items-center gap-2">
             {replyTo ? (
-              <button onClick={() => setReplyTo(undefined)} className="text-xs text-gray-500 transition hover:text-white">
+              <button onClick={() => setReplyTo(undefined)} className="text-xs text-[var(--app-text-muted)] transition hover:text-white">
                 Cancel reply
               </button>
             ) : null}
@@ -269,17 +269,17 @@ function CommentCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-semibold text-white">{comment.author.name}</p>
-            <span className="text-xs text-gray-500">{formatRelativeTime(comment.createdAt)}</span>
+            <span className="text-xs text-[var(--app-text-muted)]">{formatRelativeTime(comment.createdAt)}</span>
           </div>
-          <p className={cn("mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-gray-300", compact && "text-[13px]")}>{comment.content}</p>
+          <p className={cn("mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-[var(--app-text-soft)]", compact && "text-[13px]")}>{comment.content}</p>
           <div className="mt-2 flex items-center gap-3">
             {!compact && onReply ? (
-              <button onClick={onReply} className="text-xs text-gray-500 transition hover:text-white">
+              <button onClick={onReply} className="text-xs text-[var(--app-text-muted)] transition hover:text-white">
                 Reply
               </button>
             ) : null}
             {canDelete && onDelete ? (
-              <button onClick={onDelete} className="inline-flex items-center gap-1 text-xs text-red-300 transition hover:text-red-200">
+              <button onClick={onDelete} className="inline-flex items-center gap-1 text-xs text-[var(--app-danger)] transition hover:text-[var(--app-text)]">
                 <Trash2 size={12} />
                 Delete
               </button>

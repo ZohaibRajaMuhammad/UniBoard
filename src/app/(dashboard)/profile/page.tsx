@@ -98,7 +98,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-white">{user?.name ?? "Loading profile..."}</h1>
+                  <h1 className="text-3xl font-bold text-[var(--app-text)]">{user?.name ?? "Loading profile..."}</h1>
                   <p className="mt-1 text-sm text-[var(--app-text-muted)]">{user?.email ?? " "}</p>
                 </div>
               </div>
@@ -117,7 +117,7 @@ export default function ProfilePage() {
 
         <section className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
           <div className="glass-panel rounded-[28px] p-6">
-            <h2 className="text-2xl font-semibold text-white">Profile details</h2>
+            <h2 className="text-2xl font-semibold text-[var(--app-text)]">Profile details</h2>
             <p className="mt-2 text-sm text-[var(--app-text-muted)]">Keep editable identity fields explicit and easy to review.</p>
 
             {user ? (
@@ -129,7 +129,7 @@ export default function ProfilePage() {
                         <GraduationCap size={18} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-white">Finish access setup</h3>
+                        <h3 className="text-lg font-semibold text-[var(--app-text)]">Finish access setup</h3>
                         <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">
                           Students can activate access immediately. Teacher access is reviewed by a super admin before elevated workspace controls are unlocked.
                         </p>
@@ -240,7 +240,7 @@ export default function ProfilePage() {
               <BookOpenCheck size={18} className="text-[var(--app-violet)]" />
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Learning posture</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">Account context</h2>
+                <h2 className="mt-2 text-2xl font-semibold text-[var(--app-text)]">Account context</h2>
               </div>
             </div>
             <div className="mt-5 space-y-3">
@@ -257,7 +257,7 @@ export default function ProfilePage() {
         </section>
 
         <section className="glass-panel rounded-[28px] p-6">
-          <h2 className="text-2xl font-bold text-white">Saved posts</h2>
+          <h2 className="text-2xl font-bold text-[var(--app-text)]">Saved posts</h2>
           <p className="mt-2 text-sm text-[var(--app-text-muted)]">Posts you bookmarked for later review.</p>
           <div className="mt-6 space-y-4">
             {savedPosts === undefined ? (
@@ -287,7 +287,7 @@ function InfoCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="app-surface-muted rounded-[24px] p-5">
       <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">{label}</p>
-      <p className="mt-2 text-lg font-semibold text-white">{value}</p>
+      <p className="mt-2 text-lg font-semibold text-[var(--app-text)]">{value}</p>
     </div>
   );
 }

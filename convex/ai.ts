@@ -39,6 +39,38 @@ const AI_STOPWORDS = new Set([
   "your"
 ]);
 
+const LOW_SIGNAL_PATTERNS = [
+  /@uniboardai.*@uniboardai/i,
+  /^draft\s+(a|this)\s+/i,
+  /^tell me about\b/i,
+  /^what is\b/i,
+  /^explain\b/i,
+  /^summarize\b/i
+] as const;
+
+function isLowSignalPost(post: {
+  content: string;
+  deadlineTitle?: string | null;
+  resourceTitle?: string | null;
+  tags?: string[] | null;
+}) {
+  const normalized = [post.deadlineTitle, post.resourceTitle, post.content, ...(post.tags ?? [])]
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (normalized.length < 18) {
+    return true;
+  }
+
+  if (LOW_SIGNAL_PATTERNS.some((pattern) => pattern.test(normalized)) && normalized.length < 220) {
+    return true;
+  }
+
+  return (normalized.match(/@uniboardai/gi) ?? []).length >= 2;
+}
+
 function directConceptAnswer(question: string) {
   const normalized = question.toLowerCase();
   if (normalized.includes("convex functions") || normalized.includes("convex function")) {
@@ -103,17 +135,20 @@ export const queryKnowledgeBase = query({
 
     const ranked = await Promise.all(
       posts
-        .filter((post) => !post.isDeleted && !post.isHidden && roomIds.has(post.roomId))
+        .filter((post) => !post.isDeleted && !post.isHidden && roomIds.has(post.roomId) && !isLowSignalPost(post))
         .map(async (post) => {
           const room = await ctx.db.get(post.roomId);
           const haystack = [post.content, post.deadlineTitle, post.resourceTitle, ...(post.tags ?? [])]
             .filter(Boolean)
             .join(" ")
             .toLowerCase();
-          const score = tokens.reduce((total, token) => total + (haystack.includes(token) ? 1 : 0), 0);
-          return score >= 2
+          const matchedTokens = tokens.filter((token) => haystack.includes(token));
+          const score = matchedTokens.length;
+          const coverage = tokens.length === 0 ? 0 : matchedTokens.length / tokens.length;
+          return score >= 2 && coverage >= 0.45
             ? {
                 score,
+                coverage,
                 post,
                 room
               }
@@ -123,7 +158,7 @@ export const queryKnowledgeBase = query({
 
     const matches = ranked
       .filter((item): item is NonNullable<typeof item> => item !== null)
-      .sort((left, right) => right.score - left.score || right.post.createdAt - left.post.createdAt)
+      .sort((left, right) => right.score - left.score || right.coverage - left.coverage || right.post.createdAt - left.post.createdAt)
       .slice(0, 3);
 
     if (matches.length === 0) {

@@ -16,7 +16,7 @@ export function RoomCard({ room }: { room: Doc<"rooms"> }) {
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--app-line)] bg-white/5 text-[var(--app-primary-strong)]">
             <RoomIcon size={22} />
           </div>
-          <h3 className="text-lg font-semibold text-white sm:text-xl">{room.name}</h3>
+          <h3 className="text-lg font-semibold text-[var(--app-text)] sm:text-xl">{room.name}</h3>
           <p className="mt-1 text-sm text-[var(--app-text-muted)]">{room.subject}</p>
         </div>
         <span className="shrink-0 rounded-full border border-[var(--app-line)] bg-white/[0.04] px-3 py-1 text-xs text-[var(--app-text-muted)]">

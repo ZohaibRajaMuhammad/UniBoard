@@ -8,25 +8,25 @@ const PALETTES = [
   {
     shell: "from-sky-500/20 to-blue-500/10",
     ring: "border-sky-400/30",
-    core: "bg-sky-500/18 text-sky-100",
+    core: "bg-sky-500/18 text-[var(--app-text)]",
     dot: "bg-sky-300/80"
   },
   {
     shell: "from-violet-500/18 to-indigo-500/10",
     ring: "border-violet-400/30",
-    core: "bg-violet-500/16 text-violet-100",
+    core: "bg-violet-500/16 text-[var(--app-text)]",
     dot: "bg-violet-300/80"
   },
   {
     shell: "from-emerald-500/18 to-teal-500/10",
     ring: "border-emerald-400/28",
-    core: "bg-emerald-500/16 text-emerald-100",
+    core: "bg-emerald-500/16 text-[var(--app-text)]",
     dot: "bg-emerald-300/80"
   },
   {
     shell: "from-amber-500/18 to-orange-500/10",
     ring: "border-amber-400/30",
-    core: "bg-amber-500/16 text-amber-100",
+    core: "bg-amber-500/16 text-[var(--app-text)]",
     dot: "bg-amber-300/85"
   }
 ];

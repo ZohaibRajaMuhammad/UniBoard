@@ -164,7 +164,7 @@ export default function ReputationPage() {
                     </div>
                   </div>
                   {profileError ? (
-                    <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-100">{profileError}</div>
+                    <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-[var(--app-text)]">{profileError}</div>
                   ) : null}
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     {expertise.length === 0 ? (
@@ -193,7 +193,7 @@ export default function ReputationPage() {
               <div className="space-y-5">
                 <article className="glass-panel rounded-[28px] p-6">
                   <div className="flex items-center gap-3">
-                    <Flame size={18} className="text-amber-500" />
+                    <Flame size={18} className="text-[var(--app-warning)]" />
                     <div>
                       <p className="metric-kicker">Momentum</p>
                       <h2 className="mt-2 text-2xl font-semibold text-white">Current standing</h2>
@@ -249,7 +249,7 @@ function HeroStat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="rounded-[22px] border border-[var(--app-line)] bg-white/5 p-4">
       <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--app-text-muted)]">{label}</p>
-      <p className="mt-3 text-2xl font-black text-white">{value}</p>
+      <p className="mt-3 text-2xl font-black text-[var(--app-text)]">{value}</p>
     </div>
   );
 }

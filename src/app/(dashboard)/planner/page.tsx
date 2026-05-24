@@ -310,7 +310,7 @@ export default function PlannerPage() {
                         <p className="text-sm font-medium text-white">{date.getDate()}</p>
                         <div className="mt-3 space-y-2">
                           {dayEvents.slice(0, 2).map((item) => (
-                            <div key={item.id} className={item.urgency === "high" ? "rounded-xl bg-red-500/15 px-2 py-1 text-[11px] text-red-100" : item.urgency === "medium" ? "rounded-xl bg-amber-500/15 px-2 py-1 text-[11px] text-amber-100" : "rounded-xl bg-emerald-500/15 px-2 py-1 text-[11px] text-emerald-100"}>
+                            <div key={item.id} className={item.urgency === "high" ? "rounded-xl bg-red-500/15 px-2 py-1 text-[11px] text-[var(--app-text)]" : item.urgency === "medium" ? "rounded-xl bg-amber-500/15 px-2 py-1 text-[11px] text-[var(--app-text)]" : "rounded-xl bg-emerald-500/15 px-2 py-1 text-[11px] text-[var(--app-text)]"}>
                               {item.title}
                             </div>
                           ))}
@@ -332,7 +332,7 @@ export default function PlannerPage() {
                   <h2 className="mt-2 text-2xl font-semibold text-white">Recommended sessions</h2>
                   <div className="mt-5 space-y-3">
                     {studyPlanError ? (
-                      <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-100">{studyPlanError}</div>
+                      <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-[var(--app-text)]">{studyPlanError}</div>
                     ) : studyPlan === null ? (
                       Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-20 animate-pulse rounded-2xl bg-white/5" />)
                     ) : studyPlan.data?.sessions.length === 0 ? (
@@ -347,7 +347,7 @@ export default function PlannerPage() {
                               <p className="font-medium text-white">{session.title}</p>
                               <p className="mt-1 text-xs text-[var(--app-text-muted)]">{formatDeadline(session.startAt)} to {new Date(session.endAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</p>
                             </div>
-                            <span className={session.urgency === "high" ? "rounded-full bg-red-500/15 px-3 py-1 text-xs font-medium text-red-100" : session.urgency === "medium" ? "rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-100" : "rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-100"}>
+                            <span className={session.urgency === "high" ? "rounded-full bg-red-500/15 px-3 py-1 text-xs font-medium text-[var(--app-text)]" : session.urgency === "medium" ? "rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-[var(--app-text)]" : "rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-[var(--app-text)]"}>
                               {session.urgency}
                             </span>
                           </div>
@@ -383,7 +383,7 @@ export default function PlannerPage() {
                               <p className="font-medium text-white">{item.title}</p>
                               <p className="mt-1 text-xs text-[var(--app-text-muted)]">{item.roomName ?? "Manual planning item"}</p>
                             </div>
-                            <span className={item.urgency === "high" ? "rounded-full bg-red-500/15 px-3 py-1 text-xs font-medium text-red-100" : item.urgency === "medium" ? "rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-100" : "rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-100"}>
+                            <span className={item.urgency === "high" ? "rounded-full bg-red-500/15 px-3 py-1 text-xs font-medium text-[var(--app-text)]" : item.urgency === "medium" ? "rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-[var(--app-text)]" : "rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-[var(--app-text)]"}>
                               {item.riskScore}%
                             </span>
                           </div>
@@ -438,7 +438,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="stat-card">
       <p className="text-xs uppercase tracking-[0.25em] text-[var(--app-text-muted)]">{label}</p>
-      <p className="mt-4 text-3xl font-black text-white">{value}</p>
+      <p className="mt-4 text-3xl font-black text-[var(--app-text)]">{value}</p>
     </div>
   );
 }

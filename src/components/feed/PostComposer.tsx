@@ -266,11 +266,11 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
       <div className="spotlight-ring glass-panel rounded-[30px] p-4 sm:p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-500">
+            <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--app-text-muted)]">
               <Plus size={14} />
               Compose update
             </p>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-gray-300">{helperLabel}</p>
+            <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--app-text-soft)]">{helperLabel}</p>
           </div>
 
           <button
@@ -283,7 +283,7 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
             disabled={!allowsAnonymous || isRoomArchived}
             className={cn(
               "inline-flex items-center justify-center gap-2 self-start rounded-2xl border px-4 py-2 text-sm transition disabled:cursor-not-allowed disabled:opacity-60",
-              isAnonymous ? "border-brand-400/40 bg-brand-500/10 text-brand-100" : "border-white/10 bg-white/5 text-gray-300"
+              isAnonymous ? "border-brand-400/40 bg-brand-500/10 text-[var(--app-text)]" : "border-white/10 bg-white/5 text-[var(--app-text-soft)]"
             )}
           >
             {isAnonymous ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -295,7 +295,7 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
           <div className="relative">
             <button
               onClick={() => setShowTypes((current) => !current)}
-              className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white"
+              className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-[var(--app-text)]"
             >
               {(() => {
                 const SelectedTypeIcon = getPostTypeIcon(selectedType.value);
@@ -314,7 +314,7 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
                       setPostType(type.value);
                       setShowTypes(false);
                     }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-gray-200 transition hover:bg-white/5"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[var(--app-text-soft)] transition hover:bg-white/5"
                   >
                     {(() => {
                       const TypeIcon = getPostTypeIcon(type.value);
@@ -327,14 +327,14 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
             ) : null}
           </div>
 
-          <div className="panel-chip text-gray-300">{selectedType.label} format selected</div>
-          {canPostAnnouncement ? <div className="panel-chip text-brand-100">Announcement access enabled</div> : null}
-          {!allowsAnonymous ? <div className="panel-chip text-amber-100">Anonymous posting disabled by room policy</div> : null}
-          {isRoomArchived ? <div className="panel-chip text-red-200">Archived rooms are read-only</div> : null}
+          <div className="panel-chip text-[var(--app-text-soft)]">{selectedType.label} format selected</div>
+          {canPostAnnouncement ? <div className="panel-chip text-[var(--app-text)]">Announcement access enabled</div> : null}
+          {!allowsAnonymous ? <div className="panel-chip text-[var(--app-text)]">Anonymous posting disabled by room policy</div> : null}
+          {isRoomArchived ? <div className="panel-chip text-[var(--app-text)]">Archived rooms are read-only</div> : null}
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <div className="panel-chip rounded-2xl px-4 py-2 text-gray-300">
+          <div className="panel-chip rounded-2xl px-4 py-2 text-[var(--app-text-soft)]">
             <Sparkles size={14} />
             Mentions
           </div>
@@ -343,7 +343,7 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
               key={mention}
               type="button"
               onClick={() => insertMention(mention)}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-gray-200 transition hover:bg-white/10"
+              className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-[var(--app-text-soft)] transition hover:bg-white/10"
             >
               {mention}
             </button>
@@ -401,13 +401,13 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
               className="app-textarea"
               placeholder={"Option 1\nOption 2\nOption 3"}
             />
-            <p className="mt-2 text-xs text-gray-500">Each option should be on its own line. Polls use the post vote controls for room feedback.</p>
+              <p className="mt-2 text-xs text-[var(--app-text-muted)]">Each option should be on its own line. Polls use the post vote controls for room feedback.</p>
           </div>
         ) : null}
 
         <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
           <div>
-            <label className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+            <label className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">
               <Tags size={13} />
               Tags
             </label>
@@ -418,7 +418,7 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
               className="app-input"
             />
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs leading-6 text-gray-400">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs leading-6 text-[var(--app-text-muted)]">
             Use comma-separated tags.
             <br />
             Mention teammates or {ROOM_MENTION_AI} directly in the post body.
@@ -433,15 +433,15 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
             maxLength={1000}
             rows={4}
             placeholder="Share something useful with the room..."
-            className="min-h-[140px] w-full rounded-[24px] border border-transparent bg-black/15 px-5 py-4 text-sm leading-7 text-white outline-none transition focus:border-brand-400"
+            className="min-h-[140px] w-full rounded-[24px] border border-transparent bg-black/15 px-5 py-4 text-sm leading-7 text-[var(--app-text)] outline-none transition focus:border-brand-400"
           />
         </div>
 
-        {submitError ? <p className="mt-3 text-sm text-red-300">{submitError}</p> : null}
+        {submitError ? <p className="mt-3 text-sm text-[var(--app-danger)]">{submitError}</p> : null}
         {aiDraftStatus ? <p className="mt-3 text-sm text-[var(--app-text-muted)]">{aiDraftStatus}</p> : null}
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-xs text-gray-500">{content.length}/1000 - Press Enter to post, Shift+Enter for a new line</span>
+          <span className="text-xs text-[var(--app-text-muted)]">{content.length}/1000 - Press Enter to post, Shift+Enter for a new line</span>
           <button
             onClick={() => void handleSubmit()}
             disabled={!content.trim() || isSubmitting || isRoomArchived}

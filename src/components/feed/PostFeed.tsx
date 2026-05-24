@@ -60,7 +60,7 @@ export function PostFeed({
           <FilePlus2 size={28} />
         </div>
         <h2 className="mt-5 text-2xl font-semibold text-white">{emptyStateLabel}</h2>
-        <p className="mt-2 max-w-md text-sm leading-7 text-gray-400">
+        <p className="mt-2 max-w-md text-sm leading-7 text-[var(--app-text-muted)]">
           Start with a note, question, resource, or deadline so the room becomes useful immediately for everyone else.
         </p>
       </div>

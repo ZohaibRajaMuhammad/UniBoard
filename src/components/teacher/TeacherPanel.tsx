@@ -31,7 +31,7 @@ export function TeacherPanel({
   ];
 
   return (
-    <div className="flex h-full min-h-0 flex-col border-l border-[var(--app-line)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(244,248,253,0.98))] text-[var(--app-text)]">
+    <div className="flex h-full min-h-0 flex-col border-l border-[var(--app-line)] bg-[linear-gradient(180deg,rgba(7,17,26,0.98),rgba(9,20,34,0.98))] text-[var(--app-text)]">
       <div className="border-b border-[var(--app-line)] px-5 py-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -52,7 +52,7 @@ export function TeacherPanel({
             <button
               type="button"
               onClick={onClose}
-              className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/80 p-2 text-[var(--app-text-muted)] transition hover:border-[var(--app-line-strong)] hover:text-[var(--app-text)]"
+              className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-muted)] transition hover:border-[var(--app-line-strong)] hover:bg-white/10 hover:text-[var(--app-text)]"
               aria-label="Close teacher panel"
             >
               <X size={16} />
@@ -75,7 +75,7 @@ export function TeacherPanel({
                   "rounded-2xl border px-3 py-3 text-xs font-semibold transition",
                   isActive
                     ? "border-[rgba(49,92,243,0.18)] bg-[rgba(49,92,243,0.1)] text-[var(--app-primary-strong)] shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]"
-                    : "border-[var(--app-line)] bg-white/70 text-[var(--app-text-muted)] hover:border-[var(--app-line-strong)] hover:text-[var(--app-text)]"
+                    : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-muted)] hover:border-[var(--app-line-strong)] hover:bg-white/10 hover:text-[var(--app-text)]"
                 )}
               >
                 <span className="flex items-center justify-center gap-2">
@@ -91,7 +91,7 @@ export function TeacherPanel({
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
         {activeTab === "flagged" ? (
           <div className="space-y-3">
-            <section className="rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.74)] p-4">
+            <section className="app-surface-muted rounded-[22px] p-4">
               <div className="flex items-start gap-3">
                 <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[rgba(198,64,95,0.1)] text-[var(--app-danger)]">
                   <AlertTriangle size={16} />
@@ -108,7 +108,7 @@ export function TeacherPanel({
             {reportedPosts === undefined ? (
               <div className="space-y-3">
                 {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="h-28 animate-pulse rounded-[22px] border border-[var(--app-line)] bg-white/60" />
+                  <div key={index} className="h-28 animate-pulse rounded-[22px] border border-[var(--app-line)] bg-white/5" />
                 ))}
               </div>
             ) : reportedPosts.length === 0 ? (
@@ -118,7 +118,7 @@ export function TeacherPanel({
               />
             ) : (
               reportedPosts.map((post) => (
-                <article key={post._id} className="rounded-[22px] border border-[rgba(198,64,95,0.16)] bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,244,246,0.98))] p-4 shadow-[0_14px_32px_rgba(163,42,72,0.08)]">
+                <article key={post._id} className="rounded-[22px] border border-[rgba(198,64,95,0.16)] bg-[linear-gradient(180deg,rgba(82,25,40,0.28),rgba(31,17,22,0.86))] p-4 shadow-[0_14px_32px_rgba(16,8,12,0.28)]">
                   <div className="flex items-center justify-between gap-3">
                     <p className="metric-kicker text-[var(--app-danger)]">Reported content</p>
                     <span className="rounded-full border border-[rgba(198,64,95,0.14)] bg-[rgba(198,64,95,0.08)] px-3 py-1 text-[11px] font-semibold text-[var(--app-danger)]">
@@ -146,7 +146,7 @@ export function TeacherPanel({
             {members === undefined ? (
               <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="h-24 animate-pulse rounded-[22px] border border-[var(--app-line)] bg-white/60" />
+                  <div key={index} className="h-24 animate-pulse rounded-[22px] border border-[var(--app-line)] bg-white/5" />
                 ))}
               </div>
             ) : members.length === 0 ? (
@@ -156,7 +156,7 @@ export function TeacherPanel({
               />
             ) : (
               members.map((member) => (
-                <article key={member._id} className="rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.78)] p-4 shadow-[0_16px_36px_rgba(59,82,120,0.06)]">
+                <article key={member._id} className="app-surface-muted rounded-[22px] p-4 shadow-[0_16px_36px_rgba(6,12,24,0.18)]">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-[var(--app-text)]">{member.user.name}</p>
@@ -223,7 +223,7 @@ export function TeacherPanel({
                 <StatCard label="Anonymous posts" value={analytics.anonymousPosts} />
               </div>
 
-              <section className="rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.78)] p-4">
+              <section className="app-surface-muted rounded-[22px] p-4">
                 <div className="section-heading">
                   <div>
                     <p className="metric-kicker">Content mix</p>
@@ -252,7 +252,7 @@ export function TeacherPanel({
                 </div>
               </section>
 
-              <section className="rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.78)] p-4">
+              <section className="app-surface-muted rounded-[22px] p-4">
                 <p className="metric-kicker">Posting cadence</p>
                 <h3 className="mt-1 text-sm font-semibold text-[var(--app-text)]">Day-by-day activity</h3>
                 <div className="mt-4 space-y-2">
@@ -276,7 +276,7 @@ export function TeacherPanel({
                 </div>
               </section>
 
-              <section className="rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.78)] p-4">
+              <section className="app-surface-muted rounded-[22px] p-4">
                 <p className="metric-kicker">Top contributors</p>
                 <div className="mt-3 space-y-2">
                   {analytics.topContributors.length === 0 ? (
@@ -303,7 +303,7 @@ export function TeacherPanel({
           ) : (
             <div className="space-y-3">
               {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="h-28 animate-pulse rounded-[22px] border border-[var(--app-line)] bg-white/60" />
+                <div key={index} className="h-28 animate-pulse rounded-[22px] border border-[var(--app-line)] bg-white/5" />
               ))}
             </div>
           )
@@ -315,7 +315,7 @@ export function TeacherPanel({
 
 function EmptyPanelState({ title, detail }: { title: string; detail: string }) {
   return (
-    <div className="rounded-[22px] border border-dashed border-[var(--app-line-strong)] bg-[rgba(255,255,255,0.68)] p-5">
+    <div className="rounded-[22px] border border-dashed border-[var(--app-line-strong)] bg-white/5 p-5">
       <p className="text-sm font-semibold text-[var(--app-text)]">{title}</p>
       <p className="mt-2 text-sm leading-6 text-[var(--app-text-soft)]">{detail}</p>
     </div>
@@ -324,7 +324,7 @@ function EmptyPanelState({ title, detail }: { title: string; detail: string }) {
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.82)] p-4">
+    <div className="stat-card rounded-[22px] p-4">
       <p className="metric-kicker">{label}</p>
       <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--app-text)]">{value}</p>
     </div>
@@ -367,7 +367,7 @@ function MemberAction({
           ? "border-[rgba(198,64,95,0.16)] bg-[rgba(198,64,95,0.08)] text-[var(--app-danger)] hover:bg-[rgba(198,64,95,0.14)]"
           : tone === "warning"
             ? "border-[rgba(185,109,17,0.16)] bg-[rgba(185,109,17,0.08)] text-[var(--app-warning)] hover:bg-[rgba(185,109,17,0.14)]"
-            : "border-[var(--app-line)] bg-[rgba(255,255,255,0.72)] text-[var(--app-text-soft)] hover:border-[var(--app-line-strong)] hover:text-[var(--app-text)]"
+            : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:border-[var(--app-line-strong)] hover:bg-white/10 hover:text-[var(--app-text)]"
       )}
     >
       {label}

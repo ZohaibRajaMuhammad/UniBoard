@@ -45,10 +45,10 @@ export function DeadlineCountdown({ deadlineDate, title }: { deadlineDate: numbe
     <div
       className={cn(
         "mt-4 inline-flex flex-wrap items-center gap-2 rounded-2xl border px-4 py-2 text-xs",
-        status === "safe" && "border-emerald-500/20 bg-emerald-500/10 text-emerald-200",
-        status === "soon" && "border-amber-500/20 bg-amber-500/10 text-amber-200",
-        status === "urgent" && "border-orange-500/20 bg-orange-500/10 text-orange-200",
-        status === "overdue" && "border-red-500/20 bg-red-500/10 text-red-200"
+        status === "safe" && "border-emerald-500/20 bg-emerald-500/10 text-[var(--app-text)]",
+        status === "soon" && "border-amber-500/20 bg-amber-500/10 text-[var(--app-text)]",
+        status === "urgent" && "border-orange-500/20 bg-orange-500/10 text-[var(--app-text)]",
+        status === "overdue" && "border-red-500/20 bg-red-500/10 text-[var(--app-text)]"
       )}
     >
       <Clock size={13} />

@@ -4,6 +4,8 @@ import { assertContextBudget } from "./safety";
 
 export type SourcePost = {
   postId: string;
+  sourceId?: string;
+  sourceKind?: "post" | "comment";
   roomId: string;
   roomName: string;
   title: string;
@@ -34,6 +36,18 @@ export type RetrievedChunk = {
 
 const embeddingCache = new Map<string, number[]>();
 
+const LOW_SIGNAL_PATTERNS = [
+  /@uniboardai.*@uniboardai/i,
+  /^draft\s+(a|this)\s+/i,
+  /^i could not find grounded room material\b/i,
+  /^i could not find enough grounded evidence\b/i,
+  /^the best grounded material i found\b/i,
+  /^tell me about\b/i,
+  /^what is\b/i,
+  /^explain\b/i,
+  /^summarize\b/i
+] as const;
+
 function cosineSimilarity(left: number[], right: number[]) {
   let dot = 0;
   let leftNorm = 0;
@@ -59,6 +73,24 @@ function tokenize(value: string) {
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter((token) => token.length > 2);
+}
+
+function isLowSignalContent(value: string) {
+  const normalized = value.trim().replace(/\s+/g, " ");
+  if (normalized.length < 18) {
+    return true;
+  }
+
+  if (LOW_SIGNAL_PATTERNS.some((pattern) => pattern.test(normalized)) && normalized.length < 220) {
+    return true;
+  }
+
+  const mentionCount = (normalized.match(/@uniboardai/gi) ?? []).length;
+  if (mentionCount >= 2) {
+    return true;
+  }
+
+  return false;
 }
 
 function getAuthorityBand(post: SourcePost): RetrievedChunk["authorityBand"] {
@@ -106,7 +138,7 @@ function getSourceTier(authorityBand: RetrievedChunk["authorityBand"]) {
 function buildChunks(posts: SourcePost[]) {
   return posts.flatMap((post) => {
     const normalized = [post.title, post.content, ...post.tags].filter(Boolean).join("\n").trim();
-    if (!normalized) {
+    if (!normalized || isLowSignalContent(normalized)) {
       return [];
     }
 
@@ -124,7 +156,7 @@ function buildChunks(posts: SourcePost[]) {
       }
 
       chunks.push({
-        id: `${post.postId}-${start}`,
+        id: `${post.sourceId ?? post.postId}-${start}`,
         postId: post.postId,
         roomId: post.roomId,
         roomName: post.roomName,

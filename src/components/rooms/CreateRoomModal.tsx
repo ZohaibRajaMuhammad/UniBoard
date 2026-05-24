@@ -84,7 +84,7 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
         <Dialog.Content className="glass-panel fixed inset-x-4 top-1/2 z-50 max-h-[calc(100dvh-2rem)] w-auto -translate-y-1/2 overflow-hidden rounded-[1.75rem] shadow-2xl sm:left-1/2 sm:w-[min(42rem,calc(100vw-2rem))] sm:-translate-x-1/2">
           <div className="flex items-start justify-between border-b border-[var(--app-line)] px-5 py-4 sm:px-6">
             <div className="pr-4">
-              <Dialog.Title className="text-xl font-bold text-white sm:text-2xl">Create room</Dialog.Title>
+              <Dialog.Title className="text-xl font-bold text-[var(--app-text)] sm:text-2xl">Create room</Dialog.Title>
               <Dialog.Description className="mt-2 text-sm leading-6 text-[var(--app-text-muted)]">
                 Define a clean academic space with the right subject identity, visibility, and tone from the start.
               </Dialog.Description>

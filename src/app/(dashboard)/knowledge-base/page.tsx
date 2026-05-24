@@ -121,7 +121,7 @@ export default function KnowledgeBasePage() {
         </section>
 
         {error ? (
-          <section className="glass-panel rounded-[28px] border border-red-400/20 p-5 text-sm text-red-100">
+          <section className="glass-panel rounded-[28px] border border-red-400/20 p-5 text-sm text-[var(--app-text)]">
             {error}
           </section>
         ) : null}
@@ -136,11 +136,13 @@ export default function KnowledgeBasePage() {
               {result ? (
                 <span
                   className={
-                    result.data?.confidenceBand === "high"
-                      ? "rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-100"
+                    result.data?.abstained || (result.data?.sources.length ?? 0) === 0
+                      ? "rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-[var(--app-text)]"
+                      : result.data?.confidenceBand === "high"
+                      ? "rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-[var(--app-text)]"
                       : result.data?.confidenceBand === "medium"
-                        ? "rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-100"
-                        : "rounded-full bg-red-500/15 px-3 py-1 text-xs font-medium text-red-100"
+                        ? "rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-[var(--app-text)]"
+                        : "rounded-full bg-red-500/15 px-3 py-1 text-xs font-medium text-[var(--app-text)]"
                   }
                 >
                   {result.meta.mode === "openai"
@@ -160,6 +162,11 @@ export default function KnowledgeBasePage() {
                   <div className="h-32 animate-pulse rounded-[20px] bg-white/5" />
                 ) : (
                   <div className="space-y-4">
+                    {result?.data?.abstained || (result?.data?.sources.length ?? 0) === 0 ? (
+                      <div className="rounded-[20px] border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-[var(--app-text-soft)]">
+                        No strong grounded room evidence was found for this question. Refine the room name, concept, deadline, or artifact before trusting an answer.
+                      </div>
+                    ) : null}
                     <p className="whitespace-pre-wrap text-sm leading-8 text-[var(--app-text-soft)]">{result?.data?.answer}</p>
                     {result?.data?.followUp ? (
                       <div className="rounded-[20px] border border-[var(--app-line)] bg-white/5 px-4 py-3 text-sm text-[var(--app-text-soft)]">
@@ -181,10 +188,10 @@ export default function KnowledgeBasePage() {
                           "rounded-full px-3 py-1 text-xs font-medium uppercase tracking-[0.16em]",
                           result?.data?.confidenceBand === band
                             ? band === "high"
-                              ? "bg-emerald-500/15 text-emerald-100"
+                              ? "bg-emerald-500/15 text-[var(--app-text)]"
                               : band === "medium"
-                                ? "bg-amber-500/15 text-amber-100"
-                                : "bg-red-500/15 text-red-100"
+                                ? "bg-amber-500/15 text-[var(--app-text)]"
+                                : "bg-red-500/15 text-[var(--app-text)]"
                             : "bg-white/5 text-[var(--app-text-muted)]"
                         )}
                       >

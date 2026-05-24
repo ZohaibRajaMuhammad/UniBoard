@@ -178,7 +178,7 @@ export function Sidebar() {
             </div>
           </div>
           <div className="min-w-0 flex-1">
-            <Link href="/profile" className="truncate text-sm font-semibold text-white transition hover:text-[var(--app-primary-strong)]">
+            <Link href="/profile" className="truncate text-sm font-semibold text-[var(--app-text)] transition hover:text-[var(--app-primary-strong)]">
               Your profile
             </Link>
             <p className="truncate text-xs text-[var(--app-text-muted)]">Personal workspace controls</p>
@@ -218,7 +218,7 @@ function NavItem({
       className={cn(
         "flex min-h-[3rem] items-center gap-3 rounded-[18px] px-4 py-3 text-sm transition",
         active
-          ? "border border-[rgba(109,140,255,0.18)] bg-[rgba(77,117,255,0.14)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+          ? "border border-[rgba(109,140,255,0.18)] bg-[rgba(77,117,255,0.14)] text-[var(--app-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
           : "text-[var(--app-text-muted)] hover:bg-white/5 hover:text-[var(--app-text)]"
       )}
     >
@@ -249,8 +249,8 @@ function SidebarRoomItem({
       className={cn(
         "flex min-h-[3rem] items-center gap-3 rounded-[18px] border px-4 py-3 text-sm transition",
         active
-          ? "border-[rgba(213,178,122,0.2)] bg-[rgba(213,178,122,0.08)] text-white"
-          : "border-transparent text-[var(--app-text-muted)] hover:bg-white/5 hover:text-white"
+          ? "border-[rgba(213,178,122,0.2)] bg-[rgba(213,178,122,0.08)] text-[var(--app-text)]"
+          : "border-transparent text-[var(--app-text-muted)] hover:bg-white/5 hover:text-[var(--app-text)]"
       )}
       >
       <span className="icon-frame h-8 w-8 rounded-2xl text-[var(--app-primary-strong)]">

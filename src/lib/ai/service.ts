@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { AI_EMBEDDING_MODEL, AI_MODEL, AI_TIMEOUT_MS } from "./config";
 import type {
   AiBriefing,
@@ -32,6 +33,18 @@ import { retrieveChunks } from "./retrieval";
 import { AiValidationError } from "./safety";
 
 type RoomRecord = Awaited<ReturnType<typeof fetchQuery<typeof api.rooms.getMyRooms>>>[number];
+
+const LOW_SIGNAL_SOURCE_PATTERNS = [
+  /@uniboardai.*@uniboardai/i,
+  /^draft\s+(a|this)\s+/i,
+  /^i could not find grounded room material\b/i,
+  /^i could not find enough grounded evidence\b/i,
+  /^the best grounded material i found\b/i,
+  /^tell me about\b/i,
+  /^what is\b/i,
+  /^explain\b/i,
+  /^summarize\b/i
+] as const;
 
 const knowledgeSchema = z.object({
   answer: z.string(),
@@ -259,6 +272,53 @@ async function getAiScopedRooms(token: string) {
   return aiRooms;
 }
 
+function sanitizeSourceTitle(post: {
+  deadlineTitle?: string | null;
+  resourceTitle?: string | null;
+  content: string;
+  type: string;
+}) {
+  const explicitTitle = post.deadlineTitle || post.resourceTitle;
+  if (explicitTitle?.trim()) {
+    return explicitTitle.trim();
+  }
+
+  const firstLine = post.content
+    .split("\n")
+    .map((line) => line.trim())
+    .find(Boolean);
+
+  if (firstLine) {
+    return firstLine.replace(/^@uniboardai\b/gi, "").trim().slice(0, 80) || `${post.type} update`;
+  }
+
+  return `${post.type} update`;
+}
+
+function isLowSignalSource(post: {
+  content: string;
+  deadlineTitle?: string | null;
+  resourceTitle?: string | null;
+  tags?: string[] | null;
+}) {
+  const normalized = [post.deadlineTitle, post.resourceTitle, post.content, ...(post.tags ?? [])]
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (normalized.length < 18) {
+    return true;
+  }
+
+  if (LOW_SIGNAL_SOURCE_PATTERNS.some((pattern) => pattern.test(normalized)) && normalized.length < 220) {
+    return true;
+  }
+
+  const mentionCount = (normalized.match(/@uniboardai/gi) ?? []).length;
+  return mentionCount >= 2;
+}
+
 async function getRoomPosts(token: string, room: RoomRecord): Promise<SourcePost[]> {
   const posts = await fetchQuery(
     api.posts.getByRoom,
@@ -269,23 +329,96 @@ async function getRoomPosts(token: string, room: RoomRecord): Promise<SourcePost
     { token }
   );
 
-  return posts.map((post) => ({
-    postId: post._id,
-    roomId: post.roomId,
-    roomName: room.name,
-    title: post.deadlineTitle || post.resourceTitle || post.content.slice(0, 80),
-    type: post.type,
-    content: post.content,
-    tags: post.tags ?? [],
-    createdAt: post.createdAt,
-    authorRole: post.author?.role ?? null,
-    isResolved: post.isResolved,
-    isPinned: post.isPinned,
-    commentCount: post.commentCount ?? 0
-  }));
+  return posts
+    .filter((post) => !isLowSignalSource(post))
+    .map((post) => ({
+      postId: post._id,
+      roomId: post.roomId,
+      roomName: room.name,
+      title: sanitizeSourceTitle(post),
+      type: post.type,
+      content: post.content,
+      tags: post.tags ?? [],
+      createdAt: post.createdAt,
+      authorRole: post.author?.role ?? null,
+      isResolved: post.isResolved,
+      isPinned: post.isPinned,
+      commentCount: post.commentCount ?? 0
+    }));
 }
 
-async function getScopedPosts(token: string, roomId?: string, options?: { allowEmpty?: boolean }) {
+type RoomComment = Awaited<ReturnType<typeof fetchQuery<typeof api.comments.getByPost>>>[number];
+
+function buildCommentSource(post: SourcePost, comment: RoomComment, parentComment?: RoomComment): SourcePost | null {
+  const commentTitle = parentComment ? `Thread reply in ${post.title}` : `Comment thread in ${post.title}`;
+  const normalized = [commentTitle, comment.content, parentComment?.content].filter(Boolean).join(" ");
+
+  if (isLowSignalSource({ content: normalized, tags: [] })) {
+    return null;
+  }
+
+  const threadContext = [
+    `Post title: ${post.title}`,
+    `Post type: ${post.type}`,
+    parentComment ? `Parent comment: ${parentComment.content}` : null,
+    `Comment: ${comment.content}`
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return {
+    postId: post.postId,
+    sourceId: `${post.postId}:comment:${comment._id}`,
+    sourceKind: "comment",
+    roomId: post.roomId,
+    roomName: post.roomName,
+    title: commentTitle,
+    type: "comment",
+    content: threadContext,
+    tags: post.tags,
+    createdAt: comment.createdAt,
+    authorRole: comment.author?.role ?? null,
+    isResolved: post.isResolved,
+    isPinned: post.isPinned,
+    commentCount: post.commentCount
+  };
+}
+
+async function getRoomCommentSources(token: string, posts: SourcePost[]) {
+  const commentEligiblePosts = posts
+    .filter((post) => (post.commentCount ?? 0) > 0)
+    .sort((left, right) => right.createdAt - left.createdAt)
+    .slice(0, 18);
+
+  const commentGroups = await Promise.all(
+    commentEligiblePosts.map(async (post) => ({
+      post,
+      comments: await fetchQuery(
+        api.comments.getByPost,
+        {
+          postId: post.postId as Id<"posts">
+        },
+        { token }
+      )
+    }))
+  );
+
+  return commentGroups.flatMap(({ post, comments }) => {
+    const commentMap = new Map(comments.map((comment) => [comment._id, comment]));
+    return comments
+      .slice(-10)
+      .map((comment) =>
+        buildCommentSource(
+          post,
+          comment,
+          comment.parentCommentId ? (commentMap.get(comment.parentCommentId) ?? undefined) : undefined
+        )
+      )
+      .filter((comment): comment is SourcePost => comment !== null);
+  });
+}
+
+async function getScopedPosts(token: string, roomId?: string, options?: { allowEmpty?: boolean; includeComments?: boolean }) {
   const rooms = await getAiScopedRooms(token);
   const scopedRooms = roomId ? rooms.filter((room) => room._id === roomId) : rooms;
 
@@ -293,14 +426,30 @@ async function getScopedPosts(token: string, roomId?: string, options?: { allowE
     throw new AiServiceError("no_authorized_sources", 422, "No authorized AI-enabled sources were found.");
   }
 
-  const posts = (await Promise.all(scopedRooms.map((room) => getRoomPosts(token, room)))).flat();
-  if (posts.length === 0 && !options?.allowEmpty) {
+  const postGroups = await Promise.all(scopedRooms.map(async (room) => ({ room, posts: await getRoomPosts(token, room) })));
+  const posts = postGroups.flatMap((group) => group.posts);
+  const commentSources = options?.includeComments ? (await Promise.all(postGroups.map((group) => getRoomCommentSources(token, group.posts)))).flat() : [];
+  const sources = options?.includeComments ? [...posts, ...commentSources] : posts;
+
+  if (sources.length === 0 && !options?.allowEmpty) {
     throw new AiServiceError("no_authorized_sources", 422, "No authorized sources were found for this request.");
   }
 
   return {
     rooms: scopedRooms,
-    posts
+    posts: sources
+  };
+}
+
+function buildAssistantAbstentionReply(
+  assistantIntent: ReturnType<typeof classifyAssistantIntent>,
+  roomName: string | null
+): AssistantReply {
+  return {
+    reply: "I do not have enough grounded room evidence to answer that reliably yet. Name the room, concept, deadline, artifact, or thread more explicitly.",
+    confidenceBand: "low",
+    suggestions: buildAssistantSuggestions(assistantIntent, roomName),
+    sources: []
   };
 }
 
@@ -934,7 +1083,7 @@ export async function getAssistantReply(message: string, roomId?: string) {
       if (directIntent) {
         return directIntent;
       }
-      const { posts } = await getScopedPosts(token, roomId);
+      const { posts } = await getScopedPosts(token, roomId, { includeComments: true });
       return withTimeout(async (client, signal) => {
         const retrievalQuery = [normalizedMessage, mentionContext.postTitle, mentionContext.postType, mentionContext.parentCommentContent]
           .filter(Boolean)
@@ -973,24 +1122,13 @@ export async function getAssistantReply(message: string, roomId?: string) {
 
       const result = await fetchQuery(api.ai.queryKnowledgeBase, { question: normalizedMessage }, { token });
 
-      if (result.sources.length === 0) {
-        return {
-          reply: "I could not find grounded room material for that request. Name the course, topic, deadline, or artifact more explicitly.",
-          confidenceBand: "low" as const,
-          suggestions: ["Ask with a specific class name or open the relevant room before trying again."],
-          sources: []
-        };
+      if (result.sources.length === 0 || result.mode === "fallback" || result.confidence === "low") {
+        return buildAssistantAbstentionReply(assistantIntent, result.sources[0]?.roomName ?? null);
       }
-
-      const topSource = result.sources[0];
-      const directSourceAnswer =
-        topSource.title && topSource.title.trim().length > 20
-          ? topSource.title.trim()
-          : `The best grounded material I found is in ${topSource.roomName}.`;
       return {
-        reply: directSourceAnswer,
+        reply: result.answer,
         confidenceBand: toConfidenceBand(result.confidence),
-        suggestions: buildAssistantSuggestions(assistantIntent, topSource.roomName),
+        suggestions: buildAssistantSuggestions(assistantIntent, result.sources[0]?.roomName ?? null),
         sources: result.sources.map((source) => ({
           ...source,
           quote: source.title

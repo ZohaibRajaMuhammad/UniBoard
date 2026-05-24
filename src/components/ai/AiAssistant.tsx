@@ -268,14 +268,14 @@ export function AiAssistant() {
               ) : null}
 
               {error ? (
-                <div className="rounded-[22px] border border-red-400/25 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+                <div className="rounded-[22px] border border-red-400/25 bg-red-500/10 px-4 py-3 text-sm text-[var(--app-text)]">
                   {error}
                 </div>
               ) : null}
             </div>
 
             <form onSubmit={handleSubmit} className="border-t border-white/10 px-4 py-4">
-              <div className="rounded-[26px] border border-white/10 bg-[rgba(255,255,255,0.03)] p-2">
+              <div className="rounded-[26px] border border-white/10 bg-white/[0.03] p-2">
                 <textarea
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}

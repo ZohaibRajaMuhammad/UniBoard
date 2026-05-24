@@ -26,13 +26,13 @@ import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
 const typeConfig: Record<string, string> = {
-  note: "bg-blue-500/10 text-blue-200",
-  deadline: "bg-red-500/10 text-red-200",
-  question: "bg-amber-500/10 text-amber-200",
-  resource: "bg-emerald-500/10 text-emerald-200",
+  note: "bg-blue-500/10 text-[var(--app-text)]",
+  deadline: "bg-red-500/10 text-[var(--app-text)]",
+  question: "bg-amber-500/10 text-[var(--app-text)]",
+  resource: "bg-emerald-500/10 text-[var(--app-text)]",
   announcement: "bg-brand-500/10 text-brand-200",
-  poll: "bg-fuchsia-500/10 text-fuchsia-200",
-  project: "bg-cyan-500/10 text-cyan-200"
+  poll: "bg-fuchsia-500/10 text-[var(--app-text)]",
+  project: "bg-cyan-500/10 text-[var(--app-text)]"
 };
 
 export function PostCard({
@@ -129,8 +129,8 @@ export function PostCard({
             <span className={cn("rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em]", typeConfig[post.type] ?? typeConfig.note)}>
               {post.type}
             </span>
-            {post.isPinned ? <span className="inline-flex items-center gap-1 text-xs text-amber-300"><Pin size={12} />Pinned</span> : null}
-            {post.isResolved ? <span className="inline-flex items-center gap-1 text-xs text-emerald-300"><CheckCircle2 size={12} />Resolved</span> : null}
+            {post.isPinned ? <span className="inline-flex items-center gap-1 text-xs text-[var(--app-warning)]"><Pin size={12} />Pinned</span> : null}
+            {post.isResolved ? <span className="inline-flex items-center gap-1 text-xs text-[var(--app-success)]"><CheckCircle2 size={12} />Resolved</span> : null}
             {post.isHidden ? <span className="inline-flex items-center gap-1 text-xs text-[var(--app-text-muted)]"><EyeOff size={12} />Hidden</span> : null}
             {post.isEdited ? <span className="text-xs text-[var(--app-text-muted)]">Edited</span> : null}
             <span className="ml-auto text-xs text-[var(--app-text-muted)]">{formatRelativeTime(post.createdAt)}</span>
@@ -295,14 +295,14 @@ export function PostCard({
               href={post.resourceUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-emerald-400/20 bg-emerald-400/5 px-4 py-2 text-sm text-emerald-200 transition hover:bg-emerald-400/10"
+              className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-emerald-400/20 bg-emerald-400/5 px-4 py-2 text-sm text-[var(--app-text)] transition hover:bg-emerald-400/10"
             >
               <Link2 size={14} />
               {post.resourceTitle || post.resourceUrl}
             </a>
           ) : null}
 
-          {actionError ? <p className="mt-3 text-sm text-red-300">{actionError}</p> : null}
+          {actionError ? <p className="mt-3 text-sm text-[var(--app-danger)]">{actionError}</p> : null}
 
           <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
             <UpvoteButton postId={post._id} upvoteCount={post.upvoteCount} label={post.type === "poll" ? "Vote" : "Upvote"} />
@@ -344,7 +344,7 @@ function ActionButton({
       onClick={() => void onClick()}
       className={cn(
         "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm transition hover:bg-white/5",
-        tone === "danger" ? "text-red-300" : "text-[var(--app-text)]"
+        tone === "danger" ? "text-[var(--app-danger)]" : "text-[var(--app-text)]"
       )}
     >
       {icon}

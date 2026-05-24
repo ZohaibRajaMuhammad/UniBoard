@@ -65,7 +65,7 @@ export default function DashboardRoutePage() {
               <StatCard label="Momentum" value={rooms && rooms.length > 0 ? "Live" : "Idle"} detail="Workspace engagement status" />
             </div>
             {user?.role === "pending" ? (
-              <div className="mt-6 rounded-[24px] border border-amber-400/20 bg-amber-500/10 p-4 text-sm leading-7 text-amber-100">
+              <div className="mt-6 rounded-[24px] border border-amber-400/20 bg-amber-500/10 p-4 text-sm leading-7 text-[var(--app-text)]">
                 Your account is still in pending access mode. Open Profile to finish student setup or request teacher approval before using governed workspace actions.
               </div>
             ) : null}
@@ -77,7 +77,7 @@ export default function DashboardRoutePage() {
               <p className="section-eyebrow">AI briefing</p>
             </div>
             {briefingError ? (
-              <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-100">{briefingError}</div>
+              <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-[var(--app-text)]">{briefingError}</div>
             ) : briefing === null ? (
               <div className="mt-4 h-40 animate-pulse rounded-2xl bg-white/5" />
             ) : (
@@ -94,10 +94,10 @@ export default function DashboardRoutePage() {
                 </div>
                 {(briefing.data?.warnings?.length ?? 0) > 0 ? (
                   <div className="mt-5 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4">
-                    <p className="text-xs uppercase tracking-[0.2em] text-amber-100">Warnings</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text)]">Warnings</p>
                     <div className="mt-2 space-y-2">
                       {briefing.data?.warnings.map((item) => (
-                        <p key={item} className="text-sm text-amber-50">
+                        <p key={item} className="text-sm text-[var(--app-text-soft)]">
                           {item}
                         </p>
                       ))}
@@ -160,7 +160,7 @@ function StatCard({ label, value, detail }: { label: string; value: string; deta
   return (
     <div className="stat-card">
       <p className="text-xs uppercase tracking-[0.25em] text-[var(--app-text-muted)]">{label}</p>
-      <p className="mt-4 text-3xl font-black text-white">{value}</p>
+      <p className="mt-4 text-3xl font-black text-[var(--app-text)]">{value}</p>
       <p className="mt-2 text-sm text-[var(--app-text-muted)]">{detail}</p>
     </div>
   );

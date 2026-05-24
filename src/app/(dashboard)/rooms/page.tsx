@@ -118,7 +118,7 @@ export default function RoomsPage() {
               Public rooms can be joined from the grid. Private rooms require a join code shared by the room owner or teacher.
             </div>
 
-            <div className="rounded-[24px] border border-[var(--app-line)] bg-white/70 p-4">
+            <div className="app-surface-muted rounded-[24px] p-4">
               <p className="text-xs uppercase tracking-[0.22em] text-[var(--app-text-muted)]">Join private room</p>
               <div className="mt-3 flex flex-col gap-3 sm:flex-row xl:flex-col">
                 <input
@@ -152,7 +152,7 @@ export default function RoomsPage() {
             </div>
           </div>
           {user?.role === "pending" ? (
-            <div className="mt-5 rounded-[24px] border border-amber-400/20 bg-amber-500/10 p-4 text-sm leading-7 text-amber-100">
+            <div className="mt-5 rounded-[24px] border border-amber-400/20 bg-amber-500/10 p-4 text-sm leading-7 text-[var(--app-text)]">
               Pending accounts can browse room discovery, but joining rooms or creating governed spaces requires completed student setup or approved teacher access.
             </div>
           ) : null}

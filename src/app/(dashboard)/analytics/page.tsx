@@ -65,7 +65,7 @@ export default function AnalyticsPage() {
         <section className="glass-panel page-hero">
           <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
             <div>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--app-line)] bg-white text-[var(--app-primary-strong)]">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--app-line)] bg-white/5 text-[var(--app-primary-strong)]">
                 <BarChart3 size={20} />
               </div>
               <p className="section-eyebrow text-[var(--app-primary-strong)]">Analytics</p>
@@ -81,7 +81,7 @@ export default function AnalyticsPage() {
                 <p className="metric-kicker">AI priority</p>
               </div>
               {riskError ? (
-                <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-100">{riskError}</div>
+                <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-[var(--app-text)]">{riskError}</div>
               ) : riskResult?.data?.[0] ? (
                 <>
                   <h2 className="mt-3 text-2xl font-semibold text-white">{riskResult.data[0].title}</h2>
@@ -92,7 +92,7 @@ export default function AnalyticsPage() {
                   </div>
                 </>
               ) : riskResult ? (
-                <div className="mt-4 rounded-2xl border border-dashed border-[var(--app-line)] bg-white/70 p-4 text-sm leading-7 text-[var(--app-text-soft)]">
+                <div className="mt-4 rounded-2xl border border-dashed border-[var(--app-line)] bg-white/5 p-4 text-sm leading-7 text-[var(--app-text-soft)]">
                   No urgent deadline signal is available yet. Add deadlines in the planner or join more active rooms to populate AI risk insights.
                 </div>
               ) : (
@@ -134,7 +134,7 @@ export default function AnalyticsPage() {
                   <DonutChart data={typeBreakdown} total={totalTypeCount} />
                   <div className="space-y-3">
                     {typeBreakdown.map((item) => (
-                      <div key={item.label} className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--app-line)] bg-white/70 px-4 py-3">
+                      <div key={item.label} className="app-surface-muted flex items-center justify-between gap-3 rounded-2xl px-4 py-3">
                         <div className="flex items-center gap-3">
                           <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
                           <span className="text-sm font-medium capitalize text-[var(--app-text)]">{item.label}</span>
@@ -161,12 +161,12 @@ export default function AnalyticsPage() {
                 </div>
                 <div className="mt-5 space-y-3">
                   {analytics.upcomingDeadlines.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-[var(--app-line)] bg-white/70 p-4 text-sm text-[var(--app-text-muted)]">
+                    <div className="rounded-2xl border border-dashed border-[var(--app-line)] bg-white/5 p-4 text-sm text-[var(--app-text-muted)]">
                       No upcoming deadlines are currently available.
                     </div>
                   ) : (
                     analytics.upcomingDeadlines.map((item) => (
-                      <div key={item.postId} className="flex items-center justify-between gap-4 rounded-2xl border border-[var(--app-line)] bg-white/70 px-4 py-3">
+                      <div key={item.postId} className="app-surface-muted flex items-center justify-between gap-4 rounded-2xl px-4 py-3">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-[var(--app-text)]">{item.title}</p>
                           <p className="mt-1 text-xs text-[var(--app-text-muted)]">Due {formatDeadline(item.dueDate)}</p>
@@ -180,7 +180,7 @@ export default function AnalyticsPage() {
 
               <article className="glass-panel rounded-[28px] p-6">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle size={18} className="mt-1 text-amber-500" />
+                  <AlertTriangle size={18} className="mt-1 text-[var(--app-warning)]" />
                   <div>
                     <p className="metric-kicker">AI risk radar</p>
                     <h2 className="mt-2 text-2xl font-semibold text-white">Grounded deadline review</h2>
@@ -188,11 +188,11 @@ export default function AnalyticsPage() {
                 </div>
                 <div className="mt-5 space-y-3">
                   {riskError ? (
-                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-100">{riskError}</div>
+                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-[var(--app-text)]">{riskError}</div>
                   ) : riskResult === null ? (
                     Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-24 animate-pulse rounded-2xl bg-white/5" />)
                   ) : riskResult.data?.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-[var(--app-line)] bg-white/70 p-4 text-sm text-[var(--app-text-muted)]">
+                    <div className="rounded-2xl border border-dashed border-[var(--app-line)] bg-white/5 p-4 text-sm text-[var(--app-text-muted)]">
                       Not enough deadline signal is available yet.
                     </div>
                   ) : (
@@ -247,7 +247,7 @@ function MetricCard({
         <p className="metric-kicker">{label}</p>
         <span className="text-[var(--app-primary-strong)]">{icon}</span>
       </div>
-      <p className="mt-4 text-3xl font-black text-white">{value}</p>
+      <p className="mt-4 text-3xl font-black text-[var(--app-text)]">{value}</p>
       <p className="mt-2 text-sm text-[var(--app-text-muted)]">{detail}</p>
     </div>
   );
@@ -267,7 +267,7 @@ function LineChart({ data }: { data: Array<{ day: string; count: number }> }) {
   const areaPath = `${linePath} L ${points[points.length - 1]?.x ?? padding} ${height - padding} L ${points[0]?.x ?? padding} ${height - padding} Z`;
 
   return (
-    <div className="rounded-[24px] border border-[var(--app-line)] bg-white/70 p-4">
+    <div className="app-surface-muted rounded-[24px] p-4">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-[240px] w-full" role="img" aria-label="Workspace activity line chart">
         {[0, 1, 2, 3].map((step) => {
           const y = padding + ((height - padding * 2) / 3) * step;
@@ -297,7 +297,7 @@ function DonutChart({
 }) {
   if (total === 0) {
     return (
-      <div className="flex h-[13rem] w-[13rem] items-center justify-center rounded-full border border-dashed border-[var(--app-line)] bg-white/70 text-sm text-[var(--app-text-muted)]">
+      <div className="flex h-[13rem] w-[13rem] items-center justify-center rounded-full border border-dashed border-[var(--app-line)] bg-white/5 text-sm text-[var(--app-text-muted)]">
         No content
       </div>
     );
@@ -334,7 +334,7 @@ function DonutChart({
         ))}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold text-white">{total}</span>
+        <span className="text-3xl font-bold text-[var(--app-text)]">{total}</span>
         <span className="text-xs uppercase tracking-[0.18em] text-[var(--app-text-muted)]">posts</span>
       </div>
     </div>
@@ -344,7 +344,7 @@ function DonutChart({
 function SparklineChart({ data }: { data: Array<{ label: string; value: number }> }) {
   if (data.length === 0) {
     return (
-      <div className="rounded-[24px] border border-dashed border-[var(--app-line)] bg-white/70 p-4 text-sm text-[var(--app-text-muted)]">
+      <div className="rounded-[24px] border border-dashed border-[var(--app-line)] bg-white/5 p-4 text-sm text-[var(--app-text-muted)]">
         Add more deadline data to render the priority sparkline.
       </div>
     );
@@ -362,7 +362,7 @@ function SparklineChart({ data }: { data: Array<{ label: string; value: number }
   const path = points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
 
   return (
-    <div className="rounded-[24px] border border-[var(--app-line)] bg-white/70 p-4">
+    <div className="app-surface-muted rounded-[24px] p-4">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-[130px] w-full" role="img" aria-label="Deadline priority sparkline">
         <path d={path} fill="none" stroke="#315CF3" strokeWidth="3" strokeLinecap="round" />
         {points.map((point) => (
@@ -381,9 +381,9 @@ function StatusChip({
   tone: string;
 }) {
   const tones: Record<string, string> = {
-    high: "bg-red-500/15 text-red-100 border-red-400/20",
-    medium: "bg-amber-500/15 text-amber-100 border-amber-400/20",
-    low: "bg-emerald-500/15 text-emerald-100 border-emerald-400/20",
+    high: "bg-red-500/15 text-[var(--app-text)] border-red-400/20",
+    medium: "bg-amber-500/15 text-[var(--app-text)] border-amber-400/20",
+    low: "bg-emerald-500/15 text-[var(--app-text)] border-emerald-400/20",
     neutral: "bg-white/10 text-[var(--app-text-soft)] border-white/10"
   };
 

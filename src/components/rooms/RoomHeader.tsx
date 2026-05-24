@@ -16,7 +16,7 @@ export function RoomHeader({ room }: { room: Doc<"rooms"> }) {
 
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-bold text-white sm:text-3xl">{room.name}</h1>
+                <h1 className="text-2xl font-bold text-[var(--app-text)] sm:text-3xl">{room.name}</h1>
                 <span className="app-chip">{room.subject}</span>
                 <span className="app-chip">{room.batch}</span>
                 <span className="app-chip">{room.isPublic ? "Public room" : "Private room"}</span>

@@ -110,8 +110,8 @@ export default async function LandingPage() {
                   <h3 className="mt-3 text-xl font-semibold text-white">Live public activity, minimal presentation.</h3>
                 </div>
                 <div className="flex gap-2">
-                  <span className="panel-chip text-gray-200">{snapshot.publicRoomCount} rooms</span>
-                  <span className="panel-chip text-gray-200">{snapshot.activeMemberCount} members</span>
+                  <span className="panel-chip text-[var(--app-text-soft)]">{snapshot.publicRoomCount} rooms</span>
+                  <span className="panel-chip text-[var(--app-text-soft)]">{snapshot.activeMemberCount} members</span>
                 </div>
               </div>
               <p className="mt-4 text-sm leading-6 text-[var(--app-text-muted)]">

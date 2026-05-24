@@ -100,7 +100,7 @@ export default function SettingsPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
               <p className="section-eyebrow text-[var(--app-primary-strong)]">Settings</p>
-              <h1 className="mt-2 text-3xl font-bold text-white">Personal controls for room activity</h1>
+              <h1 className="mt-2 text-3xl font-bold text-[var(--app-text)]">Personal controls for room activity</h1>
               <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">
                 Tune the alerts that matter, keep low-signal noise down, and use room settings for policy changes that affect everyone.
               </p>
@@ -136,7 +136,7 @@ export default function SettingsPage() {
                     <ShieldCheck size={18} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-white">Appearance</h2>
+                    <h2 className="text-lg font-semibold text-[var(--app-text)]">Appearance</h2>
                     <p className="mt-1 text-sm leading-6 text-[var(--app-text-muted)]">Theme changes are now persisted across your authenticated workspace, not just this browser session.</p>
                   </div>
                 </div>
@@ -152,7 +152,7 @@ export default function SettingsPage() {
                         <Icon size={18} />
                       </div>
                       <div>
-                        <h2 className="text-lg font-semibold text-white">{group.title}</h2>
+                        <h2 className="text-lg font-semibold text-[var(--app-text)]">{group.title}</h2>
                         <p className="mt-1 text-sm leading-6 text-[var(--app-text-muted)]">{group.description}</p>
                       </div>
                     </div>
@@ -178,7 +178,7 @@ export default function SettingsPage() {
 
             <aside className="app-surface-muted rounded-[24px] p-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Workspace notes</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">What is controlled here</h2>
+              <h2 className="mt-2 text-xl font-semibold text-[var(--app-text)]">What is controlled here</h2>
               <div className="mt-4 space-y-3 text-sm leading-7 text-[var(--app-text-soft)]">
                 <p>These preferences change your own notification experience only. Room-wide policy remains under room administration.</p>
                 <p>AI enablement is currently enforced at the room level, not as a personal override, so this screen leaves those controls read-only.</p>
@@ -186,12 +186,12 @@ export default function SettingsPage() {
 
               <div className="mt-5 rounded-2xl border border-[var(--app-line)] bg-white/[0.03] p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Dirty state</p>
-                <p className="mt-2 text-sm text-white">
+                <p className="mt-2 text-sm text-[var(--app-text)]">
                   {hasChanges ? `${dirtyKeys.length} unsaved change${dirtyKeys.length === 1 ? "" : "s"}` : "All changes saved"}
                 </p>
               </div>
 
-              <Link href="/profile" className="mt-4 inline-flex text-sm font-medium text-[var(--app-primary-strong)] transition hover:text-white">
+              <Link href="/profile" className="mt-4 inline-flex text-sm font-medium text-[var(--app-primary-strong)] transition hover:text-[var(--app-text)]">
                 Open profile details
               </Link>
             </aside>
@@ -225,7 +225,7 @@ function SettingToggle({
     >
       <div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-white">{label}</span>
+          <span className="text-sm font-medium text-[var(--app-text)]">{label}</span>
           {changed ? <span className="rounded-full bg-[rgba(77,117,255,0.14)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-primary-strong)]">Changed</span> : null}
         </div>
         <p className="mt-1 text-xs leading-5 text-[var(--app-text-muted)]">{help}</p>

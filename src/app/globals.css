@@ -506,7 +506,7 @@ h6 {
   width: 100%;
   border-radius: var(--radius-card);
   border: 1px solid var(--app-line);
-  background: rgba(255, 255, 255, 0.78);
+  background: color-mix(in srgb, var(--app-panel-strong) 88%, rgba(var(--app-white-rgb), 0.04));
   padding: 0.9rem 1rem;
   color: var(--app-text);
   outline: none;
@@ -528,7 +528,7 @@ h6 {
 .stat-card {
   border-radius: var(--radius-card);
   border: 1px solid var(--app-line);
-  background: rgba(255, 255, 255, 0.72);
+  background: color-mix(in srgb, var(--app-panel-strong) 84%, rgba(var(--app-white-rgb), 0.05));
   padding: clamp(1rem, 0.85rem + 0.6vw, 1.35rem);
   box-shadow: none;
 }
@@ -580,13 +580,13 @@ h6 {
 .app-surface-muted {
   border-radius: var(--radius-card);
   border: 1px solid var(--app-line);
-  background: rgba(255, 255, 255, 0.76);
+  background: color-mix(in srgb, var(--app-panel-strong) 88%, rgba(var(--app-white-rgb), 0.04));
 }
 
 .app-surface-soft {
   border-radius: var(--radius-card);
   border: 1px solid var(--app-line);
-  background: rgba(255, 255, 255, 0.66);
+  background: color-mix(in srgb, var(--app-panel-strong) 80%, rgba(var(--app-white-rgb), 0.05));
 }
 
 .app-chip {
@@ -644,9 +644,19 @@ h6 {
   color: var(--app-text) !important;
 }
 
+.theme-dark body .text-white,
+.theme-dark .text-white {
+  color: var(--app-text) !important;
+}
+
 .theme-light body .text-gray-500,
 .theme-light .text-gray-500 {
   color: var(--app-muted-1) !important;
+}
+
+.theme-dark body .text-gray-500,
+.theme-dark .text-gray-500 {
+  color: var(--app-text-muted) !important;
 }
 
 .theme-light body .text-gray-400,
@@ -657,6 +667,17 @@ h6 {
 .theme-light .text-gray-200,
 .theme-light body .text-gray-100,
 .theme-light .text-gray-100 {
+  color: var(--app-text-soft) !important;
+}
+
+.theme-dark body .text-gray-400,
+.theme-dark .text-gray-400,
+.theme-dark body .text-gray-300,
+.theme-dark .text-gray-300,
+.theme-dark body .text-gray-200,
+.theme-dark .text-gray-200,
+.theme-dark body .text-gray-100,
+.theme-dark .text-gray-100 {
   color: var(--app-text-soft) !important;
 }
 
@@ -673,6 +694,27 @@ h6 {
 .theme-light body .bg-black\/10,
 .theme-light .bg-black\/10 {
   background-color: var(--app-soft-surface-2) !important;
+}
+
+.theme-dark body .bg-white\/40,
+.theme-dark .bg-white\/40,
+.theme-dark body .bg-white\/45,
+.theme-dark .bg-white\/45,
+.theme-dark body .bg-white\/50,
+.theme-dark .bg-white\/50,
+.theme-dark body .bg-white\/55,
+.theme-dark .bg-white\/55,
+.theme-dark body .bg-white\/60,
+.theme-dark .bg-white\/60,
+.theme-dark body .bg-white\/70,
+.theme-dark .bg-white\/70,
+.theme-dark body .bg-white\/80,
+.theme-dark .bg-white\/80,
+.theme-dark body .bg-white\/92,
+.theme-dark .bg-white\/92,
+.theme-dark body .bg-white\/94,
+.theme-dark .bg-white\/94 {
+  background-color: color-mix(in srgb, var(--app-panel-strong) 88%, rgba(var(--app-white-rgb), 0.04)) !important;
 }
 
 .theme-light body .bg-white\/5,
@@ -741,11 +783,48 @@ h6 {
   color: var(--app-text) !important;
 }
 
+.theme-dark body .hover\:text-white:hover,
+.theme-dark .hover\:text-white:hover {
+  color: var(--app-text) !important;
+}
+
 .theme-light body .text-amber-50,
 .theme-light .text-amber-50,
 .theme-light body .text-amber-100,
 .theme-light .text-amber-100 {
   color: #8e5d12 !important;
+}
+
+.theme-light body .text-red-100,
+.theme-light .text-red-100 {
+  color: #9f2744 !important;
+}
+
+.theme-light body .text-emerald-100,
+.theme-light .text-emerald-100,
+.theme-light body .text-emerald-200,
+.theme-light .text-emerald-200 {
+  color: #156f53 !important;
+}
+
+.theme-light body .text-blue-200,
+.theme-light .text-blue-200 {
+  color: #2952d5 !important;
+}
+
+.theme-light body .text-amber-200,
+.theme-light .text-amber-200 {
+  color: #8e5d12 !important;
+}
+
+.theme-light body .text-fuchsia-200,
+.theme-light .text-fuchsia-200 {
+  color: #9a2ca0 !important;
+}
+
+.theme-light body .text-cyan-200,
+.theme-light .text-cyan-200 {
+  color: #136c8a !important;
 }
 
 .theme-light body .bg-amber-500\/10,
@@ -756,6 +835,45 @@ h6 {
 .theme-light .border-amber-300\/20 {
   border-color: rgba(185, 109, 17, 0.18) !important;
   background-color: rgba(255, 239, 214, 0.86) !important;
+}
+
+.theme-light body .bg-red-500\/10,
+.theme-light .bg-red-500\/10,
+.theme-light body .bg-red-500\/15,
+.theme-light .bg-red-500\/15 {
+  background-color: rgba(250, 228, 235, 0.92) !important;
+}
+
+.theme-light body .bg-emerald-500\/10,
+.theme-light .bg-emerald-500\/10,
+.theme-light body .bg-emerald-500\/15,
+.theme-light .bg-emerald-500\/15 {
+  background-color: rgba(223, 247, 238, 0.92) !important;
+}
+
+.theme-light body .bg-fuchsia-500\/10,
+.theme-light .bg-fuchsia-500\/10 {
+  background-color: rgba(248, 231, 250, 0.9) !important;
+}
+
+.theme-light body .bg-cyan-500\/10,
+.theme-light .bg-cyan-500\/10 {
+  background-color: rgba(227, 245, 250, 0.92) !important;
+}
+
+.theme-light body .bg-blue-500\/10,
+.theme-light .bg-blue-500\/10 {
+  background-color: rgba(229, 237, 255, 0.92) !important;
+}
+
+.theme-light body .border-red-400\/20,
+.theme-light .border-red-400\/20 {
+  border-color: rgba(159, 39, 68, 0.18) !important;
+}
+
+.theme-light body .border-emerald-400\/20,
+.theme-light .border-emerald-400\/20 {
+  border-color: rgba(21, 111, 83, 0.18) !important;
 }
 
 .theme-light .app-shell,
