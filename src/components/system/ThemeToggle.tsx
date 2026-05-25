@@ -28,10 +28,10 @@ export function ThemeToggle({
       <span className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white/5">
         {theme === "dark" ? <Moon size={16} /> : <SunMedium size={16} />}
       </span>
-      <span className="hidden sm:block">
+      {/* <span className="hidden sm:block">
         <span className="block text-[10px] uppercase tracking-[0.18em] text-[var(--app-text-muted)]">Appearance</span>
         <span className="block text-sm font-semibold text-[var(--app-text)]">{theme === "dark" ? "Dark mode" : "Light mode"}</span>
-      </span>
+      </span> */}
       <Monitor size={15} className="hidden text-[var(--app-text-muted)] sm:block" />
     </button>
   );

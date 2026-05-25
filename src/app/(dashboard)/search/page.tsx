@@ -9,35 +9,74 @@ import type { FeedPost } from "@/components/feed/PostFeed";
 import type { Room } from "@/types";
 import { formatRelativeTime } from "@/lib/utils";
 
+type SearchResultRecord = Partial<FeedPost> & {
+  room?: Partial<Room> | null;
+  relevance?: string;
+  snippet?: string;
+};
+
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const deferredQuery = useDeferredValue(searchQuery);
   const results = useQuery(api.posts.search, { searchQuery: deferredQuery });
   const rawSuggestions = useQuery(api.posts.getSearchSuggestions);
-  const suggestions = Array.isArray(rawSuggestions) ? rawSuggestions : [];
+  const suggestions = Array.isArray(rawSuggestions) ? rawSuggestions.filter((item): item is string => typeof item === "string") : [];
   const enrichedResults = useMemo(() => {
     const query = deferredQuery.trim().toLowerCase();
     if (!Array.isArray(results)) {
       return [];
     }
 
-    return (results as Array<FeedPost & { room?: Room | null }>).map((result) => {
-      const title = (result.deadlineTitle || result.resourceTitle || "").toLowerCase();
-      const body = (result.content ?? "").toLowerCase();
-      const tagLine = Array.isArray(result.tags) ? result.tags.join(" ").toLowerCase() : "";
+    return (results as SearchResultRecord[])
+      .map((result) => {
+        const safeId = typeof result._id === "string" ? result._id : null;
+        const safeRoomId = typeof result.roomId === "string" ? result.roomId : null;
+        const safeContent = typeof result.content === "string" ? result.content : "";
+        const safeDeadlineTitle = typeof result.deadlineTitle === "string" ? result.deadlineTitle : "";
+        const safeResourceTitle = typeof result.resourceTitle === "string" ? result.resourceTitle : "";
+        const safeType = typeof result.type === "string" ? result.type : "note";
+        const safeCreatedAt = typeof result.createdAt === "number" && Number.isFinite(result.createdAt) ? result.createdAt : null;
+        const safeRoomName = typeof result.room?.name === "string" ? result.room.name : "Room";
+        const safeAuthorName = typeof result.author?.name === "string" ? result.author.name : "Unknown author";
+        const safeTags = Array.isArray(result.tags) ? result.tags.filter((tag): tag is string => typeof tag === "string") : [];
 
-      const relevance = title.includes(query)
-        ? "Title match"
-        : tagLine.includes(query)
-          ? "Tag match"
-          : "Body match";
+        if (!safeId || !safeRoomId || !safeCreatedAt) {
+          return null;
+        }
 
-      return {
-        ...result,
-        relevance,
-        snippet: buildSnippet(result.content ?? "", query)
-      };
-    }).filter((result) => typeof result._id === "string" && typeof result.roomId === "string");
+        const title = (safeDeadlineTitle || safeResourceTitle).toLowerCase();
+        const body = safeContent.toLowerCase();
+        const tagLine = safeTags.join(" ").toLowerCase();
+
+        const relevance = title.includes(query)
+          ? "Title match"
+          : tagLine.includes(query)
+            ? "Tag match"
+            : "Body match";
+
+        return {
+          ...result,
+          _id: safeId,
+          roomId: safeRoomId,
+          type: safeType,
+          createdAt: safeCreatedAt,
+          deadlineTitle: safeDeadlineTitle,
+          resourceTitle: safeResourceTitle,
+          content: safeContent,
+          tags: safeTags,
+          room: {
+            ...(result.room ?? {}),
+            name: safeRoomName
+          },
+          author: {
+            ...(result.author ?? {}),
+            name: safeAuthorName
+          },
+          relevance,
+          snippet: buildSnippet(safeContent, query)
+        };
+      })
+      .filter((result): result is NonNullable<typeof result> => result !== null);
   }, [deferredQuery, results]);
 
   return (

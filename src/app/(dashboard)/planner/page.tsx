@@ -219,7 +219,7 @@ export default function PlannerPage() {
                 Turn deadlines into a visible calendar, inspect AI-prioritized study blocks, and add manual work that does not yet live in room posts.
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col flex-wrap gap-3">
               <div className="relative">
                 <button
                   type="button"
@@ -235,11 +235,11 @@ export default function PlannerPage() {
                   <div className="dropdown-panel absolute right-0 top-[calc(100%+0.75rem)] z-30 min-w-[16rem] rounded-[24px] p-2 shadow-2xl">
                     <button type="button" onClick={() => void handleExport("xlsx")} className="app-action-button w-full justify-start border-transparent bg-transparent text-left">
                       <FileSpreadsheet size={15} />
-                      Export Excel (.xlsx)
+                      Export Excel
                     </button>
                     <button type="button" onClick={() => void handleExport("docx")} className="app-action-button mt-1 w-full justify-start border-transparent bg-transparent text-left">
                       <FileText size={15} />
-                      Export Word (.docx)
+                      Export Word
                     </button>
                   </div>
                 ) : null}

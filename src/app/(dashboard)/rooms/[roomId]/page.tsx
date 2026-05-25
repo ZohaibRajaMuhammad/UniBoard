@@ -16,7 +16,6 @@ import {
   PlusSquare,
   ShieldCheck,
   Sparkles,
-  Users2,
   X
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -28,6 +27,7 @@ import { PostFeed } from "@/components/feed/PostFeed";
 import { useNotifier } from "@/components/providers/NotificationProvider";
 import { PresenceBar } from "@/components/rooms/PresenceBar";
 import { RoomHeader } from "@/components/rooms/RoomHeader";
+import { ThemeToggle } from "@/components/system/ThemeToggle";
 import { TeacherPanel } from "@/components/teacher/TeacherPanel";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { postAi } from "@/lib/ai/client";
@@ -168,24 +168,27 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   }
 
   return (
-    <div className="relative flex h-full min-h-0 flex-1 overflow-hidden">
-      <div className="grid h-full min-h-0 flex-1 grid-rows-[auto_auto_auto_minmax(0,1fr)] overflow-hidden">
+    <div className="app-scroll relative flex min-h-full flex-1 overflow-y-auto">
+      <div className="grid min-h-full flex-1 grid-rows-[auto_auto_auto_1fr]">
         <RoomHeader room={room} />
         <PresenceBar roomId={roomId} />
 
         <div className="border-b border-[var(--app-line)] bg-[var(--app-panel)] backdrop-blur-xl">
-          <div className="page-wrap py-3">
-            <div className="glass-panel rounded-[28px] p-3 sm:p-4">
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(20rem,0.9fr)] xl:items-start">
+          <div className="page-wrap py-2">
+            <div className="glass-panel rounded-[24px] p-3">
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1.95fr)_minmax(18rem,0.8fr)] xl:items-start">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Sparkles size={15} className="text-[var(--app-violet)]" />
-                    <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Room intelligence</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Sparkles size={14} className="text-[var(--app-violet)]" />
+                      <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Room intelligence</p>
+                    </div>
+                    <ThemeToggle className="min-h-[2.35rem] shrink-0 rounded-full px-2 py-1.5" />
                   </div>
-                  <div className="mt-2 flex flex-col gap-2 xl:flex-row xl:items-start xl:justify-between xl:gap-4">
-                    <div className="min-w-0">
-                      <h2 className="text-lg font-semibold text-white sm:text-xl">The feed stays primary. Room context stays beside it.</h2>
-                      <p className="mt-1 line-clamp-2 text-sm leading-6 text-[var(--app-text-soft)]">
+                  <div className="mt-1.5 flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between lg:gap-3">
+                    <div className="min-w-0 max-w-3xl">
+                      <h2 className="text-[15px] font-semibold text-white sm:text-base">The feed stays primary. Room context stays close.</h2>
+                      <p className="mt-1 line-clamp-2 text-[13px] leading-5 text-[var(--app-text-soft)]">
                         {room.aiEnabled
                           ? summaryError
                             ? summaryError
@@ -193,37 +196,26 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                           : "Room AI is disabled, so this workspace relies on visible posts, presence, and room controls."}
                       </p>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:min-w-[22rem] xl:grid-cols-2">
+                    <div className="grid grid-cols-3 gap-2 sm:max-w-[20rem] sm:min-w-[19rem]">
                       {roomStats.map((item) => (
-                        <div key={item.label} className="stat-card px-3 py-3">
+                        <div key={item.label} className="stat-card px-3 py-2">
                           <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--app-text-muted)]">{item.label}</p>
-                          <p className="mt-1 text-base font-semibold text-[var(--app-text)]">{item.value}</p>
+                          <p className="mt-0.5 text-sm font-semibold text-[var(--app-text)]">{item.value}</p>
                         </div>
                       ))}
-                      <div className="stat-card col-span-2 px-3 py-3 sm:col-span-2 xl:col-span-2">
-                        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-[var(--app-text-muted)]">
-                          <Users2 size={13} />
-                          Active workspace
-                        </div>
-                        <p className="mt-1 text-sm leading-6 text-[var(--app-text-soft)]">
-                          Discussion remains visible while filters and pinned guidance stay close.
-                        </p>
-                      </div>
                     </div>
                   </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-2 flex flex-wrap gap-2">
                     <span className={summary?.meta.mode === "fallback" ? "app-chip border-amber-400/20 bg-amber-500/10 text-[var(--app-text)]" : "app-chip"}>
                       {room.aiEnabled ? (summary?.meta.mode === "fallback" ? "Deterministic mode" : "AI grounded") : "AI disabled"}
                     </span>
-                    <span className="app-chip">{room.postCount} posts</span>
-                    <span className="app-chip">{room.memberCount} members</span>
                     <span className="app-chip">{activeFilterLabel}</span>
                     {hasPinnedPosts ? <span className="app-chip">{pinnedPosts?.length} pinned</span> : null}
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3">
-                  <div className="smooth-x-scroll flex gap-2 pb-1">
+                <div className="flex flex-col gap-2 xl:items-start">
+                  <div className="smooth-x-scroll flex gap-2 pb-0.5">
                     {ROOM_VIEWS.map((view) => (
                       <button
                         key={view}
@@ -245,7 +237,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                         aria-controls="teacher-panel"
                       >
                         <ShieldCheck size={14} />
-                        {teacherPanelOpen ? "Hide teacher panel" : "Teacher panel"}
+                        {teacherPanelOpen ? "Hide panel" : "Teacher panel"}
                         {teacherPanelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                       </button>
                     ) : null}
@@ -264,7 +256,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     ) : null}
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
+                  <div className="smooth-x-scroll flex gap-2 pb-0.5">
                     {FEED_FILTERS.map((filter) => {
                       const FilterIcon = filter === "all" ? null : getPostTypeIcon(filter);
                       return (
@@ -287,10 +279,10 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         </div>
 
         {showFeed ? (
-          <div className="flex min-h-0 flex-col overflow-hidden">
-            <div className={cn("grid min-h-0 flex-1", activeView === "split" ? "xl:grid-cols-[minmax(0,1.55fr)_23rem]" : "")}>
-              <div ref={feedSectionRef} className="min-h-0 overflow-hidden">
-                <div className="app-scroll h-full px-1 pb-8">
+          <div className="flex flex-col">
+            <div className={cn("grid flex-1", activeView === "split" ? "xl:grid-cols-[minmax(0,1.55fr)_23rem]" : "")}>
+              <div ref={feedSectionRef} className="min-w-0">
+                <div className="px-1 pb-8">
                   <section id="room-post-list" className="mx-auto w-full max-w-[66rem] scroll-mt-4 px-4 pt-3 sm:px-6">
                     <div className="sticky top-0 z-10 -mx-1 px-1 pb-3">
                       <div className="glass-panel rounded-[26px] border border-[var(--app-line)] bg-[var(--app-panel-strong)]/88 p-3 shadow-[0_18px_40px_rgba(8,16,30,0.18)] backdrop-blur-xl sm:p-4">
@@ -342,9 +334,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
               {activeView === "split" ? (
                 <aside className="hidden border-l border-[var(--app-line)] bg-[var(--app-bg-strong)]/55 xl:block">
-                  <div className="app-scroll h-full">
-                    <div className="px-5 py-5">
-                      <div className="sticky top-5 grid gap-4">
+                  <div className="px-5 py-5">
+                    <div className="sticky top-5 grid gap-4">
                         <section className="glass-panel rounded-[28px] p-5">
                           <div className="flex items-start justify-between gap-3">
                             <div>
@@ -413,7 +404,6 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                             </div>
                           </section>
                         ) : null}
-                      </div>
                     </div>
                   </div>
                 </aside>

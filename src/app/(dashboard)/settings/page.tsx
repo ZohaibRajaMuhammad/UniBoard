@@ -130,7 +130,7 @@ export default function SettingsPage() {
 
           <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="grid gap-4">
-              <section className="app-surface-muted rounded-[24px] p-5">
+              {/* <section className="app-surface-muted rounded-[24px] p-5">
                 <div className="mb-5 flex items-start gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[rgba(109,140,255,0.25)] bg-[rgba(77,117,255,0.1)] text-[var(--app-primary-strong)]">
                     <ShieldCheck size={18} />
@@ -141,7 +141,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <ThemeToggle />
-              </section>
+              </section> */}
 
               {SETTING_GROUPS.map((group) => {
                 const Icon = group.icon;
