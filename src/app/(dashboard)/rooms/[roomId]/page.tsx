@@ -135,9 +135,9 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
     }
 
     return [
-      { label: "Members", value: String(room.memberCount) },
-      { label: "Posts", value: String(room.postCount) },
-      { label: "Format", value: room.isPublic ? "Public" : "Private" }
+      { label: "Members", value: `${room.memberCount} Active` },
+      { label: "Posts", value: `${room.postCount} Published` },
+      { label: "Format", value: room.isPublic ? "Public Workspace" : "Private Workspace" }
     ];
   }, [room]);
 
@@ -185,18 +185,26 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     </div>
                     <ThemeToggle className="min-h-[2.35rem] shrink-0 rounded-full px-2 py-1.5" />
                   </div>
-                  <div className="mt-1.5 flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between lg:gap-3">
+                  <div className="mt-1.5 grid gap-3 xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start">
                     <div className="min-w-0 max-w-3xl">
-                      <h2 className="text-[15px] font-semibold text-white sm:text-base">The feed stays primary. Room context stays close.</h2>
-                      <p className="mt-1 line-clamp-2 text-[13px] leading-5 text-[var(--app-text-soft)]">
-                        {room.aiEnabled
-                          ? summaryError
-                            ? summaryError
-                            : summary?.data?.summary ?? "Preparing a grounded room summary from visible discussion."
-                          : "Room AI is disabled, so this workspace relies on visible posts, presence, and room controls."}
+                      <h2 className="text-[15px] font-semibold text-white sm:text-base">Workspace collaboration overview</h2>
+                      <p className="mt-1 text-[13px] leading-5 text-[var(--app-text-soft)]">
+                        The feed remains the primary collaboration surface. Room context and member activity remain visible in real time.
                       </p>
+                      <div className="mt-2 rounded-[18px] border border-[var(--app-line)] bg-white/[0.04] px-3 py-2.5">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">
+                          {room.aiEnabled ? (summaryError ? "AI status" : "AI enabled") : "AI disabled"}
+                        </p>
+                        <p className="mt-1 text-sm leading-5 text-[var(--app-text-soft)]">
+                          {room.aiEnabled
+                            ? summaryError
+                              ? summaryError
+                              : summary?.data?.summary ?? "Automated room assistance is currently active."
+                            : "Manual room moderation is active."}
+                        </p>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 sm:max-w-[20rem] sm:min-w-[19rem]">
+                    <div className="grid grid-cols-3 gap-2 sm:max-w-[20rem] sm:min-w-[19rem] xl:justify-self-end">
                       {roomStats.map((item) => (
                         <div key={item.label} className="stat-card px-3 py-2">
                           <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--app-text-muted)]">{item.label}</p>
@@ -209,12 +217,14 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     <span className={summary?.meta.mode === "fallback" ? "app-chip border-amber-400/20 bg-amber-500/10 text-[var(--app-text)]" : "app-chip"}>
                       {room.aiEnabled ? (summary?.meta.mode === "fallback" ? "Deterministic mode" : "AI grounded") : "AI disabled"}
                     </span>
-                    <span className="app-chip">{activeFilterLabel}</span>
                     {hasPinnedPosts ? <span className="app-chip">{pinnedPosts?.length} pinned</span> : null}
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-2 xl:items-start">
+                  <div className="w-full">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Navigation</p>
+                  </div>
                   <div className="smooth-x-scroll flex gap-2 pb-0.5">
                     {ROOM_VIEWS.map((view) => (
                       <button
@@ -243,6 +253,9 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     ) : null}
                   </div>
 
+                  <div className="w-full">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Primary actions</p>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     <button type="button" onClick={() => setComposerOpen(true)} className="app-button app-button-primary min-h-[2.6rem] rounded-2xl px-4 py-2 text-sm">
                       <PlusSquare size={14} />
@@ -256,6 +269,9 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     ) : null}
                   </div>
 
+                  <div className="w-full">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Feed filters</p>
+                  </div>
                   <div className="smooth-x-scroll flex gap-2 pb-0.5">
                     {FEED_FILTERS.map((filter) => {
                       const FilterIcon = filter === "all" ? null : getPostTypeIcon(filter);
@@ -264,10 +280,10 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                           key={filter}
                           type="button"
                           onClick={() => setActiveFilter(filter)}
-                          className={cn("app-filter-pill", activeFilter === filter ? "app-filter-pill-active" : "")}
+                          className={cn("app-filter-pill text-xs", activeFilter === filter ? "app-filter-pill-active" : "")}
                         >
                           {FilterIcon ? <FilterIcon size={14} /> : null}
-                          {filter === "all" ? "All posts" : POST_TYPE_CONFIG[filter].label}
+                          {filter === "all" ? "All Posts" : POST_TYPE_CONFIG[filter].label}
                         </button>
                       );
                     })}
