@@ -87,6 +87,10 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
 
       if (containsAiMention(content)) {
         const parentComment = replyTo ? (comments ?? []).find((comment) => comment._id === replyTo) : null;
+        const mentionFailureComment = formatAssistantComment(
+          "I could not answer that mention reliably right now. Try again with one direct question and a clearer room-specific concept, artifact, or deadline.",
+          ["Ask with a single @UniBoardAI mention and name the exact topic you want explained."]
+        );
         void postAi<AssistantReply>("/api/v1/ai/assistant", {
           message: buildAssistantPrompt(content, {
             postTitle: post?.deadlineTitle ?? post?.resourceTitle ?? null,
@@ -102,7 +106,8 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
               parentCommentId: replyTo ?? createdCommentId,
               content: formatAssistantComment(payload.data?.reply ?? "I could not ground a reliable answer for that mention.", payload.data?.suggestions)
             })
-          ).then(() => {
+          )
+          .then(() => {
             notify({
               title: "AI replied",
               message: "UniBoard AI added a follow-up comment.",
@@ -110,7 +115,30 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
               tag: "comment-ai-reply"
             });
           })
-          .catch(() => null);
+          .catch(() =>
+            createAiReply({
+              postId,
+              parentCommentId: replyTo ?? createdCommentId,
+              content: mentionFailureComment
+            })
+              .then(() => {
+                notify({
+                  title: "AI mention needs refinement",
+                  message: "UniBoard AI could not fully answer, so it left a fallback reply instead of failing silently.",
+                  tone: "warning",
+                  tag: "comment-ai-reply-fallback"
+                });
+              })
+              .catch(() => {
+                notify({
+                  title: "AI mention failed",
+                  message: "UniBoard AI did not reply to that mention. Try one direct @UniBoardAI question with the exact concept or room topic.",
+                  tone: "error",
+                  priority: "high",
+                  tag: "comment-ai-reply-error"
+                });
+              })
+          );
       }
 
       setContent("");

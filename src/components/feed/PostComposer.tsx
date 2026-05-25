@@ -152,6 +152,10 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
       });
 
       if ((room?.aiEnabled ?? false) && containsAiMention(finalContent)) {
+        const mentionFailureComment = formatAssistantComment(
+          "I could not answer that mention reliably right now. Try again with one direct question and a clearer room-specific concept, artifact, or deadline.",
+          ["Ask with a single @UniBoardAI mention and name the exact topic you want explained."]
+        );
         void postAi<AssistantReply>("/api/v1/ai/assistant", {
           message: buildAssistantPrompt(finalContent, {
             postType,
@@ -165,7 +169,8 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
               postId,
               content: formatAssistantComment(payload.data?.reply ?? "I could not ground a reliable answer for that mention.", payload.data?.suggestions)
             })
-          ).then(() => {
+          )
+          .then(() => {
             notify({
               title: "AI mention answered",
               message: "UniBoard AI replied inside the discussion thread.",
@@ -173,7 +178,29 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
               tag: "post-ai-reply"
             });
           })
-          .catch(() => null);
+          .catch(() =>
+            createAiReply({
+              postId,
+              content: mentionFailureComment
+            })
+              .then(() => {
+                notify({
+                  title: "AI mention needs refinement",
+                  message: "UniBoard AI could not fully answer, so it left a fallback reply instead of failing silently.",
+                  tone: "warning",
+                  tag: "post-ai-reply-fallback"
+                });
+              })
+              .catch(() => {
+                notify({
+                  title: "AI mention failed",
+                  message: "UniBoard AI did not reply to that mention. Try one direct @UniBoardAI question with the exact concept or room topic.",
+                  tone: "error",
+                  priority: "high",
+                  tag: "post-ai-reply-error"
+                });
+              })
+          );
       }
 
       setContent("");
