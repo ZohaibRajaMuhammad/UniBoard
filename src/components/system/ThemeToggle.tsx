@@ -32,7 +32,7 @@ export function ThemeToggle({
         <span className="block text-[10px] uppercase tracking-[0.18em] text-[var(--app-text-muted)]">Appearance</span>
         <span className="block text-sm font-semibold text-[var(--app-text)]">{theme === "dark" ? "Dark mode" : "Light mode"}</span>
       </span> */}
-      <Monitor size={15} className="hidden text-[var(--app-text-muted)] sm:block" />
+      {/* <Monitor size={15} className="hidden text-[var(--app-text-muted)] sm:block" /> */}
     </button>
   );
 }
