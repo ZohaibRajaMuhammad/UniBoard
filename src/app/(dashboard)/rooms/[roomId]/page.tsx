@@ -174,120 +174,120 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         <PresenceBar roomId={roomId} />
 
         <div className="border-b border-[var(--app-line)] bg-[var(--app-panel)] backdrop-blur-xl">
-          <div className="page-wrap py-2">
-            <div className="glass-panel rounded-[24px] p-3">
-              <div className="grid gap-3 xl:grid-cols-[minmax(0,1.95fr)_minmax(18rem,0.8fr)] xl:items-start">
+          <div className="page-wrap py-3">
+            <div className="glass-panel rounded-[24px] p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <Sparkles size={14} className="text-[var(--app-violet)]" />
-                      <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Room intelligence</p>
-                    </div>
-                    <ThemeToggle className="min-h-[2.35rem] shrink-0 rounded-full px-2 py-1.5" />
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={14} className="text-[var(--app-violet)]" />
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Room intelligence</p>
                   </div>
-                  <div className="mt-1.5 grid gap-3 xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start">
-                    <div className="min-w-0 max-w-3xl">
-                      <h2 className="text-[15px] font-semibold text-white sm:text-base">Workspace collaboration overview</h2>
-                      <p className="mt-1 text-[13px] leading-5 text-[var(--app-text-soft)]">
-                        The feed remains the primary collaboration surface. Room context and member activity remain visible in real time.
-                      </p>
-                      <div className="mt-2 rounded-[18px] border border-[var(--app-line)] bg-white/[0.04] px-3 py-2.5">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">
-                          {room.aiEnabled ? (summaryError ? "AI status" : "AI enabled") : "AI disabled"}
-                        </p>
-                        <p className="mt-1 text-sm leading-5 text-[var(--app-text-soft)]">
-                          {room.aiEnabled
-                            ? summaryError
-                              ? summaryError
-                              : summary?.data?.summary ?? "Automated room assistance is currently active."
-                            : "Manual room moderation is active."}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 sm:max-w-[20rem] sm:min-w-[19rem] xl:justify-self-end">
-                      {roomStats.map((item) => (
-                        <div key={item.label} className="stat-card px-3 py-2">
-                          <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--app-text-muted)]">{item.label}</p>
-                          <p className="mt-0.5 text-sm font-semibold text-[var(--app-text)]">{item.value}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <span className={summary?.meta.mode === "fallback" ? "app-chip border-amber-400/20 bg-amber-500/10 text-[var(--app-text)]" : "app-chip"}>
-                      {room.aiEnabled ? (summary?.meta.mode === "fallback" ? "Deterministic mode" : "AI grounded") : "AI disabled"}
-                    </span>
-                    {hasPinnedPosts ? <span className="app-chip">{pinnedPosts?.length} pinned</span> : null}
-                  </div>
+                  <h2 className="mt-2 text-base font-semibold text-white sm:text-lg">Workspace collaboration overview</h2>
                 </div>
+                <ThemeToggle className="min-h-[2.35rem] shrink-0 rounded-full px-2 py-1.5" />
+              </div>
 
-                <div className="flex flex-col gap-2 xl:items-start">
-                  <div className="w-full">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Navigation</p>
-                  </div>
-                  <div className="smooth-x-scroll flex gap-2 pb-0.5">
-                    {ROOM_VIEWS.map((view) => (
-                      <button
-                        key={view}
-                        type="button"
-                        onClick={() => (view === "overview" ? setActiveView(view) : openFeed(view))}
-                        className={cn("app-segmented-button shrink-0", activeView === view ? "app-segmented-button-active" : "")}
-                        aria-pressed={activeView === view}
-                      >
-                        <LayoutPanelTop size={14} />
-                        {view === "overview" ? "Overview" : view === "split" ? "Split feed" : "Full feed"}
-                      </button>
-                    ))}
-                    {canModerateRoom ? (
-                      <button
-                        type="button"
-                        onClick={() => setTeacherPanelOpen((current) => !current)}
-                        className={cn("app-segmented-button shrink-0", teacherPanelOpen ? "app-segmented-button-active" : "")}
-                        aria-expanded={teacherPanelOpen}
-                        aria-controls="teacher-panel"
-                      >
-                        <ShieldCheck size={14} />
-                        {teacherPanelOpen ? "Hide panel" : "Teacher panel"}
-                        {teacherPanelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
-                      </button>
-                    ) : null}
-                  </div>
+              <div className="mt-4 max-w-3xl">
+                <p className="text-sm leading-6 text-[var(--app-text-soft)]">
+                  The feed remains the primary collaboration surface. Room context and member activity remain visible in real time.
+                </p>
+              </div>
 
-                  <div className="w-full">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Primary actions</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button type="button" onClick={() => setComposerOpen(true)} className="app-button app-button-primary min-h-[2.6rem] rounded-2xl px-4 py-2 text-sm">
-                      <PlusSquare size={14} />
-                      New post
+              <div className="mt-4 rounded-[18px] border border-[var(--app-line)] bg-white/[0.04] px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">
+                  {room.aiEnabled ? (summaryError ? "AI status" : "AI enabled") : "AI disabled"}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-[var(--app-text-soft)]">
+                  {room.aiEnabled
+                    ? summaryError
+                      ? summaryError
+                      : summary?.data?.summary ?? "Automated room assistance is currently active."
+                    : "Manual room moderation is active."}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className={summary?.meta.mode === "fallback" ? "app-chip border-amber-400/20 bg-amber-500/10 text-[var(--app-text)]" : "app-chip"}>
+                    {room.aiEnabled ? (summary?.meta.mode === "fallback" ? "Deterministic mode" : "AI grounded") : "AI disabled"}
+                  </span>
+                  {hasPinnedPosts ? <span className="app-chip">{pinnedPosts?.length} pinned</span> : null}
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Metrics overview</p>
+                <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                  {roomStats.map((item) => (
+                    <div key={item.label} className="stat-card px-4 py-3">
+                      <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--app-text-muted)]">{item.label}</p>
+                      <p className="mt-1.5 text-sm font-semibold text-[var(--app-text)]">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Feed navigation</p>
+                <div className="smooth-x-scroll mt-2 flex gap-2 pb-0.5">
+                  {ROOM_VIEWS.map((view) => (
+                    <button
+                      key={view}
+                      type="button"
+                      onClick={() => (view === "overview" ? setActiveView(view) : openFeed(view))}
+                      className={cn("app-segmented-button shrink-0", activeView === view ? "app-segmented-button-active" : "")}
+                      aria-pressed={activeView === view}
+                    >
+                      <LayoutPanelTop size={14} />
+                      {view === "overview" ? "Overview" : view === "split" ? "Split Feed" : "Full Feed"}
                     </button>
-                    {showFeed ? (
-                      <Link href="#room-post-list" className="app-button app-button-secondary min-h-[2.6rem] rounded-2xl px-4 py-2 text-sm">
-                        Jump into posts
-                        <ArrowDown size={14} />
-                      </Link>
-                    ) : null}
-                  </div>
+                  ))}
+                  {canModerateRoom ? (
+                    <button
+                      type="button"
+                      onClick={() => setTeacherPanelOpen((current) => !current)}
+                      className={cn("app-segmented-button shrink-0", teacherPanelOpen ? "app-segmented-button-active" : "")}
+                      aria-expanded={teacherPanelOpen}
+                      aria-controls="teacher-panel"
+                    >
+                      <ShieldCheck size={14} />
+                      {teacherPanelOpen ? "Hide Teacher" : "Teacher"}
+                      {teacherPanelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+                    </button>
+                  ) : null}
+                </div>
+              </div>
 
-                  <div className="w-full">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Feed filters</p>
-                  </div>
-                  <div className="smooth-x-scroll flex gap-2 pb-0.5">
-                    {FEED_FILTERS.map((filter) => {
-                      const FilterIcon = filter === "all" ? null : getPostTypeIcon(filter);
-                      return (
-                        <button
-                          key={filter}
-                          type="button"
-                          onClick={() => setActiveFilter(filter)}
-                          className={cn("app-filter-pill text-xs", activeFilter === filter ? "app-filter-pill-active" : "")}
-                        >
-                          {FilterIcon ? <FilterIcon size={14} /> : null}
-                          {filter === "all" ? "All Posts" : POST_TYPE_CONFIG[filter].label}
-                        </button>
-                      );
-                    })}
-                  </div>
+              <div className="mt-5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Primary actions</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => setComposerOpen(true)} className="app-button app-button-primary min-h-[2.75rem] rounded-2xl px-4 py-2 text-sm">
+                    <PlusSquare size={14} />
+                    New post
+                  </button>
+                  {showFeed ? (
+                    <Link href="#room-post-list" className="app-button app-button-secondary min-h-[2.75rem] rounded-2xl px-4 py-2 text-sm">
+                      Jump into posts
+                      <ArrowDown size={14} />
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Feed filters</p>
+                <div className="smooth-x-scroll mt-2 flex gap-2 pb-0.5">
+                  {FEED_FILTERS.map((filter) => {
+                    const FilterIcon = filter === "all" ? null : getPostTypeIcon(filter);
+                    return (
+                      <button
+                        key={filter}
+                        type="button"
+                        onClick={() => setActiveFilter(filter)}
+                        className={cn("app-filter-pill min-h-[2.1rem] text-xs", activeFilter === filter ? "app-filter-pill-active" : "")}
+                      >
+                        {FilterIcon ? <FilterIcon size={13} /> : null}
+                        {filter === "all" ? "All" : POST_TYPE_CONFIG[filter].label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
