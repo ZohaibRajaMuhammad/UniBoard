@@ -1,559 +1,822 @@
 # UniBoard
 
-UniBoard is an enterprise-style academic collaboration platform designed to bring classroom communication, structured discussion, deadlines, moderation, search, and AI assistance into one organized workspace.
+UniBoard is a structured academic collaboration platform for students, teachers, project groups, and institutional operators.
 
-This document explains the product in plain language. It is written so that a founder, teacher, student, product manager, academic administrator, or non-technical reviewer can understand what the platform does, why it exists, how each feature behaves, and how the overall experience works.
+It brings classroom discussion, room-based collaboration, deadlines, resources, search, planning, moderation, analytics, and AI assistance into one organized workspace. The purpose of UniBoard is to replace scattered academic communication with a clear, searchable, governed, and intelligent system that people can use every day without feeling overwhelmed.
 
-The goal of UniBoard is simple:
+This README explains the application in plain language. It is written for technical and non-technical readers, including founders, teachers, students, administrators, reviewers, product managers, and stakeholders who need to understand what the platform does and how to explain it.
 
-to replace fragmented academic coordination with one structured, real-time, intelligent workspace.
-
----
-
-## 1. What UniBoard Is
-
-UniBoard is a room-based academic collaboration system.
-
-Each room acts like a focused academic workspace for a course, lab, project team, revision group, studio, or supervised discussion environment. Inside that room, people can publish structured posts, ask questions, share resources, discuss deadlines, collaborate around projects, and receive AI-assisted help that is grounded in the information they are allowed to access.
-
-UniBoard is not intended to behave like a generic chat tool or a social network. It is designed to behave like an academic operating layer.
-
-That means the system emphasizes:
-
-- structured content instead of chaotic messaging
-- searchable knowledge instead of disappearing conversations
-- role-aware governance instead of open disorder
-- grounded AI assistance instead of random chatbot behavior
-- room context instead of disconnected page experiences
+No technical implementation knowledge is required to understand this document.
 
 ---
 
-## 2. Why UniBoard Exists
+## 1. Executive Summary
 
-Academic work is usually scattered across too many places.
+UniBoard is an academic operating workspace.
 
-Students often rely on messaging apps, private group chats, classroom announcements, email threads, screenshots, notes, file links, and verbal clarifications. Teachers often repeat the same answers, lose visibility into student confusion, and struggle to keep important information visible in one place. Institutions lose knowledge every semester because discussion history, clarifications, and useful resources are not preserved in a structured way.
+Most academic communication is fragmented across group chats, emails, screenshots, notes, classroom announcements, file links, and private conversations. Important information gets lost, questions are repeated, deadlines are missed, and teachers often have limited visibility into what students are confused about.
 
-UniBoard exists to solve that fragmentation.
+UniBoard solves this by organizing academic work into focused rooms.
 
-It creates one system where:
+Inside each room, users can create structured posts, discuss topics in threads, share resources, track deadlines, ask questions, save useful content, search past knowledge, and use AI assistance that is aware of room context.
 
-- rooms hold academic collaboration
-- posts hold structured academic signal
-- comments hold contextual discussion
-- search retrieves prior knowledge
-- planner tools help users act on deadlines
-- analytics help teachers and administrators understand activity
-- AI helps users interpret, summarize, and use the information already inside the workspace
+The platform is designed around five major outcomes:
+
+- Keep academic collaboration organized.
+- Make important information searchable and reusable.
+- Help students understand what matters next.
+- Give teachers better visibility and moderation control.
+- Use AI as a grounded knowledge companion, not as a disconnected chatbot.
+
+In one sentence:
+
+UniBoard is an AI-assisted academic collaboration workspace that helps classes, study groups, and institutions organize communication, deadlines, resources, knowledge, and room activity in one structured system.
 
 ---
 
-## 3. Who UniBoard Is For
+## 2. The Problem UniBoard Solves
 
-UniBoard serves several groups at the same time, but it gives each group a different kind of value.
+Academic collaboration usually breaks down because information lives in too many places.
 
-### Students
+A class may use one messaging app for questions, another platform for files, email for announcements, screenshots for deadlines, verbal reminders for clarifications, and informal student groups for exam preparation. This creates confusion because no single place holds the full academic picture.
 
-Students use UniBoard to:
+Common problems include:
 
-- join class and project rooms
-- ask academic questions
-- share notes and resources
-- keep track of deadlines
-- follow project work
+- Students ask the same questions again because old answers are hard to find.
+- Deadlines are shared informally and then forgotten.
+- Important teacher guidance disappears inside long message threads.
+- Project teams lose track of blockers, responsibilities, and updates.
+- Students hesitate to ask questions when they feel exposed.
+- Teachers cannot easily see which topics are causing confusion.
+- Institutions lose useful academic knowledge every semester.
+- AI tools answer generally because they do not understand the actual class context.
+
+UniBoard addresses these issues by creating a structured academic workspace where communication, knowledge, planning, and AI assistance all connect to the same room-based system.
+
+---
+
+## 3. What UniBoard Is
+
+UniBoard is a room-based collaboration system built for academic work.
+
+A room is a focused workspace for a class, subject, project, lab, revision group, study circle, or supervised discussion area. Each room contains posts, comments, members, filters, activity signals, room settings, and optional AI support.
+
+UniBoard is not just a chat application.
+
+It is closer to an academic command center because it combines:
+
+- room-based communication
+- structured academic posts
+- threaded discussion
+- deadline tracking
+- searchable academic memory
+- personal planning
+- teacher moderation
+- institutional governance
+- AI summaries and answers
+- role-aware permissions
+
+The goal is to help users move from scattered communication to organized academic action.
+
+---
+
+## 4. Who UniBoard Is For
+
+UniBoard serves multiple audiences, but each audience uses the system differently.
+
+## Students
+
+Students use UniBoard to understand their academic work more clearly.
+
+They can:
+
+- join rooms for classes, projects, and study groups
+- read structured academic posts
+- ask questions inside the correct room
+- comment in focused threads
+- track deadlines
 - save important content
-- search older explanations
-- receive AI help when they need fast guidance
+- search old explanations
+- use AI help inside the knowledge base or room discussions
+- manage planning around upcoming work
 
-For students, the system reduces confusion and improves recall.
+For students, UniBoard reduces confusion and makes academic information easier to recover.
 
-### Teachers and Professors
+## Teachers
 
-Teachers use UniBoard to:
+Teachers use UniBoard to guide, supervise, and organize academic collaboration.
 
-- create academic rooms
-- publish announcements and deadlines
-- answer or supervise discussion
-- monitor activity
-- detect room confusion earlier
-- review participation
-- moderate academic collaboration
-- keep important guidance organized
+They can:
 
-For teachers, the system reduces repetition and improves visibility.
+- create or supervise official rooms
+- post announcements
+- share deadlines
+- answer questions
+- pin important guidance
+- monitor room activity
+- moderate content
+- review participation signals
+- use room summaries to understand discussion faster
+- rely on structured posts instead of repeating the same answer in many places
 
-### Departments and Institutions
+For teachers, UniBoard reduces repeated explanation and improves visibility into student needs.
 
-Institutions use UniBoard to:
+## Project Groups
 
-- centralize academic communication
-- preserve academic knowledge over time
-- reduce platform fragmentation
-- support structured collaboration
-- create continuity across semesters and cohorts
+Project groups use UniBoard as a focused workspace for coordination.
 
-For institutions, the system creates reusable academic memory.
+They can:
 
-### Moderators and Administrative Operators
+- create project updates
+- track blockers
+- share resources
+- assign discussion around milestones
+- keep decisions visible
+- use AI to summarize context or clarify next steps
 
-Administrative and governance users use UniBoard to:
+For project teams, UniBoard makes collaboration more traceable and less dependent on scattered chat history.
 
-- review access and roles
-- monitor rooms
-- moderate misuse
-- archive or supervise rooms
-- support teacher approval and room governance workflows
+## Administrators and Super Admins
 
-For governance users, the system provides operational control without breaking the academic experience.
+Administrative users use UniBoard to manage the health and governance of the platform.
 
----
+They can:
 
-## 4. Product Philosophy
+- review user access
+- approve teacher role requests
+- oversee rooms
+- manage archived rooms
+- monitor governance needs
+- support controlled academic operations
 
-UniBoard follows a clear product philosophy.
-
-### Academic-first
-
-Everything in the system is designed around academic work, not around entertainment or social engagement.
-
-### Structured by design
-
-A question, an announcement, a deadline, a project update, and a resource are not treated as the same thing. UniBoard separates these content types because their meaning and importance are different.
-
-### Context matters
-
-Rooms, threads, role permissions, and room-specific visibility all shape how the platform behaves. The system is not meant to act like one flat universal feed.
-
-### AI must be useful, not theatrical
-
-AI in UniBoard is expected to be grounded, concise, helpful, and aware of room context. It should assist work, not create noise.
-
-### Enterprise calmness
-
-The interface is meant to feel stable, operational, and readable. The design should support focus and scanning, not visual chaos.
+For administrators, UniBoard provides institutional control without removing the everyday usability students and teachers need.
 
 ---
 
-## 5. The Core Model of the Platform
+## 5. Product Philosophy
 
-UniBoard revolves around five foundational ideas:
+UniBoard follows a practical product philosophy.
 
-### 1. Rooms
+## Academic Work Comes First
 
-A room is the primary academic workspace.
+The platform is designed for learning, coordination, explanation, deadlines, and academic discussion. It is not designed to maximize casual engagement or social noise.
 
-### 2. Structured posts
+## Structure Creates Clarity
 
-Posts are the main units of academic communication.
+Different academic messages have different meanings. A deadline is not the same as a question. A resource is not the same as an announcement. A project update is not the same as a normal note.
 
-### 3. Threaded discussion
+UniBoard separates these content types so users can scan and filter rooms more easily.
 
-Comments keep discussion connected to the original academic context.
+## Context Matters
 
-### 4. Searchable knowledge
+The meaning of a post depends on the room, the author, the thread, the role of the user, and the surrounding discussion. UniBoard keeps context attached to academic content instead of flattening everything into one generic feed.
 
-Important explanations and resources should be reusable, not lost.
+## AI Must Be Grounded
 
-### 5. Grounded AI assistance
+AI in UniBoard is intended to answer from available workspace context whenever possible. It should be concise, professional, and useful. It should avoid pretending to know things when the room knowledge is weak or unavailable.
 
-AI should help interpret workspace information using accessible context, not improvise without evidence.
+## Governance Is Part of the Product
+
+Academic collaboration needs trust. UniBoard includes role control, moderation, teacher approval, room visibility rules, and administrative oversight so the platform can scale beyond informal student groups.
+
+## Calm Interface, Strong Function
+
+The experience should feel stable, readable, and operational. UniBoard is meant to support repeated academic use, not distract users with unnecessary visual noise.
 
 ---
 
-## 6. Main Areas of the Product
+## 6. Core Concepts
 
-UniBoard includes the following major product surfaces:
+UniBoard is easiest to understand through its core concepts.
 
-- landing experience
-- sign-in and sign-up
-- onboarding and role completion
+## Rooms
+
+Rooms are the main workspaces. Every major academic conversation happens inside a room.
+
+A room may represent:
+
+- a course
+- a class section
+- a project team
+- a study group
+- a lab
+- a revision space
+- a discussion area
+
+Rooms keep collaboration organized by context.
+
+## Posts
+
+Posts are the primary units of communication.
+
+Instead of treating every message as the same kind of content, UniBoard gives posts types such as notes, deadlines, questions, resources, announcements, polls, and project updates.
+
+## Comments
+
+Comments allow discussion under a specific post.
+
+This keeps answers, clarifications, and follow-up questions attached to the correct academic context.
+
+## Knowledge
+
+Knowledge is the reusable value created by rooms, posts, comments, deadlines, and resources.
+
+UniBoard is designed so useful academic information does not disappear after the moment it is posted.
+
+## AI Assistance
+
+AI helps users interpret and use workspace information.
+
+It can support room summaries, knowledge base answers, post drafting, planning help, and replies when explicitly mentioned in a discussion.
+
+## Governance
+
+Governance defines who can create, join, moderate, approve, archive, and manage different parts of the platform.
+
+This is what makes UniBoard suitable for serious academic environments.
+
+---
+
+## 7. Main Product Areas
+
+UniBoard includes several major areas:
+
+- landing and access screens
 - dashboard
 - room discovery
-- room detail workspace
+- room workspace
+- post composer
+- comment threads
 - search
 - knowledge base
 - planner
-- notifications
 - analytics
+- notifications
 - saved items
 - leaderboard
 - reputation
 - profile
 - settings
-- administration
+- admin portal
 - AI assistant
 
-Each area has a distinct job inside the academic workflow.
+Each area supports a specific part of the academic workflow.
 
 ---
 
-## 7. Authentication, Identity, and Onboarding
+## 8. Account Access and Onboarding
 
-The platform begins with account access and identity setup.
+Users enter UniBoard through account sign-in or account creation.
 
-When a user signs in, UniBoard establishes their authenticated session and then maps that person into the academic workspace as a product user.
+After authentication, the platform needs to understand the user's academic identity. A login alone is not enough because UniBoard must know what role the person has and what level of access they should receive.
 
-This matters because a person in UniBoard is more than just a login account. The platform also needs to know:
+The onboarding flow helps establish:
 
-- what role the person has
+- user identity
+- academic role
+- student or teacher intent
+- department or batch context
+- profile information
+- access readiness
+
+The platform can treat users as active or pending depending on their status.
+
+## Pending Users
+
+A pending user is someone who has an account but has not yet received full workspace capability.
+
+This matters because teacher access and governed academic actions should not be available to every new user automatically.
+
+Pending access supports:
+
+- controlled onboarding
+- teacher approval workflows
+- safer institutional deployment
+- clearer user governance
+
+---
+
+## 9. Roles and Permissions
+
+UniBoard uses role-aware behavior so the platform can serve students, teachers, and administrators safely.
+
+## Student
+
+A student can participate in rooms, read posts, comment, ask questions, save content, search accessible knowledge, and use student-appropriate collaboration features.
+
+Student room creation may be limited depending on governance rules. This prevents student-created spaces from being confused with official academic rooms.
+
+## Teacher
+
+A teacher has stronger academic authority.
+
+Teachers may create or supervise official rooms, post announcements, moderate discussions, review activity, and guide students through structured academic content.
+
+Teacher access should be trusted, so a professional platform treats teacher status as something that may require approval.
+
+## Super Admin
+
+A super admin manages the portal at a higher level.
+
+This role can oversee governance, review access requests, manage user roles, supervise room state, and support platform health.
+
+## Room-Level Authority
+
+A user's platform role is not the only authority in the system.
+
+Rooms can also have room-level membership and control. A person may be a member, moderator, or owner inside a room depending on their relationship to that workspace.
+
+This gives UniBoard flexibility because authority can be global or room-specific.
+
+---
+
+## 10. Room Discovery and Joining
+
+Users need ways to find and enter the rooms that matter to them.
+
+Rooms can be public or private.
+
+## Public Rooms
+
+Public rooms are easier to discover.
+
+They are useful for:
+
+- open class discussions
+- common study groups
+- public academic communities
+- accessible revision spaces
+
+Users can browse public rooms and join them when allowed.
+
+## Private Rooms
+
+Private rooms are controlled spaces.
+
+They are useful for:
+
+- official course groups
+- teacher-led classes
+- closed project teams
+- sensitive academic discussions
+- rooms that require supervised membership
+
+Private rooms may require a join code or approved access.
+
+## Why Join Rules Matter
+
+Room access controls help prevent academic work from becoming exposed, disorganized, or misused. They also help teachers and administrators supervise the correct spaces without forcing every room to be public.
+
+---
+
+## 11. Room Creation
+
+Room creation is one of the most important governance points in UniBoard.
+
+A room is not just a container. It creates a new collaboration environment with members, posts, visibility, settings, moderation rules, and potentially AI behavior.
+
+When a room is created, the creator defines its purpose and structure.
+
+Important room properties may include:
+
+- room name
+- subject or academic category
+- description
+- visibility
+- join behavior
+- AI availability
+- anonymous posting rules
+- moderation expectations
+
+## Student-Created Rooms
+
+Student-created rooms can be useful for study groups and project collaboration.
+
+However, they should be governed so that they do not appear to be official course spaces unless approved.
+
+## Teacher-Created Rooms
+
+Teacher-created rooms can represent official academic spaces.
+
+These rooms may support announcements, deadlines, moderation, and structured class communication.
+
+## Admin Governance
+
+Administrators can oversee room behavior to ensure the portal remains organized and safe at scale.
+
+---
+
+## 12. The Dashboard
+
+The dashboard is the user's main entry point after sign-in.
+
+It helps users quickly understand:
+
 - which rooms they belong to
-- which department or batch they may be connected to
-- whether they are fully active or pending
-- what notifications they want
-- what their academic participation history looks like
+- what activity needs attention
+- which deadlines are coming
+- whether their workspace is active
+- what AI guidance is available
 
-### Onboarding
+The dashboard is not just a navigation page. It is a workspace overview that helps the user decide where to go next.
 
-Onboarding completes the academic identity layer.
+For a student, the dashboard answers:
 
-This may include:
+- What rooms should I check?
+- Are there deadlines coming?
+- What needs my attention?
 
-- display name
-- role intent
-- department or subject alignment
-- batch
-- optional academic information
-- workspace preferences
+For a teacher, it answers:
 
-The purpose of onboarding is to make collaboration meaningful and role-aware from the start.
-
----
-
-## 8. User Roles and Governance Model
-
-UniBoard uses both platform-level roles and room-level roles.
-
-### Platform-level roles
-
-The platform can distinguish between:
-
-- student
-- teacher
-- administrator
-- super administrator
-- pending user
-
-These roles decide what kind of actions a person can take across the wider system.
-
-### Pending users
-
-Pending users are real accounts, but not yet fully activated for all workspace actions. This helps the platform support controlled onboarding, approval steps, or staged role assignment.
-
-### Room-level roles
-
-Inside a room, people can also have room-specific authority such as:
-
-- member
-- moderator
-- owner
-
-This is important because a user may be a teacher globally but still require room-level membership and context-specific authority.
-
-### Governance logic
-
-Governance exists to keep academic collaboration usable and safe. It supports:
-
-- room ownership
-- moderation actions
-- content review
-- role changes
-- mute and ban behavior
-- archived room protection
-- teacher-only operations where needed
-
-UniBoard is designed so that governance feels integrated, not bolted on.
+- Which rooms are active?
+- Where might students need help?
+- What academic activity is happening?
 
 ---
 
-## 9. Rooms: The Heart of UniBoard
+## 13. The Room Workspace
 
-A room is the core workspace unit.
+The room workspace is the center of daily use.
 
-Rooms represent academic collaboration zones such as:
+Inside a room, users can:
 
-- courses
-- classes
-- labs
-- project teams
-- revision groups
-- supervised study circles
-- discussion clusters
-
-### What a room contains
-
-A room may contain:
-
-- a name
-- a subject or academic identity
-- a description
-- a creator or owner
-- a visibility state
-- member count
-- post count
-- room settings
-- moderation policies
-- AI enablement state
-- room activity signals
-
-### Public rooms
-
-Public rooms are designed for discoverability and easier access.
-
-Users can see them, join them, and start collaborating if permitted.
-
-### Private rooms
-
-Private rooms are more controlled.
-
-They are typically used for:
-
-- protected class spaces
-- teacher-led collaboration
-- closed project groups
-- moderated internal cohorts
-
-Private rooms rely on deliberate access flows such as room membership or join code entry.
-
-### Room lifecycle
-
-A room can be:
-
-- created
-- joined
-- used actively
-- moderated
-- archived
-- supervised
-
-Archived rooms remain important because academic history often needs to be preserved even when active discussion ends.
-
----
-
-## 10. The Dashboard
-
-The dashboard is the user’s main workspace entry point.
-
-It is designed to give fast awareness of:
-
-- active rooms
-- important activity
-- notifications
-- deadlines
-- AI insights
-- recent academic movement
-
-The dashboard is not just a menu page. It functions as a coordination surface that helps a user decide what needs attention next.
-
----
-
-## 11. The Room Workspace Experience
-
-The room detail experience is the center of daily use.
-
-It is where users:
-
-- read and create posts
-- follow discussions
-- review room intelligence
+- read posts
+- create posts
+- comment in threads
+- filter the feed
+- view room intelligence
 - see active member presence
-- switch feed modes
-- use filters
-- access pinned context
-- ask AI through mentions
-- open moderation tools when relevant
+- access pinned guidance
+- use AI mentions
+- open teacher tools when permitted
+- switch between feed views
 
-### Room intelligence
+The room screen is designed to keep posts as the primary collaboration surface while still giving users enough context to understand the room state.
 
-The room workspace begins with an intelligence layer rather than a decorative header.
+## Room Intelligence
 
-That area is meant to explain:
+Room intelligence is the operational overview at the top of the room.
 
-- what room the user is in
-- what the room state is
-- whether AI is active
-- what the current collaboration pattern looks like
-- how the feed is organized
-- what actions are available
+It communicates:
 
-### Feed-first experience
+- workspace identity
+- current room state
+- AI availability
+- member and post counts
+- room visibility
+- feed mode
+- available actions
+- content filters
 
-The feed is the main collaboration surface.
+The purpose is orientation. A user should quickly understand what room they are in, what is happening, and what they can do next.
 
-UniBoard treats the post stream as the primary work area, while summary information, room context, and controls remain visible around it in a structured way.
+## Presence
 
-### Feed views
+Presence shows active room participation.
 
-The room can support different feed views such as:
+This gives users awareness that the room is alive without turning the workspace into a noisy chat interface.
 
-- overview
-- split feed
-- full feed
+## Feed Views
 
-This allows users to choose whether they want more context, more reading space, or a balanced room workspace.
+The room can support multiple reading modes.
 
-### Presence awareness
+Overview mode helps users understand room context first.
 
-Users can see whether others are active inside the room. This adds a real-time sense of collaboration without turning the room into a chat app.
+Split feed mode balances the post stream with room context.
 
----
+Full feed mode gives maximum attention to posts, comments, and continuous reading.
 
-## 12. Structured Post Types
+## Pinned Context
 
-Posts are not generic.
+Pinned posts or guidance allow important information to stay visible.
 
-UniBoard uses content types so that the system can understand intent, filter meaningfully, and keep rooms easier to scan.
+This is useful for:
 
-### Note
-
-Used for normal academic updates, clarifications, revision points, and everyday collaboration.
-
-### Deadline
-
-Used for due dates, submission requirements, exam timing, assignment cutoffs, and milestone reminders.
-
-### Question
-
-Used when someone needs a direct answer, clarification, or academic discussion around uncertainty.
-
-### Resource
-
-Used for readings, links, references, guides, source material, and supporting academic content.
-
-### Announcement
-
-Used for formal room-wide communication that should be treated with more prominence.
-
-### Poll
-
-Used when a group needs structured preference collection or lightweight decision support.
-
-### Project
-
-Used for milestone coordination, progress updates, blockers, ownership, and collaboration around group work.
-
-The reason this matters is simple:
-
-different academic content types need different meaning, visibility, and retrieval behavior.
+- assignment rules
+- official clarification
+- project requirements
+- exam guidance
+- frequently referenced resources
 
 ---
 
-## 13. Posting Experience
+## 14. Post Types
 
-The composer is built to help users publish structured academic content quickly.
+UniBoard uses structured post types so academic content is easier to scan, filter, search, moderate, and reuse.
 
-When creating a post, a user can typically:
+## Note
 
-- choose a post type
-- write the main content
-- add tags
-- include deadline details when relevant
-- include resource titles and links when relevant
-- request AI drafting help
-- mention people or the AI assistant
-- post anonymously if the room allows it
+A note is a general academic update.
 
-The posting flow is designed to be fast enough for everyday use but structured enough to preserve long-term clarity.
+It can be used for:
 
-### Anonymous mode
+- explanations
+- reminders
+- class observations
+- normal updates
+- revision points
 
-Some rooms allow anonymous posting. This can reduce friction for sensitive questions, but the system still applies room rules and moderation logic around it.
+## Deadline
 
-### AI drafting support
+A deadline is a time-sensitive academic item.
 
-The composer can help draft cleaner academic content. This is useful for students or teachers who want a clearer version of what they are trying to say without having to start from a blank page every time.
+It can be used for:
+
+- assignment due dates
+- exam schedules
+- submission cutoffs
+- project milestones
+- lab report deadlines
+
+Deadline posts are important because they can feed planning, urgency awareness, and academic reminders.
+
+## Question
+
+A question is used when someone needs clarification.
+
+It can be used for:
+
+- concept confusion
+- assignment instructions
+- project uncertainty
+- exam preparation
+- teacher clarification
+
+Question posts are valuable because they often become reusable knowledge after they are answered.
+
+## Resource
+
+A resource is supporting academic material.
+
+It can be used for:
+
+- links
+- readings
+- slides
+- references
+- videos
+- guides
+- external learning material
+
+## Announcement
+
+An announcement is formal room communication.
+
+It is typically used by teachers or authorized users for important updates that should stand above ordinary discussion.
+
+## Poll
+
+A poll is used for lightweight group decisions or preference collection.
+
+It can help choose:
+
+- meeting times
+- project options
+- revision topics
+- group preferences
+
+## Project
+
+A project post is used for group coordination.
+
+It can include:
+
+- milestones
+- blockers
+- ownership
+- deliverables
+- demo risks
+- progress updates
+
+This post type helps teams separate project work from general class discussion.
 
 ---
 
-## 14. Comments and Threaded Discussion
+## 15. Posting Workflow
 
-Each post can host its own discussion.
+The post composer is how users add new academic content to a room.
 
-Comments support:
+A typical post workflow includes:
 
-- direct replies
-- thread context
-- mention behavior
-- visible or anonymous identity depending on room policy
-- deletion where permitted
+- choosing the post type
+- writing the main message
+- adding relevant details
+- adding tags when useful
+- adding deadline information when the post is time-sensitive
+- adding resource information when sharing material
+- deciding whether anonymous posting is appropriate
+- publishing the post into the room feed
 
-Threading matters because it preserves meaning. Instead of scattering one topic across many places, the system keeps the answer attached to the original question or post.
+The composer is designed to make structured posting fast.
 
-This is one of the biggest differences between UniBoard and generic messaging tools.
+The purpose is not to slow users down. The purpose is to preserve meaning so the platform can filter, search, summarize, and reuse academic content later.
+
+## Anonymous Posting
+
+Anonymous posting can help students ask sensitive or basic questions without fear of embarrassment.
+
+This is useful in academic environments because many students avoid asking questions publicly even when they need help.
+
+Anonymous posting must still respect room rules and moderation controls.
+
+## AI-Assisted Drafting
+
+The platform can help users improve or draft academic posts.
+
+This is useful when a user knows what they want to say but wants a clearer structure, better wording, or a more professional tone.
+
+AI drafting should support the user. It should not replace the user's academic responsibility.
 
 ---
 
-## 15. Search
+## 16. Comments and Replies
 
-The search experience is meant to retrieve academic memory, not just match random text.
+Comments keep discussion attached to the correct post.
 
-Users can search across accessible content to find:
+This is important because a room can contain many topics at the same time. Without threaded comments, answers and clarifications become scattered and hard to recover.
 
-- prior explanations
+Users can:
+
+- reply to a post
+- continue a focused discussion
+- ask follow-up questions
+- mention the AI assistant
+- receive AI replies in context
+- delete or moderate comments when permitted
+
+Threaded discussion makes the room more useful over time because answers stay connected to the original academic question.
+
+---
+
+## 17. AI Mentions Inside Posts and Comments
+
+Users can call the AI assistant directly inside a room discussion by mentioning it.
+
+This is useful when a user wants help without leaving the thread.
+
+The AI mention flow is designed to consider:
+
+- the user's actual question
+- the room where the request happened
+- the post content
+- the parent comment when relevant
+- nearby discussion context when available
+- accessible room knowledge
+
+Good AI mention behavior should:
+
+- answer the specific question
+- stay concise
+- use room context
+- avoid generic filler
+- reply in the correct discussion location
+- ask for clarification when the question is too vague
+
+Example:
+
+A student posts a question about a database topic and mentions the AI. The AI should answer in that room context, not as a random general chatbot.
+
+If the user writes a vague request, the system should make the limitation clear rather than silently failing or pretending to know the answer.
+
+---
+
+## 18. Search
+
+Search helps users recover academic information that already exists in accessible rooms.
+
+Users can search for:
+
+- posts
 - deadlines
 - resources
+- questions
+- explanations
 - project discussions
-- notes
-- question threads
+- room-specific topics
 
-### Why search matters
+Search is important because academic questions repeat. A good search system reduces repeated effort by helping users find what has already been discussed.
 
-The same question often appears again and again in academic settings.
+## Search Behavior
 
-Search reduces repetition by allowing users to find:
+Search should be permission-aware.
 
-- what was already explained
-- what was already clarified
-- which room discussed it
-- what the relevant deadline or resource was
+Users should only see content they are allowed to access.
 
-Search suggestions further reduce effort by surfacing terms already common in the user’s accessible workspace.
+Search should also handle imperfect data gracefully. If a result is incomplete or malformed, the experience should remain stable instead of breaking the entire screen.
 
----
+## Search Suggestions
 
-## 16. Knowledge Base
+Suggestions help users discover common search terms and reduce effort.
 
-The knowledge base is the platform’s structured question-answering surface.
-
-Its role is to turn the workspace into a reusable source of academic understanding.
-
-Instead of forcing users to manually dig through old rooms, posts, and comments, the knowledge layer helps answer questions using accessible academic context.
-
-This is especially valuable when:
-
-- students are revising old concepts
-- teachers want consistency across repeated explanations
-- rooms have accumulated useful discussion over time
-- knowledge should be preserved beyond one moment of conversation
-
-The knowledge base is intended to feel like an institutional memory layer, not just another search bar.
+They are especially useful when users do not know the exact wording of an old post.
 
 ---
 
-## 17. Saved Items
+## 19. Knowledge Base
 
-Saved items let users keep important content for later.
+The knowledge base is the central academic intelligence surface in UniBoard.
 
-This can include:
+It allows users to ask questions against the information available inside their accessible workspace.
 
-- difficult explanations
-- important resources
-- deadline posts
-- useful discussion threads
-- project updates worth revisiting
+The knowledge base is different from normal search.
 
-The purpose is simple:
+Search finds content.
 
-people often know something is important before they know when they will need it again.
+The knowledge base interprets content and produces an answer.
 
-Saved content becomes a personal academic recall layer.
+## What the Knowledge Base Is For
+
+It helps users:
+
+- recover old explanations
+- understand previous discussions
+- find which room contained a topic
+- summarize academic context
+- answer questions from accessible workspace knowledge
+- reduce repeated teacher explanations
+
+## How It Should Behave
+
+A strong knowledge base answer should:
+
+- be grounded in accessible content
+- be clear and concise
+- cite or point to supporting context when possible
+- avoid unsupported certainty
+- explain when the available evidence is weak
+- invite a better prompt when the question is too vague
+
+## Why It Matters
+
+The knowledge base turns room history into reusable academic memory.
+
+This is one of the most important long-term advantages of UniBoard. Over time, useful answers and resources become easier to recover instead of disappearing inside old discussions.
 
 ---
 
-## 18. Notifications
+## 20. Global AI Assistant
 
-Notifications help users stay aware of important academic events without forcing them to constantly watch every room.
+The global AI assistant is a workspace companion available outside a specific thread.
 
-Notifications can represent events such as:
+It can help with:
+
+- workspace briefing
+- room-related questions
+- deadline awareness
+- planning support
+- knowledge base queries
+- learning profile insights
+- drafting help
+- general academic navigation
+
+The assistant is meant to be useful and restrained.
+
+It should help users act faster, not flood them with unnecessary text.
+
+## AI Response Standard
+
+AI responses should be:
+
+- professional
+- concise
+- grounded
+- relevant
+- structured
+- honest about uncertainty
+
+The assistant should not behave like an unrestricted public chatbot when the user is asking about room-specific academic content.
+
+---
+
+## 21. Planner
+
+The planner helps users turn academic information into action.
+
+It can bring together:
+
+- upcoming deadlines
+- manually created deadline items
+- room-derived deadline signals
+- urgency levels
+- planning recommendations
+- calendar-oriented output
+
+The planner is useful because academic users often know what is due but still struggle to organize when to do it.
+
+The planner helps answer:
+
+- What is coming soon?
+- What should I prioritize?
+- Which deadlines are risky?
+- What can I plan around this week?
+
+---
+
+## 22. Notifications
+
+Notifications keep users aware of important activity.
+
+They can represent:
 
 - new posts
 - comments
@@ -561,816 +824,730 @@ Notifications can represent events such as:
 - mentions
 - announcements
 - reactions
-- other activity relevant to the user
+- room activity
 
-The design intent is not to create alert fatigue. The system should help users notice what matters while keeping low-value noise under control.
+The purpose is awareness without constant manual checking.
 
----
-
-## 19. Planner
-
-The planner turns academic obligations into an actionable personal planning surface.
-
-It helps users move from:
-
-awareness of work
-
-to
-
-execution of work.
-
-The planner can bring together:
-
-- tracked deadlines
-- upcoming academic tasks
-- personal planning signals
-- urgency levels
-- completion awareness
-
-This matters because students often see academic information in one place but manage their time somewhere else. UniBoard reduces that gap.
+Good notification behavior should avoid overwhelming the user. It should surface meaningful academic events without turning the platform into a distraction machine.
 
 ---
 
-## 20. Analytics
+## 23. Saved Items
 
-Analytics convert collaboration activity into decision support.
+Saved items give each user a personal academic memory list.
 
-This area is intended to help understand:
+Users can save content such as:
 
+- useful explanations
+- deadline posts
+- resources
+- important questions
+- project updates
+- teacher guidance
+
+Saved items are useful because people often recognize that something matters before they know exactly when they will need it again.
+
+---
+
+## 24. Analytics
+
+Analytics help teachers and operators understand academic activity.
+
+Analytics can show:
+
+- total posts
 - room activity patterns
-- participation levels
-- content distribution
-- approaching academic risk
-- discussion intensity
+- content type distribution
 - deadline pressure
+- unresolved questions
+- participation signals
+- recent activity over time
 
-For teachers and administrators, analytics can help answer questions like:
+For teachers, analytics answer:
 
-- Is the room healthy?
-- Are students engaging?
-- Are questions being resolved?
-- Is activity concentrated around deadlines?
-- Where is intervention needed?
+- Is the room active?
+- Are students asking questions?
+- Are deadlines creating pressure?
+- Are there unresolved discussions?
+- Which areas need intervention?
 
-Analytics in UniBoard are meant to be operational, not vanity-driven.
-
----
-
-## 21. Reputation and Leaderboard
-
-UniBoard includes contribution visibility so academic participation can be recognized.
-
-This may reflect patterns such as:
-
-- posting useful content
-- receiving positive responses
-- helping others
-- participating consistently
-- contributing to room knowledge
-
-The purpose is not to gamify everything. The purpose is to reinforce constructive academic behavior and make helpfulness more visible.
+Analytics should be operational. They should help people make decisions, not just display numbers.
 
 ---
 
-## 22. Profile and Settings
+## 25. Reputation and Leaderboard
 
-The profile area helps the user present and maintain their academic identity.
+UniBoard includes contribution visibility through reputation and leaderboard concepts.
 
-It may contain:
+The goal is not to turn academic work into a game.
 
-- display name
-- bio
-- department or program context
+The goal is to recognize helpful participation.
+
+Reputation can reflect:
+
+- useful posts
+- comments
+- reactions
+- contribution quality
+- consistent participation
+- helpful academic behavior
+
+Leaderboards can help surface constructive contributors and encourage students to support one another.
+
+This feature should be handled carefully so it rewards meaningful help rather than empty activity.
+
+---
+
+## 26. Profile
+
+The profile area represents the user's academic identity.
+
+It may include:
+
+- name
+- avatar
+- role
+- department
 - batch
-- general workspace identity details
+- bio
+- academic context
+- onboarding state
 
-Settings allow users to control how the platform behaves for them, including areas such as:
-
-- notification preferences
-- workspace behavior
-- account presentation
-- appearance choices
-
-These areas are intentionally practical.
+The profile is important because UniBoard is not an anonymous-only tool. Most academic collaboration depends on identity, trust, and role clarity.
 
 ---
 
-## 23. Administration and Governance
+## 27. Settings and Appearance
 
-UniBoard includes administrative oversight so the workspace can scale beyond informal classroom use.
+Settings allow users to control their experience.
 
-Administrative capabilities can include:
+This can include:
 
-- reviewing user status
-- supervising teacher approval or role changes
-- monitoring rooms
-- archiving or managing rooms
-- overseeing platform health
+- theme preference
+- notification behavior
+- account-related preferences
+- workspace experience settings
 
-This makes the system usable as institutional software rather than only as a student collaboration tool.
+## Dark Mode and Light Mode
+
+UniBoard supports appearance control so users can switch between visual modes.
+
+Dark mode is important for long study sessions and low-light environments.
+
+Light mode is important for users who prefer higher brightness or institutional presentation settings.
+
+The appearance system should apply consistently across the whole platform, including rooms, feeds, forms, dashboards, admin surfaces, and AI panels.
 
 ---
 
-## 24. Teacher and Moderator Tools
+## 28. Admin Portal
 
-Teachers and moderators need additional room authority.
+The admin portal gives governance users a place to manage platform health.
 
-Their tools may support:
+It can support:
 
+- teacher access review
+- user role oversight
+- room governance
+- archived room management
+- operational monitoring
+
+The admin portal matters because academic software needs more than user-facing collaboration. It needs authority, review, and control.
+
+## Teacher Approval
+
+Teacher status should not be casually self-claimed in a serious academic platform.
+
+Teacher approval helps protect:
+
+- official announcements
+- moderation authority
+- room creation power
+- student trust
+- institutional credibility
+
+## Room Governance
+
+Administrators can supervise rooms to ensure they remain useful, safe, and aligned with the platform's academic purpose.
+
+---
+
+## 29. Teacher and Moderator Tools
+
+Teachers and moderators need tools that normal participants do not need.
+
+These tools can include:
+
+- viewing room members
 - reviewing room activity
-- accessing room analytics
-- moderating content
-- muting or banning members
-- promoting or demoting room roles
-- supervising discussion quality
-- pinning important room guidance
+- moderating posts
+- hiding inappropriate content
+- pinning important posts
+- managing member behavior
+- reviewing analytics
+- supervising open questions
 
-These controls help rooms stay academically useful over time.
-
----
-
-## 25. How AI Works in UniBoard
-
-AI is one of UniBoard’s most important differentiators, but it is not designed to behave like a generic public chatbot.
-
-UniBoard’s AI is meant to be:
-
-- grounded
-- scoped
-- professional
-- concise
-- room-aware
-- useful inside academic workflows
-
-The AI layer is designed to assist users with information that already exists in or around their workspace when possible.
+The goal is not to make rooms restrictive. The goal is to keep academic collaboration clear and trustworthy.
 
 ---
 
-## 26. Main AI Capabilities
+## 30. Moderation and Safety
 
-UniBoard’s AI can support multiple forms of academic assistance.
+Moderation protects the quality of the workspace.
 
-### Global AI assistant
+A room may need moderation when:
 
-This is a persistent assistant that can help the user:
+- content is inappropriate
+- a post is misleading
+- discussion becomes disruptive
+- a user violates room expectations
+- anonymous posting is misused
+- academic work needs official correction
 
-- understand what needs attention
-- interpret room context
-- answer certain academic questions
-- point to relevant workspace knowledge
-- guide planning and next steps
+Moderation actions can include:
 
-### AI mention replies inside discussion
+- hiding content
+- deleting content
+- muting users
+- banning users from a room
+- pinning official guidance
+- resolving questions
+- archiving inactive rooms
 
-Users can explicitly mention the AI assistant inside posts or comments. When that happens, UniBoard can generate a contextual reply directly inside the discussion flow.
-
-This makes AI part of the workspace instead of a separate disconnected tool.
-
-### Room summary
-
-The room summary feature condenses visible room activity into a useful operational overview.
-
-Instead of forcing a user to read everything, it helps answer:
-
-- what is happening here
-- what matters now
-- what remains unresolved
-
-### Knowledge answering
-
-The knowledge layer can answer questions based on accessible room information and previously shared academic content.
-
-### Composer support
-
-AI can help draft clearer posts, especially when a user has the idea but wants more structure or cleaner phrasing.
-
-### Deadline and study support
-
-AI can support awareness around priority, urgency, risk, and study direction.
-
-### Learning profile support
-
-The platform can also provide bounded interpretive signals around engagement or topic focus, where appropriate.
+Safety and moderation make the system more suitable for real academic use.
 
 ---
 
-## 27. AI Mentions: How They Behave
+## 31. Room Settings
 
-When someone mentions the AI assistant inside a room discussion, UniBoard treats that as a structured academic request.
+Room settings define how a room behaves.
 
-The system tries to interpret:
+Settings may include:
 
-- what the user is asking
-- which room the request belongs to
-- what the surrounding post says
-- whether parent comment context matters
-- what room knowledge is relevant
+- room name
+- description
+- visibility
+- join code behavior
+- AI enablement
+- anonymous posting rules
+- moderation policies
+- archive state
 
-The goal is not to generate random text. The goal is to reply in context.
+Room settings matter because not every academic room should behave the same way.
 
-### Good AI mention behavior
-
-A strong AI mention should:
-
-- answer directly when evidence is strong
-- stay concise
-- respect room context
-- avoid unnecessary filler
-- support the thread where the request happened
-
-### Failure handling
-
-If the AI cannot answer reliably, the system should avoid silent failure. It should respond clearly enough to tell the user that the request needs a better prompt or more grounded context.
+A public revision room, a private teacher-led class, and a student project room require different rules.
 
 ---
 
-## 28. The Role of the Knowledge Base
+## 32. Room Lifecycle
 
-The knowledge base turns accumulated room activity into reusable academic value.
+A room has a lifecycle.
 
-Without a knowledge layer, useful content disappears inside room history.
+## Creation
 
-With a knowledge layer, users can:
+The room is created for a class, subject, project, lab, or study purpose.
 
-- ask previously answered questions again
-- recover old explanations
-- revisit academic insights
-- find guidance that would otherwise stay buried
+## Activation
 
-This is one of UniBoard’s most important long-term strengths because it turns discussion into reusable academic memory.
+Members join, posts begin, questions appear, deadlines are shared, and the room becomes a working space.
 
----
+## Growth
 
-## 29. Search vs Knowledge Base vs AI Mention
+The room accumulates explanations, resources, comments, pinned guidance, and knowledge.
 
-These three surfaces are related, but they are not the same.
+## Maturity
 
-### Search
+The room becomes easier to search and summarize because it contains meaningful academic history.
 
-Search is for finding content.
+## Archiving
 
-### Knowledge Base
+When the room is no longer active, it can be archived or preserved.
 
-The knowledge base is for asking questions against accessible academic memory.
-
-### AI Mention
-
-AI mention is for asking for help inside the flow of an active discussion.
-
-This distinction matters because each surface supports a different type of user intent.
+Archived rooms still matter because they may contain useful academic memory.
 
 ---
 
-## 30. How the Room Intelligence Layer Should Be Understood
+## 33. AI Architecture in Plain Language
 
-The room intelligence area is not just a header.
+UniBoard's AI should be understood as a workspace-aware assistant.
 
-It acts as:
+It does not simply answer from nowhere. It should first consider the academic context available to the user.
 
-- a workspace identity layer
-- a room awareness layer
-- a system status layer
-- a metrics layer
-- a navigation layer
-- an action layer
-- a feed filter layer
+The AI system can use:
 
-It should help the user quickly answer:
+- accessible room content
+- posts
+- comments
+- deadlines
+- room summaries
+- planner context
+- activity signals
+- user intent
 
-- Where am I?
-- What is happening in this room?
-- Is AI active?
-- How many people and posts are here?
-- What viewing mode am I in?
-- What can I do next?
-- What type of content do I want to see?
+The AI should then decide whether it has enough useful context to answer.
 
-In a professional workspace, this matters because the top of the room determines how quickly the user can orient themselves before they begin reading or acting.
+If it has enough context, it should answer directly.
 
----
+If it has partial context, it should qualify the answer.
 
-## 31. Real-Time Collaboration Behavior
+If it does not have enough context, it should ask for a clearer question or explain the limitation.
 
-UniBoard is designed to feel live.
-
-That means the platform aims to support:
-
-- real-time room activity updates
-- room presence indicators
-- updated counts and state changes
-- live discussion movement
-- current feed behavior
-
-The product should feel like one active academic environment rather than a collection of static pages.
+This behavior is important because academic trust depends on accuracy.
 
 ---
 
-## 32. Operational Value of Structure
+## 34. AI Use Cases
 
-The reason UniBoard is built around rooms, content types, filters, summaries, and governance is that academic collaboration breaks down when too much information loses structure.
+UniBoard's AI can support several practical use cases.
 
-Structure creates:
+## Room Summary
 
-- easier scanning
-- better search
-- more useful AI retrieval
-- better moderation
-- stronger knowledge reuse
-- clearer teacher visibility
+The AI can summarize what is happening inside a room so users and teachers can understand activity faster.
 
-In other words:
+## Knowledge Question
 
-the platform becomes more valuable when the content inside it is organized meaningfully.
+The user can ask a question and receive an answer based on accessible academic information.
+
+## Mention Reply
+
+The user can mention the AI inside a post or comment and receive a contextual reply in the discussion.
+
+## Post Drafting
+
+The AI can help write clearer posts, announcements, updates, or academic explanations.
+
+## Deadline Risk
+
+The AI can help identify time-sensitive work and point users toward urgent items.
+
+## Study Planning
+
+The AI can help organize work into a practical study direction.
+
+## Learning Profile
+
+The AI can provide bounded insight into engagement or learning behavior where enough data exists.
 
 ---
 
-## 33. The User Experience Standard
+## 35. Search vs Knowledge Base vs AI Mention
 
-UniBoard aims to feel:
+These three features are related, but they serve different needs.
+
+## Search
+
+Search is used when the user wants to find existing content.
+
+Example:
+
+"Find the post about API authentication."
+
+## Knowledge Base
+
+The knowledge base is used when the user wants an answer from accessible workspace knowledge.
+
+Example:
+
+"Which room discussed API authentication tradeoffs?"
+
+## AI Mention
+
+AI mention is used when the user wants help inside an active discussion.
+
+Example:
+
+"@UniBoardAI explain this Convex issue in the context of this post."
+
+This distinction matters because each feature needs a different response style.
+
+Search should retrieve.
+
+Knowledge base should answer with grounding.
+
+AI mention should reply briefly inside the thread.
+
+---
+
+## 36. Non-Technical Explanation of AI Grounding
+
+AI grounding means the assistant should use the information inside the user's workspace instead of making unsupported guesses.
+
+A simple explanation:
+
+The AI reads the relevant room information it is allowed to see, then answers based on that context.
+
+This helps avoid generic answers when the user is asking about a specific class, project, deadline, or discussion.
+
+Grounded AI is important because:
+
+- academic facts can be specific to a room
+- deadlines change
+- teacher instructions matter more than generic internet knowledge
+- private room content should remain private
+- users need trustworthy answers
+
+---
+
+## 37. Example User Journeys
+
+## Student Asking a Question
+
+A student enters a database engineering room, sees the room feed, creates a question post, and asks about a topic they do not understand.
+
+Other members can reply in the thread.
+
+The student can also mention the AI if they want a fast explanation based on the room context.
+
+Later, another student can search or ask the knowledge base to recover the answer.
+
+## Teacher Posting a Deadline
+
+A teacher creates a deadline post for an assignment.
+
+Students can see it in the room feed, the planner can surface it as upcoming work, notifications can make users aware, and analytics can show deadline pressure.
+
+## Project Team Tracking Work
+
+A project team creates project posts for milestones, blockers, and ownership.
+
+Instead of losing decisions in chat, the room keeps project history visible.
+
+AI can summarize the state of the room or help clarify next steps.
+
+## Admin Reviewing Teacher Access
+
+A user requests teacher access.
+
+The admin reviews the request before granting teacher authority.
+
+This prevents unverified users from gaining official academic powers.
+
+---
+
+## 38. Practical Use Cases
+
+UniBoard can support many academic scenarios.
+
+## Course Communication
+
+Teachers and students use one room for announcements, questions, resources, and deadlines.
+
+## Exam Revision
+
+Students collect notes, ask questions, search old explanations, and save important material.
+
+## Lab Coordination
+
+Lab groups track requirements, questions, resources, deadlines, and project deliverables.
+
+## Final Year Projects
+
+Project teams organize progress, blockers, demo risks, resources, and supervisor guidance.
+
+## Department Communities
+
+Departments create spaces for shared academic updates and resources.
+
+## Teacher Office Support
+
+Teachers reduce repeated private questions by answering once in a structured room thread.
+
+## Institutional Knowledge Retention
+
+Rooms preserve useful discussion beyond one semester or one cohort.
+
+---
+
+## 39. Why Structured Content Matters
+
+Structured content is one of UniBoard's strongest ideas.
+
+When a user marks something as a deadline, question, resource, or project update, the platform can treat it intelligently.
+
+Structured content improves:
+
+- filtering
+- search
+- planning
+- analytics
+- AI retrieval
+- moderation
+- user scanning
+- long-term knowledge reuse
+
+This is why UniBoard should avoid becoming a generic wall of messages.
+
+---
+
+## 40. Why Governance Matters
+
+Governance makes the platform credible.
+
+Without governance:
+
+- anyone could claim teacher authority
+- official and unofficial rooms could blur together
+- moderation would be weak
+- public rooms could become noisy
+- academic trust would decline
+
+With governance:
+
+- roles are clearer
+- rooms are safer
+- teacher authority is protected
+- administrators can supervise the portal
+- institutions can adopt the platform more confidently
+
+---
+
+## 41. Why the Room Screen Matters
+
+The room screen is the most important daily workspace.
+
+It must balance two needs:
+
+- users need immediate access to posts
+- users also need room context, status, filters, and actions
+
+The ideal room screen should communicate:
+
+- what room the user is in
+- what the room is for
+- whether AI is active
+- how many members and posts exist
+- what feed mode is active
+- what filters are available
+- how to create a post
+- where to begin reading
+
+If the room screen is too crowded, users feel stress.
+
+If it hides the feed too deeply, users feel lost.
+
+A strong room screen makes the post feed primary while keeping operational context nearby.
+
+---
+
+## 42. Enterprise Experience Standard
+
+UniBoard should feel like professional academic infrastructure.
+
+That means the experience should be:
 
 - calm
 - structured
 - readable
-- intelligent
-- professional
-- collaborative
-- operationally clear
+- consistent
+- role-aware
+- responsive
+- trustworthy
+- scalable
+- focused on action
 
-It should not feel:
+It should avoid:
 
-- noisy
-- overly social
-- decorative
-- fragmented
-- chaotic
-- overloaded
+- noisy dashboards
+- unclear hierarchy
+- decorative clutter
+- too many equal-priority controls
+- unsupported AI confidence
+- hidden primary workflows
+- inconsistent dark mode
+- confusing role behavior
 
-This is especially important because academic users do not need interface drama. They need clarity.
-
----
-
-## 34. A Non-Technical Explanation of the Product
-
-If UniBoard needed to be explained to someone non-technical in one simple way, the clearest explanation would be:
-
-UniBoard is a digital academic workspace where classes, project groups, and study communities can organize discussion, deadlines, resources, and collaboration in one place, with AI helping people understand and use that information more effectively.
-
-If a shorter explanation is needed:
-
-UniBoard helps universities replace scattered classroom communication with one structured, searchable, AI-assisted collaboration system.
+The user should always understand where they are, what is happening, and what they can do next.
 
 ---
 
-## 35. Typical Real-World Use Cases
+## 43. Feature Summary Table
 
-### Use case: Course communication
-
-A teacher creates a room for a class, publishes deadlines and announcements, students ask questions in threads, and AI helps summarize or clarify room knowledge.
-
-### Use case: Project team coordination
-
-A project group uses a private room to track milestones, blockers, resources, ownership, and discussion around deliverables.
-
-### Use case: Revision and exam preparation
-
-Students save useful notes, search old explanations, revisit deadlines, and ask the knowledge layer to recover prior answers.
-
-### Use case: Teacher oversight
-
-A teacher checks room activity, sees open questions, reviews participation, and uses the room summary to understand where students need attention.
-
-### Use case: Academic continuity
-
-Institutional users preserve room knowledge across time instead of letting useful explanations disappear after the semester ends.
-
----
-
-## 36. Why the AI Layer Matters
-
-The AI layer matters because academic work often suffers from delay, repetition, and information overload.
-
-Students need fast clarity.
-
-Teachers need scale.
-
-Institutions need reusable memory.
-
-AI becomes valuable when it helps users:
-
-- interpret what already exists
-- get answers faster
-- recover prior context
-- reduce duplicated explanation
-- stay focused on action
-
-The point is not to add AI for marketing. The point is to make the academic system more usable.
-
----
-
-## 37. Why the Governance Layer Matters
-
-Educational collaboration without governance often becomes inconsistent or noisy.
-
-UniBoard includes governance because real academic systems need:
-
-- room ownership
-- moderation authority
-- role clarity
-- behavior controls
-- archive logic
-- teacher protection
-- institutional oversight
-
-Without governance, the platform would be harder to trust at scale.
-
----
-
-## 38. Why the Knowledge Layer Matters
-
-The knowledge layer is one of the most strategic parts of the platform.
-
-Every time a useful answer, explanation, deadline clarification, or resource is posted in a room, UniBoard has the opportunity to preserve that value instead of letting it vanish into conversation history.
-
-Over time, this means the platform can become smarter and more useful because the academic workspace itself becomes more reusable.
-
----
-
-## 39. What Makes UniBoard Different
-
-UniBoard is not differentiated only because it includes AI.
-
-Its real differentiators are:
-
-- structured academic rooms
-- role-aware collaboration
-- feed formats built for academic meaning
-- reusable knowledge
-- AI grounded in workspace context
-- governance and moderation support
-- room intelligence rather than flat discussion
-- search and planning connected to the same workspace
-
-This combination is what makes it feel like academic infrastructure rather than a basic communication app.
-
----
-
-## 40. Final Product Positioning
-
-UniBoard is best understood as an academic command center.
-
-It brings together:
-
-- communication
-- discussion
-- planning
-- moderation
-- search
-- knowledge reuse
-- institutional structure
-- AI assistance
-
-inside one coherent workspace.
-
-Students use it to stay clear and organized.
-
-Teachers use it to guide, monitor, and coordinate.
-
-Institutions use it to preserve academic memory and reduce fragmentation.
-
-The platform’s value is not just that it contains information.
-
-Its value is that it organizes information, makes it actionable, and helps people use it more intelligently.
-
----
-
-## 41. Executive Summary
-
-UniBoard is a structured academic workspace for universities, teachers, students, and moderated learning communities.
-
-At a high level, it solves five major problems:
-
-- academic communication is scattered
-- useful explanations disappear into message history
-- deadlines are easy to miss
-- teachers struggle to monitor real room health
-- AI is often disconnected from real academic context
-
-UniBoard addresses those problems by bringing rooms, posts, discussion, planning, search, moderation, and AI assistance into one system.
-
-For a non-technical audience, the simplest way to understand the product is:
-
-UniBoard gives every class or academic group one intelligent digital workspace where collaboration stays organized, deadlines stay visible, important knowledge remains reusable, and AI helps people work faster using the information already inside the system.
-
----
-
-## 42. Feature Summary Table
-
-The following table explains the main areas of UniBoard in a fast-scanning business format.
-
-| Area | What it does | Why it matters |
+| Feature | What it does | Why it matters |
 | --- | --- | --- |
-| Rooms | Creates focused academic workspaces | Keeps collaboration organized by subject, project, or cohort |
-| Structured posts | Separates notes, deadlines, questions, resources, announcements, polls, and project updates | Makes academic content easier to understand and retrieve |
-| Threaded comments | Keeps discussion attached to the correct post | Preserves meaning and reduces confusion |
-| Search | Finds prior content across accessible rooms | Reduces repeated questions and improves recall |
-| Knowledge base | Answers questions using accessible workspace memory | Turns room history into reusable academic intelligence |
-| AI mentions | Lets users call the AI directly inside discussion | Makes AI part of the workflow rather than a separate tool |
-| Planner | Turns deadlines and workload into action planning | Helps users move from awareness to execution |
-| Analytics | Interprets activity, participation, and deadline pressure | Improves teacher visibility and operational decision-making |
-| Notifications | Surfaces relevant events without constant manual checking | Protects attention while preserving awareness |
-| Saved items | Lets users keep useful content for later | Supports revision and long-term academic reuse |
-| Reputation and leaderboard | Highlights meaningful contribution | Reinforces constructive participation |
-| Governance and moderation | Supports control, safety, and room supervision | Makes the system usable at institutional scale |
+| Rooms | Creates focused academic workspaces | Keeps collaboration organized by class, project, or topic |
+| Structured posts | Separates academic content by type | Makes content easier to scan, filter, and reuse |
+| Comments | Keeps discussion attached to posts | Preserves context and avoids scattered answers |
+| AI mentions | Lets users call AI inside a discussion | Keeps help inside the active workflow |
+| Knowledge base | Answers questions from accessible workspace knowledge | Turns room history into reusable academic memory |
+| Search | Finds accessible posts and content | Reduces repeated questions and lost information |
+| Planner | Organizes deadlines and academic work | Helps users act on what is due |
+| Analytics | Shows participation and activity signals | Helps teachers and operators make decisions |
+| Notifications | Alerts users to relevant activity | Protects awareness without constant checking |
+| Saved items | Stores important content for later | Supports revision and recall |
+| Reputation | Recognizes useful contribution | Encourages helpful academic behavior |
+| Admin portal | Manages roles and governance | Supports institutional control |
+| Theme control | Supports dark and light appearance | Improves usability across environments |
 
 ---
 
-## 43. End-to-End User Journey
+## 44. How to Explain UniBoard to a Non-Technical Person
 
-This section explains how the platform is typically experienced from the moment a user arrives until they become an active participant.
+Use this explanation:
 
-### Step 1: Discover or access the platform
+UniBoard is a digital academic workspace where each class or group gets its own room. In that room, people can post questions, deadlines, resources, announcements, and project updates. Everything stays organized, searchable, and connected to the right discussion. The AI helps users understand the information already inside the workspace, while teachers and administrators keep rooms governed and useful.
 
-A user opens UniBoard through the landing experience or a direct invitation.
+Shorter version:
 
-If they are not yet signed in, they can:
+UniBoard helps universities and students replace scattered classroom communication with one structured, searchable, AI-assisted academic workspace.
 
-- create an account
-- sign in to an existing account
-- complete the required identity flow
+Even shorter:
 
-### Step 2: Complete academic identity setup
-
-After authentication, the user is represented inside the workspace as an academic participant.
-
-The system may collect or confirm:
-
-- display identity
-- role
-- department or cohort context
-- profile preferences
-
-This transforms a normal login into an academic workspace identity.
-
-### Step 3: Enter the dashboard
-
-The dashboard acts as the user’s command surface. From here, they can:
-
-- open rooms
-- monitor current activity
-- review deadlines
-- access AI help
-- move into the area that matters most next
-
-### Step 4: Join or open a room
-
-The user enters a room either by:
-
-- joining a public room
-- entering a private room with proper access
-- returning to a room they already belong to
-
-Once inside, the room becomes their focused collaboration environment.
-
-### Step 5: Read, post, ask, and collaborate
-
-Inside the room, the user can:
-
-- review the room intelligence layer
-- scan the feed
-- filter the feed by content type
-- create posts
-- comment inside threads
-- mention the AI
-- revisit pinned guidance
-
-### Step 6: Use search or knowledge recovery
-
-If the user needs older information, they can:
-
-- search across accessible content
-- ask the knowledge layer
-- save useful content for later reuse
-
-### Step 7: Act on academic work
-
-The planner and room signals help the user move from reading to execution by clarifying:
-
-- what is due
-- what is urgent
-- what room work needs attention
-- what should happen next
-
-This full journey is what makes UniBoard more than a feed. It behaves like a coordinated academic work system.
+UniBoard is a smarter, organized workspace for academic collaboration.
 
 ---
 
-## 44. Room Lifecycle in Practical Terms
+## 45. Stakeholder Value
 
-Rooms are central enough that they deserve a separate practical explanation.
+## For Students
 
-### Room creation
+UniBoard gives students one place to understand rooms, deadlines, resources, questions, and AI help.
 
-A room begins when an authorized user creates an academic workspace for a purpose such as:
+## For Teachers
 
-- a class
-- a lab
-- a discussion section
-- a project team
-- a revision group
+UniBoard helps teachers organize communication, reduce repeated explanations, and supervise academic activity.
 
-### Room activation
+## For Project Teams
 
-Once members join, the room becomes active through:
+UniBoard gives teams a traceable space for updates, blockers, resources, and decisions.
 
-- structured posting
-- comment threads
-- deadlines
-- resource sharing
-- AI-supported clarification
+## For Administrators
 
-### Room maturity
+UniBoard provides role control, room governance, and institutional oversight.
 
-As a room grows, it becomes more valuable because:
+## For Institutions
 
-- its knowledge becomes reusable
-- its patterns become analyzable
-- its guidance becomes searchable
-- its teacher visibility improves
-
-### Room archiving
-
-Eventually a room may become read-only or inactive. Even then, the room remains valuable because it preserves academic memory.
-
-This lifecycle is important because UniBoard is designed for both live collaboration and long-term knowledge retention.
+UniBoard creates reusable academic memory and reduces communication fragmentation.
 
 ---
 
-## 45. Typical Teacher Experience
+## 46. Product Positioning
 
-A teacher’s experience in UniBoard is intentionally different from a student’s experience because their responsibilities are different.
+UniBoard can be positioned as:
 
-A teacher may:
+An AI-assisted academic collaboration platform for structured rooms, searchable knowledge, deadlines, moderation, and planning.
 
-- create or supervise academic rooms
-- publish announcements
-- post deadlines
-- observe participation
-- review unresolved questions
-- moderate room behavior
-- use analytics to understand room health
-- use summaries to understand discussion faster
+It is not only a discussion tool.
 
-The teacher experience is designed to reduce repetition and improve visibility.
+It is not only a planner.
 
-Instead of constantly answering the same question across multiple channels, the teacher can use one structured room where the answer remains visible and reusable.
+It is not only an AI assistant.
+
+It is the combination of all of these inside one academic workspace that makes the product valuable.
 
 ---
 
-## 46. Typical Student Experience
+## 47. What Makes UniBoard Different
 
-A student’s experience is focused on clarity, participation, and execution.
+UniBoard is different because it combines:
 
-A student may:
+- academic rooms
+- structured content types
+- contextual discussion
+- room-aware AI
+- knowledge recovery
+- deadline planning
+- teacher moderation
+- administrative governance
+- contribution visibility
+- search and saved items
 
-- join rooms relevant to their classes or projects
-- post questions when confused
-- share resources
-- check deadlines
-- search older explanations
-- save important notes
-- ask the AI for room-specific help
-- plan around upcoming academic work
+Many tools solve one part of the problem.
 
-For students, UniBoard should feel like one place where the academic picture becomes easier to understand.
-
----
-
-## 47. Typical Administrator Experience
-
-An administrator or governance operator uses UniBoard at a higher operational level.
-
-They may need to:
-
-- oversee user roles
-- manage teacher approval
-- supervise room behavior
-- review moderation health
-- ensure academic structure remains stable
-
-This is what makes UniBoard enterprise-capable. It supports both collaboration and control without turning the user-facing experience into an administrative burden.
+UniBoard connects the whole academic workflow.
 
 ---
 
-## 48. How to Explain the AI to Non-Technical People
+## 48. Quality Expectations
 
-The AI in UniBoard should be described carefully and honestly.
+A mature UniBoard experience should meet the following standards.
 
-The best explanation is:
+## Reliability
 
-The AI helps users understand and use the academic information already present in their workspace. It can summarize rooms, answer grounded questions, help draft posts, support planning, and respond inside room discussions when explicitly mentioned.
+Pages should load without client-side crashes. Public screens should degrade gracefully when external services are unavailable.
 
-The AI should not be described as:
+## Clarity
 
-- an all-knowing tutor
-- a replacement for teachers
-- an unrestricted internet chatbot
+Users should understand each screen without needing instructions.
 
-Instead, it should be described as:
+## Grounded AI
 
-a knowledge companion operating inside an academic workspace.
+AI should answer from context when possible and avoid unsupported certainty when context is weak.
 
-This framing is more accurate and easier to trust.
+## Permission Safety
 
----
+Users should only access rooms and knowledge they are allowed to see.
 
-## 49. FAQ for Non-Technical Reviewers
+## Visual Consistency
 
-### Is UniBoard a chat app?
+Dark mode, light mode, cards, filters, forms, and panels should behave consistently across the platform.
 
-No. It includes discussion, but it is structured around academic work rather than casual conversation.
+## Workflow Completeness
 
-### Is UniBoard a learning management system?
-
-Not in the traditional sense. It is better understood as a collaboration and academic intelligence layer that can sit alongside formal institutional systems.
-
-### Why does UniBoard use rooms?
-
-Rooms keep academic activity organized by context. Without rooms, communication loses meaning and becomes harder to moderate, search, and summarize.
-
-### Why not just use a messaging app?
-
-Messaging apps are fast, but they are weak at preserving structured academic knowledge, deadlines, room governance, and long-term academic recall.
-
-### Why is AI useful here?
-
-Because academic work produces a lot of repeated questions, buried explanations, and scattered context. AI helps users recover and interpret that information faster.
-
-### Can the platform scale to more formal institutional use?
-
-Yes. The governance, room structure, role system, moderation model, and enterprise-style information architecture are designed to support institutional growth.
-
-### Is UniBoard only for students?
-
-No. Its value comes from supporting students, teachers, and institutional operators inside the same coordinated system.
+Core actions such as joining rooms, posting, commenting, searching, planning, and asking AI should feel complete and visible.
 
 ---
 
-## 50. Product Value by Audience
+## 49. Common Questions
 
-This section explains the value of UniBoard in one sentence per audience.
+## Is UniBoard a chat app?
 
-### For students
+No. UniBoard supports discussion, but it is structured around academic rooms, posts, deadlines, resources, and knowledge reuse.
 
-UniBoard reduces confusion by keeping academic communication, deadlines, resources, and AI help in one structured place.
+## Is UniBoard a learning management system?
 
-### For teachers
+Not exactly. It is better described as an academic collaboration and intelligence layer. It can complement a formal learning management system by improving discussion, planning, and knowledge recovery.
 
-UniBoard improves visibility and reduces repeated explanation by making rooms structured, searchable, and easier to supervise.
+## Why does UniBoard need AI?
 
-### For departments
+AI helps users understand accumulated academic information faster. It can summarize rooms, answer knowledge questions, assist drafting, and respond inside discussions.
 
-UniBoard reduces tool fragmentation and preserves academic knowledge in a reusable format.
+## Can students create rooms?
 
-### For institutional leadership
+Student-created rooms can be useful for study groups and projects, but official academic room creation should be governed so authority remains clear.
 
-UniBoard creates a scalable academic collaboration layer that supports both live coordination and long-term educational memory.
+## Why does teacher approval matter?
 
----
+Teacher approval prevents unverified users from gaining official posting or moderation authority.
 
-## 51. Product Messaging for Presentations
+## Why are posts typed?
 
-If UniBoard is being presented to stakeholders, these statements are the strongest ways to describe it.
+Post types make academic content easier to scan, filter, search, plan around, and summarize.
 
-### One-line description
+## What happens when AI does not have enough context?
 
-UniBoard is an AI-assisted academic collaboration workspace that replaces fragmented classroom communication with one structured, searchable, moderated system.
+The AI should say that the available information is not strong enough and ask for a clearer room, topic, or question.
 
-### Short business description
+## Is the knowledge base public?
 
-UniBoard helps universities organize academic discussion, deadlines, resources, moderation, and AI assistance inside one intelligent room-based platform.
-
-### Problem statement
-
-Academic collaboration is scattered, repetitive, hard to search, and easy to lose.
-
-### Solution statement
-
-UniBoard gives every academic group one operational workspace where collaboration stays structured and useful over time.
+The knowledge base should respect access rules. A user should only receive answers from content they are allowed to access.
 
 ---
 
-## 52. Final Reading Guide
+## 50. Final Summary
 
-If someone wants to understand UniBoard quickly, they should focus on these five ideas:
+UniBoard is built around a clear idea:
 
-### 1. UniBoard organizes academic work into rooms.
+academic communication becomes more useful when it is structured, searchable, governed, and assisted by context-aware AI.
 
-### 2. UniBoard turns posts and comments into structured academic collaboration.
+The platform gives users:
 
-### 3. UniBoard preserves academic knowledge through search and AI-assisted recovery.
+- rooms for focused collaboration
+- posts for structured communication
+- comments for contextual discussion
+- deadlines for planning
+- search for recall
+- knowledge base answers for reuse
+- AI mentions for in-thread help
+- analytics for visibility
+- moderation for trust
+- admin tools for scale
 
-### 4. UniBoard supports planning, moderation, and visibility, not just discussion.
+For students, UniBoard reduces confusion.
 
-### 5. UniBoard is designed as academic infrastructure, not as a generic social or chat product.
+For teachers, UniBoard improves visibility and reduces repetition.
 
-If those five ideas are clear, the rest of the platform becomes easy to explain.
+For institutions, UniBoard preserves academic knowledge and provides a more organized collaboration layer.
+
+The simplest way to remember UniBoard is:
+
+UniBoard is a structured, searchable, AI-assisted academic workspace designed to make classroom and project collaboration clearer, safer, and more reusable.

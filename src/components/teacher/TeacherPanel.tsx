@@ -31,8 +31,8 @@ export function TeacherPanel({
   ];
 
   return (
-    <div className="flex h-full min-h-0 flex-col border-l border-[var(--app-line)] bg-[linear-gradient(180deg,rgba(7,17,26,0.98),rgba(9,20,34,0.98))] text-[var(--app-text)]">
-      <div className="border-b border-[var(--app-line)] px-5 py-5">
+    <div className="flex h-full min-h-0 flex-col border-l border-[var(--app-line)] bg-[var(--app-panel-strong)] text-[var(--app-text)]">
+      <div className="border-b border-[var(--app-line)] bg-[var(--app-panel)] px-5 py-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -52,7 +52,7 @@ export function TeacherPanel({
             <button
               type="button"
               onClick={onClose}
-              className="touch-target rounded-2xl border border-[var(--app-line)] bg-white/5 p-2 text-[var(--app-text-muted)] transition hover:border-[var(--app-line-strong)] hover:bg-white/10 hover:text-[var(--app-text)]"
+              className="touch-target rounded-2xl border border-[var(--app-line)] bg-[var(--app-panel-soft)] p-2 text-[var(--app-text-muted)] transition hover:border-[var(--app-line-strong)] hover:bg-[var(--app-panel)] hover:text-[var(--app-text)]"
               aria-label="Close teacher panel"
             >
               <X size={16} />
@@ -61,7 +61,7 @@ export function TeacherPanel({
         </div>
       </div>
 
-      <div className="border-b border-[var(--app-line)] px-4 py-3">
+      <div className="border-b border-[var(--app-line)] bg-[var(--app-panel-soft)] px-4 py-3">
         <div className="grid grid-cols-3 gap-2">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -74,8 +74,8 @@ export function TeacherPanel({
                 className={cn(
                   "rounded-2xl border px-3 py-3 text-xs font-semibold transition",
                   isActive
-                    ? "border-[rgba(49,92,243,0.18)] bg-[rgba(49,92,243,0.1)] text-[var(--app-primary-strong)] shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]"
-                    : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-muted)] hover:border-[var(--app-line-strong)] hover:bg-white/10 hover:text-[var(--app-text)]"
+                    ? "border-[rgba(49,92,243,0.22)] bg-[color-mix(in_srgb,var(--app-primary)_12%,var(--app-panel-strong))] text-[var(--app-primary-strong)]"
+                    : "border-[var(--app-line)] bg-[var(--app-panel)] text-[var(--app-text-muted)] hover:border-[var(--app-line-strong)] hover:bg-[var(--app-panel-soft)] hover:text-[var(--app-text)]"
                 )}
               >
                 <span className="flex items-center justify-center gap-2">
@@ -108,7 +108,7 @@ export function TeacherPanel({
             {reportedPosts === undefined ? (
               <div className="space-y-3">
                 {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="h-28 animate-pulse rounded-[22px] border border-[var(--app-line)] bg-white/5" />
+                  <div key={index} className="h-28 animate-pulse rounded-[22px] border border-[var(--app-line)] bg-[var(--app-panel-soft)]" />
                 ))}
               </div>
             ) : reportedPosts.length === 0 ? (
@@ -118,7 +118,7 @@ export function TeacherPanel({
               />
             ) : (
               reportedPosts.map((post) => (
-                <article key={post._id} className="rounded-[22px] border border-[rgba(198,64,95,0.16)] bg-[linear-gradient(180deg,rgba(82,25,40,0.28),rgba(31,17,22,0.86))] p-4 shadow-[0_14px_32px_rgba(16,8,12,0.28)]">
+                <article key={post._id} className="rounded-[22px] border border-[rgba(198,64,95,0.18)] bg-[color-mix(in_srgb,var(--app-danger)_8%,var(--app-panel-strong))] p-4 shadow-[0_14px_32px_rgba(16,8,12,0.12)]">
                   <div className="flex items-center justify-between gap-3">
                     <p className="metric-kicker text-[var(--app-danger)]">Reported content</p>
                     <span className="rounded-full border border-[rgba(198,64,95,0.14)] bg-[rgba(198,64,95,0.08)] px-3 py-1 text-[11px] font-semibold text-[var(--app-danger)]">
@@ -146,7 +146,7 @@ export function TeacherPanel({
             {members === undefined ? (
               <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="h-24 animate-pulse rounded-[22px] border border-[var(--app-line)] bg-white/5" />
+                  <div key={index} className="h-24 animate-pulse rounded-[22px] border border-[var(--app-line)] bg-[var(--app-panel-soft)]" />
                 ))}
               </div>
             ) : members.length === 0 ? (
@@ -303,7 +303,7 @@ export function TeacherPanel({
           ) : (
             <div className="space-y-3">
               {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="h-28 animate-pulse rounded-[22px] border border-[var(--app-line)] bg-white/5" />
+                  <div key={index} className="h-28 animate-pulse rounded-[22px] border border-[var(--app-line)] bg-[var(--app-panel-soft)]" />
               ))}
             </div>
           )
@@ -315,7 +315,7 @@ export function TeacherPanel({
 
 function EmptyPanelState({ title, detail }: { title: string; detail: string }) {
   return (
-    <div className="rounded-[22px] border border-dashed border-[var(--app-line-strong)] bg-white/5 p-5">
+    <div className="rounded-[22px] border border-dashed border-[var(--app-line-strong)] bg-[var(--app-panel-soft)] p-5">
       <p className="text-sm font-semibold text-[var(--app-text)]">{title}</p>
       <p className="mt-2 text-sm leading-6 text-[var(--app-text-soft)]">{detail}</p>
     </div>
@@ -367,7 +367,7 @@ function MemberAction({
           ? "border-[rgba(198,64,95,0.16)] bg-[rgba(198,64,95,0.08)] text-[var(--app-danger)] hover:bg-[rgba(198,64,95,0.14)]"
           : tone === "warning"
             ? "border-[rgba(185,109,17,0.16)] bg-[rgba(185,109,17,0.08)] text-[var(--app-warning)] hover:bg-[rgba(185,109,17,0.14)]"
-            : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)] hover:border-[var(--app-line-strong)] hover:bg-white/10 hover:text-[var(--app-text)]"
+            : "border-[var(--app-line)] bg-[var(--app-panel)] text-[var(--app-text-soft)] hover:border-[var(--app-line-strong)] hover:bg-[var(--app-panel-soft)] hover:text-[var(--app-text)]"
       )}
     >
       {label}
