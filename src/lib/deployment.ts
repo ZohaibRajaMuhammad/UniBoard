@@ -10,6 +10,11 @@ export const isClerkServerConfigured =
 export const isClientDataConfigured = appEnv.convexUrl.length > 0;
 export const isAppConfigured = isClerkServerConfigured && isClientDataConfigured;
 
+export type SafeAuthState = {
+  userId: string | null;
+  authAvailable: boolean;
+};
+
 export function getMissingClientEnvVars() {
   const missing: string[] = [];
 
@@ -26,4 +31,28 @@ export function getMissingClientEnvVars() {
   }
 
   return missing;
+}
+
+export async function getSafeAuthState(
+  authResolver: () => Promise<{ userId: string | null }>
+): Promise<SafeAuthState> {
+  if (!isClerkServerConfigured) {
+    return {
+      userId: null,
+      authAvailable: false
+    };
+  }
+
+  try {
+    const { userId } = await authResolver();
+    return {
+      userId,
+      authAvailable: true
+    };
+  } catch {
+    return {
+      userId: null,
+      authAvailable: false
+    };
+  }
 }

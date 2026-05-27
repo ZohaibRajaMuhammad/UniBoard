@@ -1,5 +1,4 @@
 import { SignIn, SignOutButton } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
 import { Aperture, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -34,33 +33,6 @@ export default async function SignInPage() {
         title="Sign-in is not available yet"
         detail="Clerk is not fully configured in this deployment. Add the missing Clerk environment variables in Vercel, redeploy, and the authentication screen will render normally."
       />
-    );
-  }
-
-  const { userId } = await auth();
-
-  if (userId) {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-4 py-10">
-        <div className="glass-panel w-full max-w-[27.5rem] space-y-6 rounded-[28px] p-7">
-          <div className="space-y-3 text-center">
-            <h1 className="text-3xl font-bold text-white">You are already signed in</h1>
-            <p className="text-sm leading-6 text-[var(--app-text-muted)]">
-              Sign out first if you want to log in with another account.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3">
-            <Link href="/dashboard" className="app-button app-button-secondary w-full">
-              Go to dashboard
-            </Link>
-            <SignOutButton redirectUrl="/sign-in">
-              <button type="button" className="app-button app-button-primary w-full">
-                Sign out and use another account
-              </button>
-            </SignOutButton>
-          </div>
-        </div>
-      </div>
     );
   }
 
@@ -108,26 +80,36 @@ export default async function SignInPage() {
         </section>
 
         <div className="w-full max-w-[30rem] space-y-5 lg:justify-self-end">
-        <Link href="/" className="inline-flex items-center gap-2 text-sm text-[var(--app-text-muted)] transition hover:text-white">
-          <ArrowLeft size={15} />
-          Back to home
-        </Link>
-        <div className="glass-panel rounded-[28px] p-7">
-          <div className="mb-6">
-            <UniBoardLogo size={54} className="mb-5" showWordmark={false} />
-            <h1 className="text-3xl font-bold text-white">Sign in to UniBoard</h1>
-            <p className="mt-2 text-sm leading-6 text-[var(--app-text-muted)]">
-              Secure, low-friction access to your academic workspace.
-            </p>
+          <div className="flex items-center justify-between gap-3">
+            <Link href="/" className="inline-flex items-center gap-2 text-sm text-[var(--app-text-muted)] transition hover:text-white">
+              <ArrowLeft size={15} />
+              Back to home
+            </Link>
+            <SignOutButton redirectUrl="/sign-in">
+              <button type="button" className="text-sm text-[var(--app-text-muted)] transition hover:text-white">
+                Sign out
+              </button>
+            </SignOutButton>
           </div>
-          <div className="[&_.cl-card]:!border-0 [&_.cl-card]:!bg-transparent [&_.cl-card]:!shadow-none [&_.cl-headerSubtitle]:!hidden [&_.cl-headerTitle]:!hidden [&_.cl-footer]:!hidden [&_.cl-logoBox]:!hidden">
-            <SignIn
-              routing="hash"
-              redirectUrl="/dashboard"
-              appearance={clerkAppearance}
-            />
+          <div className="glass-panel rounded-[28px] p-7">
+            <div className="mb-6">
+              <UniBoardLogo size={54} className="mb-5" showWordmark={false} />
+              <h1 className="text-3xl font-bold text-white">Sign in to UniBoard</h1>
+              <p className="mt-2 text-sm leading-6 text-[var(--app-text-muted)]">
+                Secure, low-friction access to your academic workspace.
+              </p>
+            </div>
+            <div className="mb-4 rounded-[20px] border border-[var(--app-line)] bg-[var(--app-panel)]/70 px-4 py-3 text-sm leading-6 text-[var(--app-text-soft)]">
+              If you already have an active session, continue and Clerk will route you into the correct workspace state automatically.
+            </div>
+            <div className="[&_.cl-card]:!border-0 [&_.cl-card]:!bg-transparent [&_.cl-card]:!shadow-none [&_.cl-headerSubtitle]:!hidden [&_.cl-headerTitle]:!hidden [&_.cl-footer]:!hidden [&_.cl-logoBox]:!hidden">
+              <SignIn
+                routing="hash"
+                redirectUrl="/dashboard"
+                appearance={clerkAppearance}
+              />
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </div>

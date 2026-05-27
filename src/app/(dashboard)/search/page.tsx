@@ -5,15 +5,8 @@ import { useDeferredValue, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { ArrowUpRight, Search, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
-import type { FeedPost } from "@/components/feed/PostFeed";
-import type { Room } from "@/types";
+import { normalizeSearchResults } from "@/lib/search";
 import { formatRelativeTime } from "@/lib/utils";
-
-type SearchResultRecord = Partial<FeedPost> & {
-  room?: Partial<Room> | null;
-  relevance?: string;
-  snippet?: string;
-};
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,63 +14,7 @@ export default function SearchPage() {
   const results = useQuery(api.posts.search, { searchQuery: deferredQuery });
   const rawSuggestions = useQuery(api.posts.getSearchSuggestions);
   const suggestions = Array.isArray(rawSuggestions) ? rawSuggestions.filter((item): item is string => typeof item === "string") : [];
-  const enrichedResults = useMemo(() => {
-    const query = deferredQuery.trim().toLowerCase();
-    if (!Array.isArray(results)) {
-      return [];
-    }
-
-    return (results as SearchResultRecord[])
-      .map((result) => {
-        const safeId = typeof result._id === "string" ? result._id : null;
-        const safeRoomId = typeof result.roomId === "string" ? result.roomId : null;
-        const safeContent = typeof result.content === "string" ? result.content : "";
-        const safeDeadlineTitle = typeof result.deadlineTitle === "string" ? result.deadlineTitle : "";
-        const safeResourceTitle = typeof result.resourceTitle === "string" ? result.resourceTitle : "";
-        const safeType = typeof result.type === "string" ? result.type : "note";
-        const safeCreatedAt = typeof result.createdAt === "number" && Number.isFinite(result.createdAt) ? result.createdAt : null;
-        const safeRoomName = typeof result.room?.name === "string" ? result.room.name : "Room";
-        const safeAuthorName = typeof result.author?.name === "string" ? result.author.name : "Unknown author";
-        const safeTags = Array.isArray(result.tags) ? result.tags.filter((tag): tag is string => typeof tag === "string") : [];
-
-        if (!safeId || !safeRoomId || !safeCreatedAt) {
-          return null;
-        }
-
-        const title = (safeDeadlineTitle || safeResourceTitle).toLowerCase();
-        const body = safeContent.toLowerCase();
-        const tagLine = safeTags.join(" ").toLowerCase();
-
-        const relevance = title.includes(query)
-          ? "Title match"
-          : tagLine.includes(query)
-            ? "Tag match"
-            : "Body match";
-
-        return {
-          ...result,
-          _id: safeId,
-          roomId: safeRoomId,
-          type: safeType,
-          createdAt: safeCreatedAt,
-          deadlineTitle: safeDeadlineTitle,
-          resourceTitle: safeResourceTitle,
-          content: safeContent,
-          tags: safeTags,
-          room: {
-            ...(result.room ?? {}),
-            name: safeRoomName
-          },
-          author: {
-            ...(result.author ?? {}),
-            name: safeAuthorName
-          },
-          relevance,
-          snippet: buildSnippet(safeContent, query)
-        };
-      })
-      .filter((result): result is NonNullable<typeof result> => result !== null);
-  }, [deferredQuery, results]);
+  const enrichedResults = useMemo(() => normalizeSearchResults(results, deferredQuery), [deferredQuery, results]);
 
   return (
     <div className="app-scroll">
@@ -173,22 +110,4 @@ export default function SearchPage() {
       </div>
     </div>
   );
-}
-
-function buildSnippet(content: string, query: string) {
-  if (!query) {
-    return content;
-  }
-
-  const lower = content.toLowerCase();
-  const index = lower.indexOf(query);
-  if (index === -1) {
-    return content;
-  }
-
-  const start = Math.max(0, index - 84);
-  const end = Math.min(content.length, index + query.length + 120);
-  const prefix = start > 0 ? "..." : "";
-  const suffix = end < content.length ? "..." : "";
-  return `${prefix}${content.slice(start, end).trim()}${suffix}`;
 }

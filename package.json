@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
     "typecheck": "tsc --noEmit",
     "convex:dev": "convex dev",
     "convex:codegen": "convex codegen",
@@ -36,6 +38,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/node": "^22.14.1",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",

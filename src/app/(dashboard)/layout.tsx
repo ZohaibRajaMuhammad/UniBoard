@@ -5,7 +5,7 @@ import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice
 import { ThemeToggle } from "@/components/system/ThemeToggle";
 import { AiAssistant } from "@/components/ai/AiAssistant";
 import { MobileSidebar } from "@/components/layout/MobileSidebar";
-import { isClerkServerConfigured } from "@/lib/deployment";
+import { getSafeAuthState, isClerkServerConfigured } from "@/lib/deployment";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
     );
   }
 
-  const { userId } = await auth();
+  const { userId, authAvailable } = await getSafeAuthState(() => auth());
+  if (!authAvailable) {
+    return (
+      <DeploymentSetupNotice
+        title="Dashboard authentication is temporarily unavailable"
+        detail="UniBoard could not validate the current Clerk session for protected routes. Public pages remain available, but dashboard access will resume only after the authentication service responds normally."
+      />
+    );
+  }
   if (!userId) {
     redirect("/sign-in");
   }

@@ -12,6 +12,7 @@ describe("ai mentions", () => {
     expect(stripAiMentions("@UniBoard explain this release blocker")).toBe("explain this release blocker");
     expect(stripAiMentions("@UniBoardAI explain this release blocker")).toBe("explain this release blocker");
     expect(stripAiMentions("Please check this, @UniBoardAI.")).toBe("Please check this, .");
+    expect(stripAiMentions("@UniBoardAI @UniBoardAI tell me about Convex")).toBe("tell me about Convex");
   });
 
   it("formats assistant comments with next steps when provided", () => {
@@ -47,5 +48,17 @@ describe("ai mentions", () => {
     expect(parsed.postTitle).toBe("Demo readiness");
     expect(parsed.postContent).toContain("deployment guide is incomplete");
     expect(parsed.parentCommentContent).toContain("concise status answer");
+  });
+
+  it("keeps duplicate AI mentions from polluting the extracted user request", () => {
+    const prompt = buildAssistantPrompt("@UniBoardAI @UniBoardAI tell me about Convex", {
+      postType: "note",
+      postContent: "@UniBoardAI @UniBoardAI tell me about Convex"
+    });
+
+    const parsed = parseAssistantPromptContext(prompt);
+
+    expect(parsed.userRequest).toBe("tell me about Convex");
+    expect(prompt).toContain("User request:\ntell me about Convex");
   });
 });

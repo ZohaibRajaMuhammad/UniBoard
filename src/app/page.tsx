@@ -1,13 +1,19 @@
 import Link from "next/link";
-import { auth } from "@clerk/nextjs/server";
 import { fetchQuery } from "convex/nextjs";
-import { redirect } from "next/navigation";
 import { api } from "../../convex/_generated/api";
 import { UniBoardLogo } from "@/components/brand/UniBoardLogo";
 import { DeploymentSetupNotice } from "@/components/system/DeploymentSetupNotice";
 import { isClerkServerConfigured } from "@/lib/deployment";
 
 export const dynamic = "force-dynamic";
+
+const fallbackPublicSnapshot = {
+  publicRoomCount: 0,
+  visiblePostCount: 0,
+  upcomingDeadlineCount: 0,
+  activeMemberCount: 0,
+  busiestRoom: null
+};
 
 export default async function LandingPage() {
   if (!isClerkServerConfigured) {
@@ -19,12 +25,7 @@ export default async function LandingPage() {
     );
   }
 
-  const { userId } = await auth();
-  if (userId) {
-    redirect("/dashboard");
-  }
-
-  const snapshot = await fetchQuery(api.analytics.getPublicSnapshot, {});
+  const snapshot = await fetchQuery(api.analytics.getPublicSnapshot, {}).catch(() => fallbackPublicSnapshot);
 
   return (
     <main className="relative min-h-screen overflow-hidden px-4 py-4 sm:px-5">
