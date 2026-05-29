@@ -18,7 +18,7 @@ export function DeploymentSetupNotice({
         <p className="mt-3 text-sm leading-6 text-[var(--app-text-muted)]">{detail}</p>
 
         <div className="mt-6 rounded-3xl border border-amber-400/20 bg-amber-500/10 p-5">
-          <p className="text-sm font-semibold text-[var(--app-text)]">Missing public environment variables</p>
+          <p className="text-sm font-semibold text-[var(--app-text)]">Missing environment variables</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {missingEnvVars.map((variable) => (
               <span
