@@ -9,12 +9,15 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { CreateRoomModal } from "@/components/rooms/CreateRoomModal";
 import { RoomCard } from "@/components/rooms/RoomCard";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useTimedLoadState } from "@/hooks/useTimedLoadState";
 import type { Room } from "@/types";
 
 export default function RoomsPage() {
   const router = useRouter();
   const user = useCurrentUser();
   const publicRooms = useQuery(api.rooms.getPublicRooms, { batch: user?.batch });
+  const publicRoomsLoadState = useTimedLoadState(publicRooms);
+  const publicRoomList = useMemo(() => (publicRooms as Room[] | undefined) ?? [], [publicRooms]);
   const joinRoom = useMutation(api.rooms.join);
   const [showModal, setShowModal] = useState(false);
   const [query, setQuery] = useState("");
@@ -25,7 +28,7 @@ export default function RoomsPage() {
   const deferredQuery = useDeferredValue(query);
 
   const filteredRooms = useMemo(() => {
-    const rooms = (publicRooms as Room[] | undefined) ?? [];
+    const rooms = publicRoomList;
     if (!deferredQuery.trim()) {
       return rooms;
     }
@@ -36,7 +39,7 @@ export default function RoomsPage() {
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(normalized))
     );
-  }, [publicRooms, deferredQuery]);
+  }, [publicRoomList, deferredQuery]);
 
   async function handleJoinPublicRoom(roomId: Id<"rooms">) {
     setJoiningRoomId(roomId);
@@ -158,13 +161,17 @@ export default function RoomsPage() {
           ) : null}
         </div>
 
-        {publicRooms === undefined ? (
+        {publicRoomsLoadState.isLoading ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
               <div key={index} className="h-40 animate-pulse rounded-3xl bg-white/5" />
             ))}
           </div>
-        ) : publicRooms.length === 0 ? (
+        ) : publicRoomsLoadState.timedOut ? (
+          <div className="glass-panel rounded-[var(--radius-panel)] p-8 text-sm text-[var(--app-text-soft)]">
+            Room discovery is taking longer than expected. Refresh the page or check the Convex deployment URL.
+          </div>
+        ) : publicRoomList.length === 0 ? (
           <div className="glass-panel rounded-[var(--radius-panel)] p-8 text-sm text-[var(--app-text-muted)]">
             No public rooms available for your current batch.
           </div>

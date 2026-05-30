@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { UserButton } from "@clerk/nextjs";
+import { SignOutButton, UserButton } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
 import {
   BarChart3,
@@ -11,6 +11,7 @@ import {
   BrainCircuit,
   Crown,
   Home,
+  LogOut,
   Plus,
   Shield,
   Settings,
@@ -26,6 +27,7 @@ import { UniBoardLogo } from "@/components/brand/UniBoardLogo";
 import { CreateRoomModal } from "@/components/rooms/CreateRoomModal";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useTimedLoadState } from "@/hooks/useTimedLoadState";
 import { getRoomIcon } from "@/lib/ui-icons";
 import { cn } from "@/lib/utils";
 import type { Room } from "@/types";
@@ -70,6 +72,8 @@ export function Sidebar() {
   const rooms = useQuery(api.rooms.getMyRooms);
   const unreadNotifications = useQuery(api.notifications.getUnreadNotificationCount);
   const totalUnread = useQuery(api.rooms.getTotalUnreadCount);
+  const roomsLoadState = useTimedLoadState(rooms);
+  const roomList = (rooms as Room[] | undefined) ?? [];
   const [showCreateRoom, setShowCreateRoom] = useState(false);
 
   const dynamicNavGroups = useMemo(() => {
@@ -146,19 +150,23 @@ export function Sidebar() {
             </button>
           </div>
 
-          {rooms === undefined ? (
+          {roomsLoadState.isLoading ? (
             <div className="mt-3 space-y-2">
               {Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="h-12 animate-pulse rounded-2xl bg-white/5" />
               ))}
             </div>
-          ) : rooms.length === 0 ? (
+          ) : roomsLoadState.timedOut ? (
+            <div className="mt-3 rounded-[1.25rem] border border-amber-400/20 bg-amber-500/10 p-4 text-sm leading-6 text-[var(--app-text-soft)]">
+              Rooms are taking longer than expected. Use the Rooms page or refresh if this persists.
+            </div>
+          ) : roomList.length === 0 ? (
             <div className="mt-3 rounded-[1.25rem] border border-dashed border-[var(--app-line)] bg-white/[0.02] p-4 text-sm leading-6 text-[var(--app-text-muted)]">
               No rooms joined yet.
             </div>
           ) : (
             <div className="mt-3 space-y-2">
-              {(rooms as Room[]).map((room) => (
+              {roomList.map((room) => (
                 <SidebarRoomItem key={room._id} roomId={room._id} name={room.name} emoji={room.emoji} active={pathname === `/rooms/${room._id}`} />
               ))}
             </div>
@@ -192,6 +200,15 @@ export function Sidebar() {
             </Link>
           </div>
         </div>
+        <SignOutButton signOutOptions={{ redirectUrl: "/" }}>
+          <button
+            type="button"
+            className="mt-3 flex min-h-[2.75rem] w-full items-center justify-center gap-2 rounded-[1rem] border border-[var(--app-line)] bg-white/[0.03] px-4 text-sm font-semibold text-[var(--app-text-soft)] transition hover:bg-white/10 hover:text-white"
+          >
+            <LogOut size={16} />
+            Log out
+          </button>
+        </SignOutButton>
       </div>
 
       {showCreateRoom ? <CreateRoomModal onClose={() => setShowCreateRoom(false)} /> : null}

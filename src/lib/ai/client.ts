@@ -1,12 +1,13 @@
 import type { AiEnvelope } from "@/lib/ai/contracts";
 
-export async function getAi<T>(path: string) {
+export async function getAi<T>(path: string, init?: Pick<RequestInit, "signal">) {
   const response = await fetch(path, {
     method: "GET",
     headers: {
       Accept: "application/json"
     },
-    cache: "no-store"
+    cache: "no-store",
+    signal: init?.signal
   });
 
   const payload = (await response.json()) as AiEnvelope<T>;

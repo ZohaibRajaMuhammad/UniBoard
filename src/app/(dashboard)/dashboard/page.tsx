@@ -8,6 +8,7 @@ import { api } from "../../../../convex/_generated/api";
 import { DeadlineWidget } from "@/components/feed/DeadlineWidget";
 import { RoomCard } from "@/components/rooms/RoomCard";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useTimedLoadState } from "@/hooks/useTimedLoadState";
 import { getAi } from "@/lib/ai/client";
 import type { AiBriefing, AiEnvelope } from "@/lib/ai/contracts";
 import type { Post, Room } from "@/types";
@@ -16,12 +17,18 @@ export default function DashboardRoutePage() {
   const user = useCurrentUser();
   const rooms = useQuery(api.rooms.getMyRooms);
   const deadlines = useQuery(api.posts.getUpcomingDeadlines, {});
+  const roomsLoadState = useTimedLoadState(rooms);
+  const deadlinesLoadState = useTimedLoadState(deadlines);
+  const roomList = (rooms as Room[] | undefined) ?? [];
   const [briefing, setBriefing] = useState<AiEnvelope<AiBriefing> | null>(null);
   const [briefingError, setBriefingError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
-    void getAi<AiBriefing>("/api/v1/ai/briefing")
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 2000);
+
+    void getAi<AiBriefing>("/api/v1/ai/briefing", { signal: controller.signal })
       .then((payload) => {
         if (!cancelled) {
           setBriefing(payload);
@@ -30,12 +37,23 @@ export default function DashboardRoutePage() {
       })
       .catch((error) => {
         if (!cancelled) {
-          setBriefingError(error instanceof Error ? error.message : "Unable to load AI briefing.");
+          const message =
+            error instanceof DOMException && error.name === "AbortError"
+              ? "AI briefing is taking longer than 2 seconds. Try again from the assistant panel."
+              : error instanceof Error
+                ? error.message
+                : "Unable to load AI briefing.";
+          setBriefingError(message);
         }
+      })
+      .finally(() => {
+        window.clearTimeout(timeout);
       });
 
     return () => {
       cancelled = true;
+      controller.abort();
+      window.clearTimeout(timeout);
     };
   }, []);
 
@@ -109,7 +127,11 @@ export default function DashboardRoutePage() {
           </div>
         </div>
 
-        {deadlines && deadlines.length > 0 ? (
+        {deadlinesLoadState.timedOut ? (
+          <section className="glass-panel rounded-[var(--radius-panel)] p-6 text-sm text-[var(--app-text-soft)]">
+            Deadline data is taking longer than expected. Refresh the page if this continues.
+          </section>
+        ) : deadlines && deadlines.length > 0 ? (
           <section className="page-stack">
             <div className="section-heading">
               <h2 className="section-eyebrow">Upcoming deadlines</h2>
@@ -127,13 +149,17 @@ export default function DashboardRoutePage() {
             <h2 className="section-eyebrow">Your rooms</h2>
             <span className="text-sm text-[var(--app-text-muted)]">{rooms?.length ?? 0} active</span>
           </div>
-          {rooms === undefined ? (
+          {roomsLoadState.isLoading ? (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="h-40 animate-pulse rounded-3xl bg-white/5" />
               ))}
             </div>
-          ) : rooms.length === 0 ? (
+          ) : roomsLoadState.timedOut ? (
+            <div className="glass-panel rounded-[var(--radius-panel)] p-8 text-sm text-[var(--app-text-soft)]">
+              Room data is taking longer than expected. Refresh the page or open Rooms from the sidebar.
+            </div>
+          ) : roomList.length === 0 ? (
             <div className="glass-panel rounded-[var(--radius-panel)] p-8 text-center sm:p-10">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl border border-[var(--app-line)] bg-white/5 text-[var(--app-primary-strong)]">
                 <FolderOpen size={26} />
@@ -145,7 +171,7 @@ export default function DashboardRoutePage() {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {(rooms as Room[]).map((room) => (
+              {roomList.map((room) => (
                 <RoomCard key={room._id} room={room} />
               ))}
             </div>
