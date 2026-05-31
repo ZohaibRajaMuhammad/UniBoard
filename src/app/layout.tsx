@@ -9,7 +9,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "UniBoard",
-  description: "Academic collaboration workspace with grounded AI, live rooms, and structured course operations."
+  description: "Academic collaboration workspace with grounded AI, live rooms, and structured course operations.",
+  icons: {
+    icon: "/uniboard-logo.webp",
+    apple: "/uniboard-logo.webp"
+  }
 };
 
 export const viewport: Viewport = {
