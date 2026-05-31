@@ -26,6 +26,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import { UniBoardLogo } from "@/components/brand/UniBoardLogo";
 import { CreateRoomModal } from "@/components/rooms/CreateRoomModal";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useTimedLoadState } from "@/hooks/useTimedLoadState";
 import { getRoomIcon } from "@/lib/ui-icons";
@@ -153,7 +154,7 @@ export function Sidebar() {
           {roomsLoadState.isLoading ? (
             <div className="mt-3 space-y-2">
               {Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="h-12 animate-pulse rounded-2xl bg-white/5" />
+                <Skeleton key={index} className="h-12 rounded-2xl" />
               ))}
             </div>
           ) : roomsLoadState.timedOut ? (

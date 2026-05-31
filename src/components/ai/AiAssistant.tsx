@@ -2,6 +2,7 @@
 
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import { Bot, Loader2, MoveUpRight, Send, Sparkles, X } from "lucide-react";
 import { useNotifier } from "@/components/providers/NotificationProvider";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -156,11 +157,22 @@ export function AiAssistant() {
         </span>
       </button>
 
-      {open ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-end bg-[rgba(3,7,12,0.4)] p-3 backdrop-blur-sm md:items-end md:justify-end md:bg-transparent md:p-4">
-          <section
+      <AnimatePresence>
+        {open ? (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-end justify-end bg-[rgba(3,7,12,0.4)] p-3 backdrop-blur-sm md:items-end md:justify-end md:bg-transparent md:p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+        >
+          <motion.section
             id="ai-assistant-panel"
             className="glass-panel flex h-[min(82dvh,44rem)] w-full max-w-[24rem] flex-col overflow-hidden rounded-[30px] border-[var(--app-line-strong)] shadow-[0_28px_80px_rgba(7,14,28,0.32)] md:h-[38rem]"
+            initial={{ opacity: 0, y: 18, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 14, scale: 0.97 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
           >
             <header className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <div className="flex min-w-0 items-center gap-3">
@@ -303,9 +315,10 @@ export function AiAssistant() {
                 </div>
               </div>
             </form>
-          </section>
-        </div>
-      ) : null}
+          </motion.section>
+        </motion.div>
+        ) : null}
+      </AnimatePresence>
     </>
   );
 }

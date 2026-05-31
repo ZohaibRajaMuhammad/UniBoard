@@ -6,6 +6,7 @@ import { CalendarDays, ChevronDown, Download, FileSpreadsheet, FileText, Plus, R
 import { api } from "../../../../convex/_generated/api";
 import type { Doc, Id } from "../../../../convex/_generated/dataModel";
 import { useNotifier } from "@/components/providers/NotificationProvider";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { getAi } from "@/lib/ai/client";
 import type { AiEnvelope, StudyPlan } from "@/lib/ai/contracts";
 import { buildPlannerDoc, buildPlannerWorkbook, downloadBlob } from "@/lib/planner-export";
@@ -232,7 +233,7 @@ export default function PlannerPage() {
                   <ChevronDown size={14} />
                 </button>
                 {showExportMenu ? (
-                  <div className="dropdown-panel absolute right-0 top-[calc(100%+0.75rem)] z-30 min-w-[16rem] rounded-[24px] p-2 shadow-2xl">
+                  <div className="app-popover-enter dropdown-panel absolute right-0 top-[calc(100%+0.75rem)] z-30 min-w-[16rem] rounded-[24px] p-2 shadow-2xl">
                     <button type="button" onClick={() => void handleExport("xlsx")} className="app-action-button w-full justify-start border-transparent bg-transparent text-left">
                       <FileSpreadsheet size={15} />
                       Export Excel
@@ -334,7 +335,7 @@ export default function PlannerPage() {
                     {studyPlanError ? (
                       <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-[var(--app-text)]">{studyPlanError}</div>
                     ) : studyPlan === null ? (
-                      Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-20 animate-pulse rounded-2xl bg-white/5" />)
+                      Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} className="h-20 rounded-2xl" />)
                     ) : studyPlan.data?.sessions.length === 0 ? (
                       <div className="rounded-2xl border border-dashed border-[var(--app-line)] bg-white/5 p-4 text-sm text-[var(--app-text-muted)]">
                         Add or inherit deadlines first so the planner can allocate study blocks.
@@ -400,13 +401,13 @@ export default function PlannerPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="h-40 animate-pulse rounded-[28px] bg-white/5" />
+              <Skeleton key={index} className="h-40 rounded-[28px]" />
             ))}
           </div>
         )}
 
         {showForm ? (
-          <section id="manual-deadline-form" className="glass-panel rounded-[28px] p-6">
+          <section id="manual-deadline-form" className="app-tab-panel glass-panel rounded-[28px] p-6">
             <h2 className="text-2xl font-semibold text-white">Add manual deadline</h2>
             <form onSubmit={handleSubmit} className="mt-5 grid gap-4 lg:grid-cols-2">
               <input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="Deadline title" className="app-input" />

@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { ShieldCheck, UserCog, Users2 } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function AdminPage() {
   const currentUser = useCurrentUser();
@@ -14,7 +15,7 @@ export default function AdminPage() {
   const setArchiveState = useMutation(api.rooms.setArchiveStateBySuperAdmin);
 
   if (currentUser === undefined) {
-    return <div className="m-4 h-48 animate-pulse rounded-[28px] bg-white/5 sm:m-6" />;
+    return <Skeleton className="m-4 h-48 rounded-[28px] sm:m-6" />;
   }
 
   if (currentUser?.role !== "super_admin") {

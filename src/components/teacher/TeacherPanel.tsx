@@ -90,7 +90,7 @@ export function TeacherPanel({
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
         {activeTab === "flagged" ? (
-          <div className="space-y-3">
+          <div className="app-tab-panel space-y-3">
             <section className="app-surface-muted rounded-[22px] p-4">
               <div className="flex items-start gap-3">
                 <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[rgba(198,64,95,0.1)] text-[var(--app-danger)]">
@@ -142,7 +142,7 @@ export function TeacherPanel({
         ) : null}
 
         {activeTab === "members" ? (
-          <div className="space-y-3">
+          <div className="app-tab-panel space-y-3">
             {members === undefined ? (
               <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, index) => (
@@ -215,7 +215,7 @@ export function TeacherPanel({
 
         {activeTab === "analytics" ? (
           analytics ? (
-            <div className="space-y-4">
+            <div className="app-tab-panel space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <StatCard label="Posts in 14 days" value={analytics.totalPosts} />
                 <StatCard label="Members" value={analytics.totalMembers} />
@@ -301,7 +301,7 @@ export function TeacherPanel({
               </section>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="app-tab-panel space-y-3">
               {Array.from({ length: 4 }).map((_, index) => (
                   <div key={index} className="h-28 animate-pulse rounded-[22px] border border-[var(--app-line)] bg-[var(--app-panel-soft)]" />
               ))}

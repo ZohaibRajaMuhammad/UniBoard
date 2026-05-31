@@ -29,6 +29,7 @@ import { PresenceBar } from "@/components/rooms/PresenceBar";
 import { RoomHeader } from "@/components/rooms/RoomHeader";
 import { ThemeToggle } from "@/components/system/ThemeToggle";
 import { TeacherPanel } from "@/components/teacher/TeacherPanel";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { postAi } from "@/lib/ai/client";
 import type { AiEnvelope, RoomSummary } from "@/lib/ai/contracts";
@@ -160,7 +161,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   }
 
   if (room === undefined) {
-    return <div className="m-4 h-48 animate-pulse rounded-[28px] bg-white/5 sm:m-6" />;
+    return <Skeleton className="m-4 h-48 rounded-[28px] sm:m-6" />;
   }
 
   if (!room) {
@@ -473,7 +474,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                   <div className="mt-5 grid gap-3">
                     {posts === undefined ? (
                       Array.from({ length: 3 }).map((_, index) => (
-                        <div key={index} className="h-24 animate-pulse rounded-[22px] bg-white/10" />
+                        <Skeleton key={index} className="h-24 rounded-[22px]" />
                       ))
                     ) : previewPosts.length > 0 ? (
                       previewPosts.map((post) => (
@@ -528,8 +529,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
       <Dialog.Root open={composerOpen} onOpenChange={setComposerOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-40 bg-[rgba(7,17,26,0.36)] backdrop-blur-[2px]" />
-          <Dialog.Content className="fixed inset-x-4 top-1/2 z-50 max-h-[calc(100dvh-2rem)] w-auto -translate-y-1/2 overflow-y-auto rounded-[1.75rem] sm:left-1/2 sm:w-[min(68rem,calc(100vw-2rem))] sm:-translate-x-1/2">
+          <Dialog.Overlay className="app-dialog-overlay fixed inset-0 z-40 bg-[rgba(7,17,26,0.36)] backdrop-blur-[2px]" />
+          <Dialog.Content className="app-dialog-content fixed inset-x-4 top-1/2 z-50 max-h-[calc(100dvh-2rem)] w-auto overflow-y-auto rounded-[1.75rem] sm:left-1/2 sm:w-[min(68rem,calc(100vw-2rem))]">
             <div className="glass-panel overflow-hidden rounded-[1.75rem]">
               <div className="flex items-center justify-between border-b border-[var(--app-line)] px-5 py-4">
                 <div>

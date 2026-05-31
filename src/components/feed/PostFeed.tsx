@@ -3,6 +3,7 @@
 import type { Id } from "../../../convex/_generated/dataModel";
 import { FilePlus2 } from "lucide-react";
 import { PostCard } from "./PostCard";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export interface FeedPost {
   _id: Id<"posts">;
@@ -47,7 +48,7 @@ export function PostFeed({
     return (
       <div className="space-y-4 p-4 sm:p-6">
         {Array.from({ length: 5 }).map((_, index) => (
-          <div key={index} className="h-32 animate-pulse rounded-[28px] bg-white/5" />
+          <Skeleton key={index} className="h-32 rounded-[28px]" />
         ))}
       </div>
     );

@@ -147,6 +147,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
               key={item.id}
               className={cn(
                 "pointer-events-auto rounded-[24px] border px-4 py-4 shadow-[0_22px_48px_rgba(8,14,28,0.22)] backdrop-blur-xl",
+                "app-popover-enter",
                 getToneClasses(item.tone ?? "info")
               )}
             >

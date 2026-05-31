@@ -26,6 +26,7 @@
     "clsx": "^2.1.1",
     "convex": "^1.25.4",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.40.0",
     "lucide-react": "^0.511.0",
     "next": "14.2.33",
     "openai": "^6.37.0",

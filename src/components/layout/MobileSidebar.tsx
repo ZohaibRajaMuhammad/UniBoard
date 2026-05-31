@@ -24,14 +24,14 @@ export function MobileSidebar() {
         <div className="fixed inset-0 z-50 lg:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-[rgba(7,17,26,0.32)] backdrop-blur-[2px]"
+            className="app-dialog-overlay absolute inset-0 bg-[rgba(7,17,26,0.32)] backdrop-blur-[2px]"
             onClick={() => setOpen(false)}
             aria-label="Close workspace sidebar backdrop"
           />
 
           <aside
             id="mobile-sidebar"
-            className="relative flex h-full w-[min(21rem,calc(100vw-2rem))] max-w-full flex-col overflow-hidden border-r border-[var(--app-line)] bg-[color:var(--app-panel-strong)] shadow-[0_28px_80px_rgba(18,34,64,0.22)]"
+            className="app-tab-panel relative flex h-full w-[min(21rem,calc(100vw-2rem))] max-w-full flex-col overflow-hidden border-r border-[var(--app-line)] bg-[color:var(--app-panel-strong)] shadow-[0_28px_80px_rgba(18,34,64,0.22)]"
           >
             <button
               type="button"

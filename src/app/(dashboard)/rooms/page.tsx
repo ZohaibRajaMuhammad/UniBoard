@@ -8,6 +8,7 @@ import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { CreateRoomModal } from "@/components/rooms/CreateRoomModal";
 import { RoomCard } from "@/components/rooms/RoomCard";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useTimedLoadState } from "@/hooks/useTimedLoadState";
 import type { Room } from "@/types";
@@ -164,7 +165,7 @@ export default function RoomsPage() {
         {publicRoomsLoadState.isLoading ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="h-40 animate-pulse rounded-3xl bg-white/5" />
+              <Skeleton key={index} className="h-40 rounded-3xl" />
             ))}
           </div>
         ) : publicRoomsLoadState.timedOut ? (

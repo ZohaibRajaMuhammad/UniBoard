@@ -7,6 +7,7 @@ import { FolderOpen, Plus, Sparkles } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { DeadlineWidget } from "@/components/feed/DeadlineWidget";
 import { RoomCard } from "@/components/rooms/RoomCard";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useTimedLoadState } from "@/hooks/useTimedLoadState";
 import { getAi } from "@/lib/ai/client";
@@ -97,7 +98,7 @@ export default function DashboardRoutePage() {
             {briefingError ? (
               <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-[var(--app-text)]">{briefingError}</div>
             ) : briefing === null ? (
-              <div className="mt-4 h-40 animate-pulse rounded-2xl bg-white/5" />
+              <Skeleton className="mt-4 h-40 rounded-2xl" />
             ) : (
               <>
                 <h2 className="mt-4 text-2xl font-bold text-white">
@@ -152,7 +153,7 @@ export default function DashboardRoutePage() {
           {roomsLoadState.isLoading ? (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="h-40 animate-pulse rounded-3xl bg-white/5" />
+                <Skeleton key={index} className="h-40 rounded-3xl" />
               ))}
             </div>
           ) : roomsLoadState.timedOut ? (
