@@ -71,6 +71,16 @@ type SeedCommentSpec = {
   parentCommentKey?: string;
 };
 
+type PlannerDeadlineSpec = {
+  userId: Id<"users">;
+  roomKey: string;
+  title: string;
+  notes: string;
+  daysFromNow: number;
+  estimatedMinutes: number;
+  completed: boolean;
+};
+
 export const resetAndSeed = mutation({
   args: {
     key: v.string(),
@@ -90,6 +100,7 @@ export const resetAndSeed = mutation({
       "votes",
       "comments",
       "posts",
+      "plannerDeadlines",
       "roomMembers",
       "rooms",
       "users"
@@ -466,6 +477,28 @@ export const resetAndSeed = mutation({
         isAnonymous: false,
         isPinned: false,
         isResolved: false
+      },
+      {
+        key: "ai_system_note",
+        roomKey: "ai",
+        authorId: userIdsByKey.ai,
+        type: "note" as const,
+        content: "System note: grounded assistant answers should cite room posts, deadlines, and teacher announcements before giving general advice.",
+        tags: ["assistant", "grounding"],
+        isAnonymous: false,
+        isPinned: false,
+        isResolved: false
+      },
+      {
+        key: "admin_governance_note",
+        roomKey: "fyp",
+        authorId: superAdmin,
+        type: "note" as const,
+        content: "Governance check: demo reviewers should validate public rooms, private join codes, moderation logs, notifications, and role-specific permissions.",
+        tags: ["governance", "qa"],
+        isAnonymous: false,
+        isPinned: false,
+        isResolved: false
       }
     ];
 
@@ -483,7 +516,11 @@ export const resetAndSeed = mutation({
       { key: "c11", postKey: "db_deadline", roomKey: "db", authorId: userIdsByKey.zohaib, content: "Uploading tonight so the practical checklist stays clear tomorrow morning.", isAnonymous: false },
       { key: "c12", postKey: "fyp_announcement", roomKey: "fyp", authorId: userIdsByKey.mina, content: "Should the deployment URL point to staging or production-like hosting?", isAnonymous: false },
       { key: "c13", postKey: "fyp_announcement", roomKey: "fyp", authorId: teacher, content: "Use the environment that reviewers can access reliably without setup friction.", isAnonymous: false, parentCommentKey: "c12" },
-      { key: "c14", postKey: "fyp_resource", roomKey: "fyp", authorId: userIdsByKey.aleena, content: "The rollback section in that checklist is the part most teams usually forget.", isAnonymous: false }
+      { key: "c14", postKey: "fyp_resource", roomKey: "fyp", authorId: userIdsByKey.aleena, content: "The rollback section in that checklist is the part most teams usually forget.", isAnonymous: false },
+      { key: "c15", postKey: "ai_system_note", roomKey: "ai", authorId: userIdsByKey.ai, content: "Assistant context is ready for room summaries, deadline risk checks, and knowledge-base questions.", isAnonymous: false },
+      { key: "c16", postKey: "admin_governance_note", roomKey: "fyp", authorId: superAdmin, content: "Admin smoke test should include archiving, unarchiving, and teacher approval review.", isAnonymous: false },
+      { key: "c17", postKey: "db_note", roomKey: "db", authorId: userIdsByKey.sara, content: "This helped me distinguish normalization tradeoffs from pure exam definitions.", isAnonymous: false },
+      { key: "c18", postKey: "design_note", roomKey: "design", authorId: userIdsByKey.aleena, content: "I will convert this into a checklist for our next architecture review.", isAnonymous: false }
     ];
 
     const voteSpecs = [
@@ -526,7 +563,11 @@ export const resetAndSeed = mutation({
       { postKey: "fyp_deadline", userId: userIdsByKey.aleena },
       { postKey: "fyp_resource", userId: teacher },
       { postKey: "fyp_resource", userId: superAdmin },
-      { postKey: "fyp_note", userId: userIdsByKey.zohaib }
+      { postKey: "fyp_note", userId: userIdsByKey.zohaib },
+      { postKey: "ai_system_note", userId: teacher },
+      { postKey: "ai_system_note", userId: userIdsByKey.zohaib },
+      { postKey: "admin_governance_note", userId: teacher },
+      { postKey: "admin_governance_note", userId: userIdsByKey.ai }
     ] as const;
 
     const reactionSpecs = [
@@ -538,15 +579,21 @@ export const resetAndSeed = mutation({
       { postKey: "db_deadline", userId: userIdsByKey.zohaib, emoji: "🔥" },
       { postKey: "db_question", userId: teacher, emoji: "😮" },
       { postKey: "fyp_announcement", userId: superAdmin, emoji: "👍" },
-      { postKey: "fyp_resource", userId: userIdsByKey.mina, emoji: "❤️" }
+      { postKey: "fyp_resource", userId: userIdsByKey.mina, emoji: "❤️" },
+      { postKey: "ai_system_note", userId: userIdsByKey.zohaib, emoji: "👍" },
+      { postKey: "admin_governance_note", userId: teacher, emoji: "🔥" }
     ] as const;
 
     const savedPostSpecs = [
+      { userId: superAdmin, postKey: "admin_governance_note" },
+      { userId: teacher, postKey: "ai_system_note" },
       { userId: userIdsByKey.zohaib, postKey: "ai_announcement" },
       { userId: userIdsByKey.zohaib, postKey: "db_deadline" },
       { userId: userIdsByKey.sara, postKey: "design_resource" },
       { userId: userIdsByKey.hamza, postKey: "fyp_resource" },
-      { userId: userIdsByKey.mina, postKey: "fyp_announcement" }
+      { userId: userIdsByKey.mina, postKey: "fyp_announcement" },
+      { userId: userIdsByKey.aleena, postKey: "db_announcement" },
+      { userId: userIdsByKey.ai, postKey: "ai_question" }
     ] as const;
 
     const shareSpecs = [
@@ -572,7 +619,10 @@ export const resetAndSeed = mutation({
       { userId: userIdsByKey.mina, type: "pinned", postKey: "design_note", roomKey: "design", fromUserId: teacher, message: "Teacher pinned a post from your room workflow", isRead: false },
       { userId: superAdmin, type: "room_invite", roomKey: "fyp", fromUserId: teacher, message: "You were added to Final Year Project War Room", isRead: true },
       { userId: userIdsByKey.aleena, type: "new_post", postKey: "db_announcement", roomKey: "db", fromUserId: teacher, message: "New post in Database Engineering", isRead: false },
-      { userId: userIdsByKey.zohaib, type: "comment_reply", postKey: "ai_announcement", roomKey: "ai", commentKey: "c4", fromUserId: teacher, message: "Teacher replied to your comment", isRead: false }
+      { userId: userIdsByKey.zohaib, type: "comment_reply", postKey: "ai_announcement", roomKey: "ai", commentKey: "c4", fromUserId: teacher, message: "Teacher replied to your comment", isRead: false },
+      { userId: userIdsByKey.ai, type: "new_comment", postKey: "ai_system_note", roomKey: "ai", commentKey: "c15", fromUserId: userIdsByKey.ai, message: "Assistant readiness note was added to AI Systems Lab", isRead: false },
+      { userId: teacher, type: "pinned", postKey: "admin_governance_note", roomKey: "fyp", fromUserId: superAdmin, message: "Governance QA note is ready for teacher review", isRead: true },
+      { userId: userIdsByKey.hamza, type: "new_post", postKey: "admin_governance_note", roomKey: "fyp", fromUserId: superAdmin, message: "New governance note in Final Year Project War Room", isRead: false }
     ];
 
     const moderationSpecs: Array<{
@@ -586,7 +636,111 @@ export const resetAndSeed = mutation({
       { roomKey: "ai", actorId: teacher, targetPostKey: "ai_question", action: "flag_post", reason: "Needs teacher follow-up" },
       { roomKey: "design", actorId: teacher, targetUserId: userIdsByKey.aleena, action: "mute_member", reason: "Cooldown after repeated off-topic messages" },
       { roomKey: "db", actorId: teacher, targetUserId: userIdsByKey.hamza, action: "promote_moderator" },
-      { roomKey: "fyp", actorId: superAdmin, targetPostKey: "fyp_announcement", action: "pin_post" }
+      { roomKey: "fyp", actorId: superAdmin, targetPostKey: "fyp_announcement", action: "pin_post" },
+      { roomKey: "fyp", actorId: superAdmin, targetPostKey: "admin_governance_note", action: "flag_post", reason: "QA follow-up marker for admin testing" },
+      { roomKey: "ai", actorId: teacher, targetPostKey: "ai_system_note", action: "resolve_question", reason: "Assistant readiness verified" }
+    ];
+
+    const plannerDeadlineSpecs: PlannerDeadlineSpec[] = [
+      {
+        userId: superAdmin,
+        roomKey: "fyp",
+        title: "Admin deployment audit",
+        notes: "Verify Vercel env vars, Clerk routes, Convex functions, and seed data across admin, teacher, and student accounts.",
+        daysFromNow: 1,
+        estimatedMinutes: 90,
+        completed: false
+      },
+      {
+        userId: superAdmin,
+        roomKey: "ai",
+        title: "Governance review notes",
+        notes: "Review moderation logs, reported posts, role changes, and archived-room behavior before the final demo.",
+        daysFromNow: 4,
+        estimatedMinutes: 120,
+        completed: false
+      },
+      {
+        userId: teacher,
+        roomKey: "ai",
+        title: "Prepare AI lab feedback",
+        notes: "Summarize common mistakes from lab submissions and turn them into a pinned announcement.",
+        daysFromNow: 2,
+        estimatedMinutes: 150,
+        completed: false
+      },
+      {
+        userId: teacher,
+        roomKey: "design",
+        title: "Grade architecture review boards",
+        notes: "Check sequence diagrams, deployment views, and retry ownership notes for each project team.",
+        daysFromNow: 5,
+        estimatedMinutes: 210,
+        completed: false
+      },
+      {
+        userId: userIdsByKey.zohaib,
+        roomKey: "db",
+        title: "Database practical revision",
+        notes: "Practice indexing, normalization, and query plan interpretation before the practical.",
+        daysFromNow: 1,
+        estimatedMinutes: 120,
+        completed: false
+      },
+      {
+        userId: userIdsByKey.zohaib,
+        roomKey: "ai",
+        title: "Polish model evaluation slides",
+        notes: "Add F1 comparison, leakage example, and ablation confidence intervals.",
+        daysFromNow: 3,
+        estimatedMinutes: 180,
+        completed: false
+      },
+      {
+        userId: userIdsByKey.sara,
+        roomKey: "design",
+        title: "Queue retry decision memo",
+        notes: "Write a short note comparing application-level retries with infrastructure-owned retries.",
+        daysFromNow: 2,
+        estimatedMinutes: 75,
+        completed: false
+      },
+      {
+        userId: userIdsByKey.hamza,
+        roomKey: "db",
+        title: "Curate query tuning resources",
+        notes: "Collect two reliable execution-plan references and post a short summary in Database Engineering.",
+        daysFromNow: 4,
+        estimatedMinutes: 100,
+        completed: false
+      },
+      {
+        userId: userIdsByKey.mina,
+        roomKey: "fyp",
+        title: "Update release readiness checklist",
+        notes: "Add rollback, staging URL, and reviewer-access checks before the project demo.",
+        daysFromNow: 6,
+        estimatedMinutes: 130,
+        completed: false
+      },
+      {
+        userId: userIdsByKey.aleena,
+        roomKey: "design",
+        title: "Architecture review checklist cleanup",
+        notes: "Convert the design-room notes into a concise checklist for the next critique.",
+        daysFromNow: 3,
+        estimatedMinutes: 80,
+        completed: false
+      },
+      {
+        userId: userIdsByKey.ai,
+        roomKey: "ai",
+        title: "Assistant knowledge verification",
+        notes: "Confirm that AI assistant answers can reference current room posts, deadline risk, and planner data.",
+        daysFromNow: 2,
+        estimatedMinutes: 60,
+        completed: false
+      }
     ];
 
     const countByPostKey = <T extends { postKey: string }>(items: readonly T[]) => {
@@ -732,6 +886,25 @@ export const resetAndSeed = mutation({
       });
     }
 
+    for (const [index, plannerDeadline] of plannerDeadlineSpecs.entries()) {
+      const roomId = roomIdsByKey.get(plannerDeadline.roomKey);
+      if (!roomId) {
+        continue;
+      }
+
+      await ctx.db.insert("plannerDeadlines", {
+        userId: plannerDeadline.userId,
+        roomId,
+        title: plannerDeadline.title,
+        notes: plannerDeadline.notes,
+        dueDate: now + plannerDeadline.daysFromNow * 86_400_000 + (index % 3) * 3_600_000,
+        estimatedMinutes: plannerDeadline.estimatedMinutes,
+        completed: plannerDeadline.completed,
+        createdAt: now - (plannerDeadlineSpecs.length - index) * 520_000,
+        updatedAt: now - (plannerDeadlineSpecs.length - index) * 260_000
+      });
+    }
+
     for (const [index, shareSpec] of shareSpecs.entries()) {
       const originalPostId = postIdsByKey.get(shareSpec.postKey);
       const targetRoomId = roomIdsByKey.get(shareSpec.targetRoomKey);
@@ -797,7 +970,11 @@ export const resetAndSeed = mutation({
       users: args.users.length,
       rooms: roomConfigs.length,
       posts: postSpecs.length,
-      comments: commentSpecs.length
+      comments: commentSpecs.length,
+      plannerDeadlines: plannerDeadlineSpecs.length,
+      savedPosts: savedPostSpecs.length,
+      notifications: notificationSpecs.length,
+      moderationLogs: moderationSpecs.length
     };
   }
 });
