@@ -1046,37 +1046,6 @@ h6 {
   color: var(--app-text-soft);
 }
 
-.uniboard-logo-mark {
-  background: color-mix(in srgb, var(--app-panel-strong) 86%, rgba(var(--app-white-rgb), 0.08));
-}
-
-.uniboard-logo-image {
-  transform: scale(2.52) translateY(12.5%);
-  transform-origin: 50% 33%;
-  filter: var(--uniboard-logo-filter, none);
-  transition: filter 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
-}
-
-[data-logo-tone="light"] .uniboard-logo-image {
-  --uniboard-logo-filter: brightness(1.14) contrast(0.98) saturate(1.04);
-}
-
-[data-logo-tone="dark"] .uniboard-logo-image {
-  --uniboard-logo-filter: brightness(0.86) contrast(1.16) saturate(1.12);
-}
-
-[data-logo-tone="accent"] .uniboard-logo-image {
-  --uniboard-logo-filter: hue-rotate(8deg) saturate(1.28) contrast(1.06);
-}
-
-.theme-light [data-logo-tone="default"] .uniboard-logo-image {
-  --uniboard-logo-filter: brightness(0.96) contrast(1.08) saturate(1.05);
-}
-
-.theme-dark [data-logo-tone="default"] .uniboard-logo-image {
-  --uniboard-logo-filter: brightness(1.08) contrast(1.02) saturate(1.08);
-}
-
 .auth-matrix-fade {
   mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.9) 12%, rgba(0, 0, 0, 0.9) 88%, transparent 100%);
   -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.9) 12%, rgba(0, 0, 0, 0.9) 88%, transparent 100%);
