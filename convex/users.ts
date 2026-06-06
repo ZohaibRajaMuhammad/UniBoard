@@ -84,9 +84,27 @@ export const upsertFromClerk = mutation({
       return existing._id;
     }
 
+    const existingByEmail = await ctx.db
+      .query("users")
+      .withIndex("by_email", (query) => query.eq("email", args.email.trim().toLowerCase()))
+      .unique();
+
+    if (existingByEmail) {
+      await ctx.db.patch(existingByEmail._id, {
+        clerkId: args.clerkId,
+        email: args.email.trim().toLowerCase(),
+        name: args.name,
+        imageUrl: args.imageUrl,
+        isOnline: true,
+        lastActiveAt: now
+      });
+
+      return existingByEmail._id;
+    }
+
     return ctx.db.insert("users", {
       clerkId: args.clerkId,
-      email: args.email,
+      email: args.email.trim().toLowerCase(),
       name: args.name,
       imageUrl: args.imageUrl,
       role: "pending",
@@ -119,10 +137,11 @@ export const syncCurrentUser = mutation({
       .unique();
 
     const now = Date.now();
+    const normalizedEmail = args.email.trim().toLowerCase();
 
     if (existing) {
       await ctx.db.patch(existing._id, {
-        email: args.email,
+        email: normalizedEmail,
         name: args.name,
         imageUrl: args.imageUrl,
         isOnline: true,
@@ -132,9 +151,29 @@ export const syncCurrentUser = mutation({
       return existing._id;
     }
 
+    const existingByEmail = normalizedEmail
+      ? await ctx.db
+          .query("users")
+          .withIndex("by_email", (query) => query.eq("email", normalizedEmail))
+          .unique()
+      : null;
+
+    if (existingByEmail) {
+      await ctx.db.patch(existingByEmail._id, {
+        clerkId: identity.subject,
+        email: normalizedEmail,
+        name: args.name,
+        imageUrl: args.imageUrl,
+        isOnline: true,
+        lastActiveAt: now
+      });
+
+      return existingByEmail._id;
+    }
+
     return ctx.db.insert("users", {
       clerkId: identity.subject,
-      email: args.email,
+      email: normalizedEmail,
       name: args.name,
       imageUrl: args.imageUrl,
       role: "pending",

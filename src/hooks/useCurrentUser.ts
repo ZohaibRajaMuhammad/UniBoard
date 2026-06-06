@@ -19,8 +19,13 @@ export function useCurrentUser() {
       return;
     }
 
+    const email = clerkUser.primaryEmailAddress?.emailAddress;
+    if (!email) {
+      return;
+    }
+
     void syncCurrentUser({
-      email: clerkUser.primaryEmailAddress?.emailAddress ?? "",
+      email,
       name: clerkUser.fullName ?? clerkUser.username ?? "User",
       imageUrl: clerkUser.imageUrl
     });
