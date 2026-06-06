@@ -15,6 +15,17 @@ const fallbackPublicSnapshot = {
   busiestRoom: null
 };
 
+async function getPublicSnapshot() {
+  const timeout = new Promise<typeof fallbackPublicSnapshot>((resolve) => {
+    setTimeout(() => resolve(fallbackPublicSnapshot), 1800);
+  });
+
+  return Promise.race([
+    fetchQuery(api.analytics.getPublicSnapshot, {}).catch(() => fallbackPublicSnapshot),
+    timeout
+  ]);
+}
+
 export default async function LandingPage() {
   if (!isClerkServerConfigured) {
     return (
@@ -25,7 +36,7 @@ export default async function LandingPage() {
     );
   }
 
-  const snapshot = await fetchQuery(api.analytics.getPublicSnapshot, {}).catch(() => fallbackPublicSnapshot);
+  const snapshot = await getPublicSnapshot();
 
   return (
     <main className="relative min-h-screen overflow-hidden px-4 py-4 sm:px-5">
