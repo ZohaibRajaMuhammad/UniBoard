@@ -17,7 +17,7 @@ const fallbackPublicSnapshot = {
 
 async function getPublicSnapshot() {
   const timeout = new Promise<typeof fallbackPublicSnapshot>((resolve) => {
-    setTimeout(() => resolve(fallbackPublicSnapshot), 1800);
+    setTimeout(() => resolve(fallbackPublicSnapshot), 8000);
   });
 
   return Promise.race([

@@ -2,6 +2,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 
 type Ctx = QueryCtx | MutationCtx;
+type ConvexIdentity = NonNullable<Awaited<ReturnType<Ctx["auth"]["getUserIdentity"]>>>;
 
 export type PublicAuthor = {
   name: string;
@@ -15,10 +16,7 @@ export async function getCurrentUserOrThrow(ctx: Ctx): Promise<Doc<"users">> {
     throw new Error("Unauthenticated");
   }
 
-  const user = await ctx.db
-    .query("users")
-    .withIndex("by_clerkId", (query) => query.eq("clerkId", identity.subject))
-    .unique();
+  const user = await findUserByIdentity(ctx, identity);
 
   if (!user) {
     throw new Error("User not found");
@@ -33,10 +31,42 @@ export async function getCurrentUser(ctx: Ctx): Promise<Doc<"users"> | null> {
     return null;
   }
 
-  return ctx.db
+  return findUserByIdentity(ctx, identity);
+}
+
+async function findUserByIdentity(ctx: Ctx, identity: ConvexIdentity): Promise<Doc<"users"> | null> {
+  const userByClerkId = await ctx.db
     .query("users")
     .withIndex("by_clerkId", (query) => query.eq("clerkId", identity.subject))
     .unique();
+
+  if (userByClerkId) {
+    return userByClerkId;
+  }
+
+  const email = identity.email?.trim().toLowerCase();
+  if (!email) {
+    return null;
+  }
+
+  const userByEmail = await ctx.db
+    .query("users")
+    .withIndex("by_email", (query) => query.eq("email", email))
+    .unique();
+
+  if (!userByEmail) {
+    return null;
+  }
+
+  if ("patch" in ctx.db && userByEmail.clerkId !== identity.subject) {
+    await ctx.db.patch(userByEmail._id, {
+      clerkId: identity.subject,
+      lastActiveAt: Date.now(),
+      isOnline: true
+    });
+  }
+
+  return userByEmail;
 }
 
 export async function getMembership(
