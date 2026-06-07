@@ -14,6 +14,33 @@ import { getAi } from "@/lib/ai/client";
 import type { AiBriefing, AiEnvelope } from "@/lib/ai/contracts";
 import type { Post, Room } from "@/types";
 
+function buildDashboardFallbackBriefing(rooms: Room[], deadlines: Post[]) {
+  const topDeadlines = deadlines
+    .slice(0, 3)
+    .map((deadline) => deadline.deadlineTitle?.trim() || deadline.content.trim().slice(0, 80))
+    .filter(Boolean);
+  const roomNames = rooms.slice(0, 3).map((room) => room.name).filter(Boolean);
+
+  return {
+    summary:
+      topDeadlines.length > 0
+        ? `The current live focus is on ${topDeadlines.join(", ")}. ${rooms.length} room${rooms.length === 1 ? "" : "s"} are active, and the next best move is to review the nearest deadline first.`
+        : roomNames.length > 0
+          ? `You are active in ${roomNames.join(", ")}. Open a room to review the latest posts or create a deadline if you want the briefing to become more specific.`
+          : "No room activity is visible yet. Join a room or add a deadline and the briefing will start reflecting live academic work.",
+    priorities: [
+      ...(topDeadlines.length > 0 ? topDeadlines.map((item) => `Review ${item}`) : []),
+      ...(roomNames.length > 0 ? roomNames.map((item) => `Check ${item}`) : [])
+    ].slice(0, 3),
+    warnings:
+      deadlines.length > 0
+        ? deadlines
+            .slice(0, 2)
+            .map((deadline) => `Deadline signal: ${deadline.deadlineTitle?.trim() || deadline.content.trim().slice(0, 80)}.`)
+        : []
+  };
+}
+
 export default function DashboardRoutePage() {
   const user = useCurrentUser();
   const rooms = useQuery(api.rooms.getMyRooms);
@@ -21,6 +48,8 @@ export default function DashboardRoutePage() {
   const roomsLoadState = useTimedLoadState(rooms);
   const deadlinesLoadState = useTimedLoadState(deadlines);
   const roomList = (rooms as Room[] | undefined) ?? [];
+  const deadlineList = (deadlines as Post[] | undefined) ?? [];
+  const fallbackBriefing = buildDashboardFallbackBriefing(roomList, deadlineList);
   const [briefing, setBriefing] = useState<AiEnvelope<AiBriefing> | null>(null);
   const [briefingError, setBriefingError] = useState("");
 
@@ -96,16 +125,19 @@ export default function DashboardRoutePage() {
               <p className="section-eyebrow">AI briefing</p>
             </div>
             {briefingError ? (
-              <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-[var(--app-text)]">{briefingError}</div>
+              <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4 text-sm text-[var(--app-text)]">
+                <p className="font-medium text-white">Briefing fallback active</p>
+                <p className="mt-1 text-sm leading-7 text-[var(--app-text-soft)]">{briefingError}</p>
+              </div>
             ) : briefing === null ? (
               <Skeleton className="mt-4 h-40 rounded-2xl" />
             ) : (
               <>
                 <h2 className="mt-4 text-2xl font-bold text-white">
-                  {briefing.data?.summary?.trim() || "No briefing is available yet. Add deadlines or room activity to generate grounded guidance."}
+                  {briefing.data?.summary?.trim() || fallbackBriefing.summary}
                 </h2>
                 <div className="mt-5 space-y-3">
-                  {(briefing.data?.priorities ?? []).slice(0, 3).map((item) => (
+                  {(briefing.data?.priorities?.length ? briefing.data.priorities : fallbackBriefing.priorities).slice(0, 3).map((item) => (
                     <div key={item} className="panel-chip w-full justify-start rounded-2xl px-4 py-3 text-sm text-[var(--app-text-soft)]">
                       {item}
                     </div>
@@ -119,6 +151,15 @@ export default function DashboardRoutePage() {
                         <p key={item} className="text-sm text-[var(--app-text-soft)]">
                           {item}
                         </p>
+                      ))}
+                    </div>
+                  </div>
+                ) : fallbackBriefing.warnings.length > 0 ? (
+                  <div className="mt-5 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4">
+                    <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text)]">Warnings</p>
+                    <div className="mt-2 space-y-2">
+                      {fallbackBriefing.warnings.map((item) => (
+                        <p key={item} className="text-sm text-[var(--app-text-soft)]">{item}</p>
                       ))}
                     </div>
                   </div>

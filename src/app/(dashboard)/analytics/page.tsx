@@ -58,6 +58,16 @@ export default function AnalyticsPage() {
         : [],
     [analytics]
   );
+  const fallbackRiskItems: DeadlineRiskItem[] =
+    analytics?.upcomingDeadlines.map((item) => ({
+      ...item,
+      dueDate: item.dueDate ?? Date.now(),
+      roomName: "Room",
+      band: item.band as DeadlineRiskItem["band"],
+      explanation: "This priority is derived from the live planner snapshot while the AI review is unavailable."
+    })) ?? [];
+  const displayedRiskItems = riskResult?.data?.length ? riskResult.data : fallbackRiskItems;
+  const aiPriorityItem = riskResult?.data?.[0] ?? fallbackRiskItems[0];
 
   return (
     <div className="app-scroll">
@@ -80,15 +90,16 @@ export default function AnalyticsPage() {
                 <Sparkles size={15} />
                 <p className="metric-kicker">AI priority</p>
               </div>
-              {riskError ? (
-                <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-[var(--app-text)]">{riskError}</div>
-              ) : riskResult?.data?.[0] ? (
+              {aiPriorityItem ? (
                 <>
-                  <h2 className="mt-3 text-2xl font-semibold text-white">{riskResult.data[0].title}</h2>
-                  <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">{riskResult.data[0].explanation}</p>
+                  <h2 className="mt-3 text-2xl font-semibold text-white">{aiPriorityItem.title}</h2>
+                  <p className="mt-2 text-sm leading-7 text-[var(--app-text-soft)]">
+                    {riskResult?.data?.[0]?.explanation ??
+                      "This priority is derived from the live planner snapshot when the AI review is not available."}
+                  </p>
                   <div className="mt-4 flex flex-wrap gap-3">
-                    <StatusChip label={`${riskResult.data[0].score}% risk`} tone={riskResult.data[0].band} />
-                    <StatusChip label={riskResult.meta.mode === "openai" ? "Model review" : "Fallback review"} tone="neutral" />
+                    <StatusChip label={`${aiPriorityItem.score}% risk`} tone={aiPriorityItem.band} />
+                    <StatusChip label={riskResult?.meta.mode === "openai" ? "Model review" : "Fallback review"} tone="neutral" />
                   </div>
                 </>
               ) : riskResult ? (
@@ -187,16 +198,14 @@ export default function AnalyticsPage() {
                   </div>
                 </div>
                 <div className="mt-5 space-y-3">
-                  {riskError ? (
-                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-[var(--app-text)]">{riskError}</div>
-                  ) : riskResult === null ? (
+                  {riskResult === null && analytics === undefined ? (
                     Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-24 animate-pulse rounded-2xl bg-white/5" />)
-                  ) : riskResult.data?.length === 0 ? (
+                  ) : displayedRiskItems.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-[var(--app-line)] bg-white/5 p-4 text-sm text-[var(--app-text-muted)]">
                       Not enough deadline signal is available yet.
                     </div>
                   ) : (
-                    riskResult.data?.map((risk) => (
+                    displayedRiskItems.map((risk) => (
                       <div key={risk.postId} className="app-surface-muted rounded-[22px] p-4">
                         <div className="flex items-start justify-between gap-4">
                           <div>
@@ -211,6 +220,11 @@ export default function AnalyticsPage() {
                     ))
                   )}
                 </div>
+                {riskError ? (
+                  <div className="mt-5 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4 text-sm text-[var(--app-text-soft)]">
+                    {riskError}
+                  </div>
+                ) : null}
                 <Link href="/planner" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[var(--app-primary-strong)] transition hover:text-white">
                   <Clock3 size={14} />
                   Open planner

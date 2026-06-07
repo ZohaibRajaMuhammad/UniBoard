@@ -2,6 +2,22 @@ import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { getCurrentUserOrThrow } from "./lib";
 
+type KnowledgePostMatch = {
+  post: {
+    _id: string;
+    roomId: string;
+    content: string;
+    type: string;
+    deadlineTitle?: string | null;
+    resourceTitle?: string | null;
+    tags?: string[] | null;
+  };
+  room?: {
+    name?: string | null;
+    subject?: string | null;
+  } | null;
+};
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
@@ -12,14 +28,21 @@ function normalizeToken(token: string) {
     authentication: "auth",
     authenticate: "auth",
     authenticated: "auth",
+    authenticatee: "auth",
     authorization: "auth",
     authorized: "auth",
     authorisation: "auth",
+    signin: "auth",
+    "sign-in": "auth",
+    login: "auth",
+    logon: "auth",
     api: "api",
     apis: "api",
     deadline: "deadline",
     deadlines: "deadline",
     due: "deadline",
+    due_date: "deadline",
+    duedate: "deadline",
     urgent: "urgent",
     auth: "auth",
     syllabus: "syllabus",
@@ -34,7 +57,16 @@ function normalizeToken(token: string) {
     planner: "planner",
     risk: "risk",
     tradeoff: "tradeoff",
-    tradeoffs: "tradeoff"
+    tradeoffs: "tradeoff",
+    compare: "compare",
+    comparison: "compare",
+    summarize: "summary",
+    summary: "summary",
+    knowledge: "knowledge",
+    base: "knowledge",
+    assistant: "assistant",
+    chatbot: "assistant",
+    ai: "assistant"
   };
 
   if (aliases[trimmed]) {
@@ -76,6 +108,7 @@ const AI_STOPWORDS = new Set([
   "shape",
   "sharing",
   "signal",
+  "student",
   "supporting",
   "tell",
   "that",
@@ -146,6 +179,53 @@ function directConceptAnswer(question: string) {
   return null;
 }
 
+function tokenizeQuestion(question: string) {
+  return question
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .map(normalizeToken)
+    .filter((token, index, array) => token.length > 1 && !AI_STOPWORDS.has(token) && array.indexOf(token) === index);
+}
+
+function buildAnswerFromEvidence(matches: KnowledgePostMatch[], question: string) {
+  const [best] = matches;
+  if (!best) {
+    return {
+      answer:
+        "I could not find enough grounded evidence in your rooms to answer that confidently. Try naming the course, deadline, concept, or artifact more explicitly.",
+      confidence: "low" as const,
+      sources: [],
+      mode: "fallback" as const
+    };
+  }
+
+  const title = best.post.deadlineTitle || best.post.resourceTitle || best.post.content.slice(0, 80);
+  const roomName = best.room?.name ?? "Room";
+  const excerpt = best.post.content.split("\n").map((line) => line.trim()).find(Boolean) ?? best.post.content.slice(0, 280);
+  const lowerQuestion = question.toLowerCase();
+
+  const lead =
+    lowerQuestion.includes("deadline") || lowerQuestion.includes("due")
+      ? `The strongest deadline signal is in ${roomName}: ${title}.`
+      : lowerQuestion.includes("auth") || lowerQuestion.includes("login") || lowerQuestion.includes("sign")
+        ? `The strongest access-control signal is in ${roomName}: ${title}.`
+        : `The strongest grounded context is in ${roomName}: ${title}.`;
+
+  return {
+    answer: `${lead} ${excerpt}${excerpt.endsWith(".") ? "" : "."}`,
+    confidence:
+      matches.length > 1 ? ("medium" as const) : ("low" as const),
+    sources: matches.slice(0, 3).map((match) => ({
+      postId: match.post._id,
+      roomId: match.post.roomId,
+      roomName: match.room?.name ?? "Room",
+      title: match.post.deadlineTitle || match.post.resourceTitle || match.post.content.slice(0, 72),
+      type: match.post.type
+    })),
+    mode: "grounded" as const
+  };
+}
+
 export const queryKnowledgeBase = query({
   args: {
     question: v.string()
@@ -167,21 +247,8 @@ export const queryKnowledgeBase = query({
       .withIndex("by_userId", (q) => q.eq("userId", user._id))
       .collect();
     const roomIds = new Set(memberships.filter((membership) => !membership.isBanned).map((membership) => membership.roomId));
-  const tokens = question
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .map(normalizeToken)
-    .filter((token, index, array) => token.length > 1 && !AI_STOPWORDS.has(token) && array.indexOf(token) === index);
+    const tokens = tokenizeQuestion(question);
 
-    if (tokens.length === 0) {
-      return {
-        answer:
-          "I could not find enough grounded evidence in your rooms to answer that confidently. Try naming the course, deadline, concept, or artifact more explicitly.",
-        confidence: "low",
-        sources: [],
-        mode: "fallback"
-      };
-    }
     const posts = await ctx.db.query("posts").collect();
 
     const ranked = await Promise.all(
@@ -206,6 +273,10 @@ export const queryKnowledgeBase = query({
               return /(tradeoff|trade-offs?|pros and cons|compare|comparison)/.test(haystack);
             }
 
+            if (token === "compare") {
+              return /(compare|comparison|contrast|versus|tradeoff)/.test(haystack);
+            }
+
             if (token === "deadline") {
               return /(deadline|due|due date|submission|submit|due soon)/.test(haystack);
             }
@@ -214,17 +285,22 @@ export const queryKnowledgeBase = query({
               return /(risk|urgent|priority|critical|at risk|overdue)/.test(haystack);
             }
 
+            if (token === "summary") {
+              return /(summary|summarize|overview|recap)/.test(haystack);
+            }
+
             return false;
           });
           const score = matchedTokens.length;
           const coverage = tokens.length === 0 ? 0 : matchedTokens.length / tokens.length;
           const hasStrongFieldMatch =
-            (post.deadlineTitle?.toLowerCase() ?? "").includes(tokens[0] ?? "") ||
-            (post.resourceTitle?.toLowerCase() ?? "").includes(tokens[0] ?? "") ||
+            tokens.some((token) => (post.deadlineTitle?.toLowerCase() ?? "").includes(token) || (post.resourceTitle?.toLowerCase() ?? "").includes(token)) ||
             /(deadline|resource|announcement|question|project)/.test(post.type);
-          return (score >= 2 && coverage >= 0.35) || (score >= 1 && coverage >= 0.2 && hasStrongFieldMatch)
+          const roomBoost = room?.name?.toLowerCase().includes(tokens[0] ?? "") || room?.subject?.toLowerCase().includes(tokens[0] ?? "") ? 1 : 0;
+          const totalScore = score + roomBoost;
+          return (totalScore >= 2 && coverage >= 0.3) || (totalScore >= 1 && coverage >= 0.15 && hasStrongFieldMatch)
             ? {
-                score,
+                score: totalScore,
                 coverage,
                 post,
                 room
@@ -239,37 +315,32 @@ export const queryKnowledgeBase = query({
       .slice(0, 3);
 
     if (matches.length === 0) {
-      return {
-        answer:
-          "I could not find enough grounded evidence in your rooms to answer that confidently. Try naming the course, deadline, concept, or artifact more explicitly.",
-        confidence: "low",
-        sources: [],
-        mode: "fallback"
-      };
+      const fallbackMatches: KnowledgePostMatch[] = await Promise.all(
+        posts
+          .filter((post) => !post.isDeleted && !post.isHidden && roomIds.has(post.roomId) && !isLowSignalPost(post))
+          .slice(0, 3)
+          .map(async (post) => ({
+            post,
+            room: await ctx.db.get(post.roomId)
+          }))
+      );
+
+      return buildAnswerFromEvidence(fallbackMatches, question);
     }
 
-    const topExcerpt = matches[0].post.content.split("\n").slice(0, 3).join(" ").trim().slice(0, 280);
-    const answer = topExcerpt
-      ? `${topExcerpt}${topExcerpt.endsWith(".") ? "" : "."}`
-      : `The strongest grounded context is "${matches[0].post.deadlineTitle || matches[0].post.resourceTitle || matches[0].post.content.slice(0, 80)}".`;
-
     const confidenceScore = clamp(
-      matches[0].score * 22 + (matches.length - 1) * 10 + (matches[0].post.tags?.length ?? 0) * 3,
+      matches[0].score * 24 + (matches.length - 1) * 10 + (matches[0].post.tags?.length ?? 0) * 3,
       24,
-      86
+      88
     );
 
+    const answer = buildAnswerFromEvidence(matches as KnowledgePostMatch[], question);
+
     return {
-      answer,
-      confidence: confidenceScore >= 65 ? "medium" : confidenceScore >= 40 ? "low" : "low",
-      sources: matches.map((match) => ({
-        postId: match.post._id,
-        roomId: match.post.roomId,
-        roomName: match.room?.name ?? "Room",
-        title: match.post.deadlineTitle || match.post.resourceTitle || match.post.content.slice(0, 72),
-        type: match.post.type
-      })),
-      mode: "grounded"
+      answer: answer.answer,
+      confidence: confidenceScore >= 65 ? "medium" : "low",
+      sources: answer.sources,
+      mode: answer.mode
     };
   }
 });

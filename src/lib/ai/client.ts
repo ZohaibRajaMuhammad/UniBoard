@@ -3,6 +3,7 @@ import type { AiEnvelope } from "@/lib/ai/contracts";
 export async function getAi<T>(path: string, init?: Pick<RequestInit, "signal">) {
   const response = await fetch(path, {
     method: "GET",
+    credentials: "include",
     headers: {
       Accept: "application/json"
     },
@@ -21,6 +22,7 @@ export async function getAi<T>(path: string, init?: Pick<RequestInit, "signal">)
 export async function postAi<T>(path: string, body: Record<string, unknown>) {
   const response = await fetch(path, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json"

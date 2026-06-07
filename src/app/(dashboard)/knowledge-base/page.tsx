@@ -162,9 +162,13 @@ export default function KnowledgeBasePage() {
                   <div className="h-32 animate-pulse rounded-[20px] bg-white/5" />
                 ) : (
                   <div className="space-y-4">
-                    {result?.data?.abstained || (result?.data?.sources.length ?? 0) === 0 ? (
+                    {(result?.data?.sources.length ?? 0) === 0 ? (
                       <div className="rounded-[20px] border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-[var(--app-text-soft)]">
                         No strong grounded room evidence was found for this question. Refine the room name, concept, deadline, or artifact before trusting an answer.
+                      </div>
+                    ) : result?.data?.abstained ? (
+                      <div className="rounded-[20px] border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-[var(--app-text-soft)]">
+                        The answer is cautious, but it still points to visible room evidence below. Review the sources before using it as a final decision.
                       </div>
                     ) : null}
                     <p className="whitespace-pre-wrap text-sm leading-8 text-[var(--app-text-soft)]">{result?.data?.answer}</p>
@@ -205,15 +209,17 @@ export default function KnowledgeBasePage() {
                 </div>
 
                 <div className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">System behavior</p>
-                  <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">
-                    {result?.data?.abstained
-                      ? "The model abstained because accessible evidence was too weak or too narrow for a reliable answer."
+                <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">System behavior</p>
+                <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">
+                  {(result?.data?.sources.length ?? 0) === 0
+                    ? "The system could not find enough visible room evidence yet. Add a clearer room, deadline, concept, or artifact to improve grounding."
+                    : result?.data?.abstained
+                      ? "The response stayed cautious, but the system still returned the strongest visible evidence it could find."
                       : "The response is optimized to stay concise, professional, and grounded in authorized room knowledge."}
-                  </p>
-                </div>
-              </aside>
-            </div>
+                </p>
+              </div>
+            </aside>
+          </div>
 
             {result?.data?.sources.length ? (
               <div className="mt-5">

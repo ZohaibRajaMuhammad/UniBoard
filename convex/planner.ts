@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getCurrentUserOrThrow } from "./lib";
+import { getCurrentUser, getCurrentUserOrThrow } from "./lib";
 
 type PlannerItem = {
   id: string;
@@ -38,7 +38,20 @@ function clamp(value: number, min: number, max: number) {
 }
 
 async function buildPlannerSnapshot(ctx: any) {
-  const user = await getCurrentUserOrThrow(ctx);
+  const user = await getCurrentUser(ctx);
+  if (!user) {
+    return {
+      generatedAt: Date.now(),
+      metrics: {
+        totalDeadlines: 0,
+        dueSoonCount: 0,
+        highRiskCount: 0,
+        plannedHours: 0
+      },
+      items: [],
+      sessions: []
+    };
+  }
   const now = Date.now();
   const memberships = await ctx.db
     .query("roomMembers")

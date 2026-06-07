@@ -82,7 +82,15 @@ export const getWorkspaceAnalytics = query({
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
     if (!user) {
-      throw new Error("Unauthenticated");
+      return {
+        totalPosts: 0,
+        activeRooms: 0,
+        last28Days: [],
+        byType: {},
+        anonymousPosts: 0,
+        resolvedQuestions: 0,
+        upcomingDeadlines: []
+      };
     }
 
     const memberships = await ctx.db

@@ -168,7 +168,7 @@ export function AiAssistant() {
         >
           <motion.section
             id="ai-assistant-panel"
-            className="glass-panel flex h-[min(82dvh,44rem)] w-full max-w-[24rem] flex-col overflow-hidden rounded-[30px] border-[var(--app-line-strong)] shadow-[0_28px_80px_rgba(7,14,28,0.32)] md:h-[38rem]"
+            className="glass-panel flex h-[min(82dvh,44rem)] w-full max-w-[24rem] flex-col overflow-hidden rounded-[30px] border-[var(--app-line-strong)] shadow-[0_28px_80px_rgba(7,14,28,0.32)] md:h-[40rem] xl:max-w-[32rem]"
             initial={{ opacity: 0, y: 18, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 14, scale: 0.97 }}
