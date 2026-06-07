@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { AlertTriangle, ArrowUpRight, BarChart3, Clock3, Sparkles, TrendingUp } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
+import { useClerkAuthReady } from "@/hooks/useClerkAuthReady";
 import { getAi } from "@/lib/ai/client";
 import type { AiEnvelope, DeadlineRiskItem } from "@/lib/ai/contracts";
 import { formatDeadline } from "@/lib/utils";
@@ -15,8 +16,13 @@ export default function AnalyticsPage() {
   const analytics = useQuery(api.analytics.getWorkspaceAnalytics);
   const [riskResult, setRiskResult] = useState<AiEnvelope<DeadlineRiskItem[]> | null>(null);
   const [riskError, setRiskError] = useState("");
+  const { isReady: aiReady } = useClerkAuthReady();
 
   useEffect(() => {
+    if (!aiReady) {
+      return;
+    }
+
     let cancelled = false;
 
     void getAi<DeadlineRiskItem[]>("/api/v1/ai/deadline-risk")
@@ -35,7 +41,7 @@ export default function AnalyticsPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [aiReady]);
 
   const totalTypeCount = useMemo(() => {
     if (!analytics) {
@@ -68,6 +74,7 @@ export default function AnalyticsPage() {
     })) ?? [];
   const displayedRiskItems = riskResult?.data?.length ? riskResult.data : fallbackRiskItems;
   const aiPriorityItem = riskResult?.data?.[0] ?? fallbackRiskItems[0];
+  const reviewTone = riskResult?.meta.mode === "openai" ? "Model review" : "Fallback review";
 
   return (
     <div className="app-scroll">
@@ -99,7 +106,7 @@ export default function AnalyticsPage() {
                   </p>
                   <div className="mt-4 flex flex-wrap gap-3">
                     <StatusChip label={`${aiPriorityItem.score}% risk`} tone={aiPriorityItem.band} />
-                    <StatusChip label={riskResult?.meta.mode === "openai" ? "Model review" : "Fallback review"} tone="neutral" />
+                    <StatusChip label={reviewTone} tone="neutral" />
                   </div>
                 </>
               ) : riskResult ? (
@@ -107,7 +114,9 @@ export default function AnalyticsPage() {
                   No urgent deadline signal is available yet. Add deadlines in the planner or join more active rooms to populate AI risk insights.
                 </div>
               ) : (
-                <div className="mt-4 h-28 animate-pulse rounded-2xl bg-white/5" />
+                <div className="mt-4 rounded-2xl border border-dashed border-[var(--app-line)] bg-white/5 p-4 text-sm leading-7 text-[var(--app-text-soft)]">
+                  No urgent deadline signal is available yet. Add deadlines in the planner or join more active rooms to populate this panel.
+                </div>
               )}
             </div>
           </div>

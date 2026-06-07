@@ -188,18 +188,23 @@ export default defineSchema({
 
   assignmentSubmissions: defineTable({
     roomId: v.id("rooms"),
+    assignmentPostId: v.optional(v.id("posts")),
     submittedByUserId: v.id("users"),
     reviewerUserId: v.id("users"),
     title: v.string(),
     content: v.string(),
     attachmentUrl: v.optional(v.string()),
+    attachmentName: v.optional(v.string()),
+    attachmentType: v.optional(v.string()),
+    attachmentSize: v.optional(v.number()),
     status: v.union(v.literal("submitted"), v.literal("reviewed"), v.literal("returned")),
     createdAt: v.number(),
     updatedAt: v.number()
   })
     .index("by_roomId_createdAt", ["roomId", "createdAt"])
     .index("by_roomId_submittedByUserId", ["roomId", "submittedByUserId"])
-    .index("by_reviewerUserId_createdAt", ["reviewerUserId", "createdAt"]),
+    .index("by_reviewerUserId_createdAt", ["reviewerUserId", "createdAt"])
+    .index("by_roomId_assignmentPostId_createdAt", ["roomId", "assignmentPostId", "createdAt"]),
 
   votes: defineTable({
     targetId: v.optional(v.string()),

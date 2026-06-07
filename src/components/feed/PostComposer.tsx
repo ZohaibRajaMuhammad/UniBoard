@@ -7,6 +7,7 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { useNotifier } from "@/components/providers/NotificationProvider";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useClerkAuthReady } from "@/hooks/useClerkAuthReady";
 import { POST_TYPE_CONFIG, POST_TYPES, ROOM_MENTION_AI } from "@/lib/constants";
 import { postAi } from "@/lib/ai/client";
 import type { AssistantReply, ComposerSuggestion } from "@/lib/ai/contracts";
@@ -23,6 +24,7 @@ const postTypes = POST_TYPES.map((type) => ({
 export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onSubmitted?: () => void }) {
   const { notify } = useNotifier();
   const user = useCurrentUser();
+  const { isReady: aiReady } = useClerkAuthReady();
   const room = useQuery(api.rooms.getById, { roomId });
   const members = useQuery(api.rooms.getMembers, { roomId });
   const createPost = useMutation(api.posts.create);
@@ -156,51 +158,64 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
           "I could not answer that mention reliably right now. Try again with one direct question and a clearer room-specific concept, artifact, or deadline.",
           ["Ask with a single @UniBoardAI mention and name the exact topic you want explained."]
         );
-        void postAi<AssistantReply>("/api/v1/ai/assistant", {
-          message: buildAssistantPrompt(finalContent, {
-            postType,
-            postTitle: deadlineTitle || resourceTitle || null,
-            postContent: finalContent
-          }),
-          roomId
-        })
-          .then((payload) =>
-            createAiReply({
-              postId,
-              content: formatAssistantComment(payload.data?.reply ?? "I could not ground a reliable answer for that mention.", payload.data?.suggestions)
-            })
-          )
-          .then(() => {
-            notify({
-              title: "AI mention answered",
-              message: "UniBoard AI replied inside the discussion thread.",
-              tone: "ai",
-              tag: "post-ai-reply"
-            });
+        if (!aiReady) {
+          await createAiReply({
+            postId,
+            content: mentionFailureComment
+          });
+          notify({
+            title: "AI mention deferred",
+            message: "Sign in fully to unlock grounded AI replies. A fallback reply was added instead.",
+            tone: "warning",
+            tag: "post-ai-reply-deferred"
+          });
+        } else {
+          void postAi<AssistantReply>("/api/v1/ai/assistant", {
+            message: buildAssistantPrompt(finalContent, {
+              postType,
+              postTitle: deadlineTitle || resourceTitle || null,
+              postContent: finalContent
+            }),
+            roomId
           })
-          .catch(() =>
-            createAiReply({
-              postId,
-              content: mentionFailureComment
+            .then((payload) =>
+              createAiReply({
+                postId,
+                content: formatAssistantComment(payload.data?.reply ?? "I could not ground a reliable answer for that mention.", payload.data?.suggestions)
+              })
+            )
+            .then(() => {
+              notify({
+                title: "AI mention answered",
+                message: "UniBoard AI replied inside the discussion thread.",
+                tone: "ai",
+                tag: "post-ai-reply"
+              });
             })
-              .then(() => {
-                notify({
-                  title: "AI mention needs refinement",
-                  message: "UniBoard AI could not fully answer, so it left a fallback reply instead of failing silently.",
-                  tone: "warning",
-                  tag: "post-ai-reply-fallback"
-                });
+            .catch(() =>
+              createAiReply({
+                postId,
+                content: mentionFailureComment
               })
-              .catch(() => {
-                notify({
-                  title: "AI mention failed",
-                  message: "UniBoard AI did not reply to that mention. Try one direct @UniBoardAI question with the exact concept or room topic.",
-                  tone: "error",
-                  priority: "high",
-                  tag: "post-ai-reply-error"
-                });
-              })
-          );
+                .then(() => {
+                  notify({
+                    title: "AI mention needs refinement",
+                    message: "UniBoard AI could not fully answer, so it left a fallback reply instead of failing silently.",
+                    tone: "warning",
+                    tag: "post-ai-reply-fallback"
+                  });
+                })
+                .catch(() => {
+                  notify({
+                    title: "AI mention failed",
+                    message: "UniBoard AI did not reply to that mention. Try one direct @UniBoardAI question with the exact concept or room topic.",
+                    tone: "error",
+                    priority: "high",
+                    tag: "post-ai-reply-error"
+                  });
+                })
+            );
+        }
       }
 
       setContent("");
@@ -236,6 +251,17 @@ export function PostComposer({ roomId, onSubmitted }: { roomId: Id<"rooms">; onS
 
   async function handleAiDraft() {
     if (isAiDrafting || isRoomArchived || !(room?.aiEnabled ?? false)) {
+      return;
+    }
+
+    if (!aiReady) {
+      setAiDraftStatus("Sign in fully before using AI drafting.");
+      notify({
+        title: "AI drafting unavailable",
+        message: "The signed-in session is still loading.",
+        tone: "warning",
+        tag: "post-ai-draft-deferred"
+      });
       return;
     }
 

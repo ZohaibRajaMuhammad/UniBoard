@@ -7,6 +7,7 @@ import { api } from "../../../../convex/_generated/api";
 import type { Doc, Id } from "../../../../convex/_generated/dataModel";
 import { useNotifier } from "@/components/providers/NotificationProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useClerkAuthReady } from "@/hooks/useClerkAuthReady";
 import { getAi } from "@/lib/ai/client";
 import type { AiEnvelope, StudyPlan } from "@/lib/ai/contracts";
 import { buildPlannerDoc, buildPlannerWorkbook, downloadBlob } from "@/lib/planner-export";
@@ -21,6 +22,7 @@ export default function PlannerPage() {
   const createManualDeadline = useMutation(api.planner.createManualDeadline);
   const replan = useMutation(api.planner.replan);
   const exportCalendar = useMutation(api.planner.exportCalendar);
+  const { isReady: aiReady } = useClerkAuthReady();
   const [calendarView, setCalendarView] = useState<CalendarView>("month");
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,6 +48,10 @@ export default function PlannerPage() {
   }, [calendarView]);
 
   useEffect(() => {
+    if (!aiReady) {
+      return;
+    }
+
     let cancelled = false;
     void getAi<StudyPlan>("/api/v1/ai/study-plan")
       .then((payload) => {
@@ -80,7 +86,7 @@ export default function PlannerPage() {
     return () => {
       cancelled = true;
     };
-  }, [notify, planner?.generatedAt]);
+  }, [aiReady, notify, planner?.generatedAt]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();

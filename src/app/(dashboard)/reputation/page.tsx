@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { Award, Flame, Gauge, Sparkles, TrendingUp, Trophy } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
+import { useClerkAuthReady } from "@/hooks/useClerkAuthReady";
 import { getAi } from "@/lib/ai/client";
 import type { AiEnvelope, LearningProfile } from "@/lib/ai/contracts";
 
@@ -23,6 +24,7 @@ export default function ReputationPage() {
   const leaderboard = useQuery(api.reputation.getLeaderboard);
   const [profile, setProfile] = useState<AiEnvelope<LearningProfile> | null>(null);
   const [profileError, setProfileError] = useState("");
+  const { isReady: aiReady } = useClerkAuthReady();
 
   const expertise = useMemo(
     () => (profile?.data?.expertise ?? me?.expertise ?? []) as Array<{ topic: string; score: number; confidence: string; evidence?: string }>,
@@ -30,6 +32,10 @@ export default function ReputationPage() {
   );
 
   useEffect(() => {
+    if (!aiReady) {
+      return;
+    }
+
     let cancelled = false;
     void getAi<LearningProfile>("/api/v1/ai/learning-profile")
       .then((payload) => {
@@ -46,7 +52,7 @@ export default function ReputationPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [aiReady]);
 
   return (
     <div className="app-scroll">

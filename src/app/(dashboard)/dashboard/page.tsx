@@ -8,6 +8,7 @@ import { api } from "../../../../convex/_generated/api";
 import { DeadlineWidget } from "@/components/feed/DeadlineWidget";
 import { RoomCard } from "@/components/rooms/RoomCard";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useClerkAuthReady } from "@/hooks/useClerkAuthReady";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useTimedLoadState } from "@/hooks/useTimedLoadState";
 import { getAi } from "@/lib/ai/client";
@@ -47,13 +48,19 @@ export default function DashboardRoutePage() {
   const deadlines = useQuery(api.posts.getUpcomingDeadlines, {});
   const roomsLoadState = useTimedLoadState(rooms);
   const deadlinesLoadState = useTimedLoadState(deadlines);
+  const { isReady: aiReady } = useClerkAuthReady();
   const roomList = (rooms as Room[] | undefined) ?? [];
   const deadlineList = (deadlines as Post[] | undefined) ?? [];
   const fallbackBriefing = buildDashboardFallbackBriefing(roomList, deadlineList);
   const [briefing, setBriefing] = useState<AiEnvelope<AiBriefing> | null>(null);
   const [briefingError, setBriefingError] = useState("");
+  const displayedBriefing = briefing?.data ?? fallbackBriefing;
 
   useEffect(() => {
+    if (!aiReady) {
+      return;
+    }
+
     let cancelled = false;
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 2000);
@@ -85,7 +92,7 @@ export default function DashboardRoutePage() {
       controller.abort();
       window.clearTimeout(timeout);
     };
-  }, []);
+  }, [aiReady]);
 
   return (
     <div className="app-scroll">
@@ -129,25 +136,23 @@ export default function DashboardRoutePage() {
                 <p className="font-medium text-white">Briefing fallback active</p>
                 <p className="mt-1 text-sm leading-7 text-[var(--app-text-soft)]">{briefingError}</p>
               </div>
-            ) : briefing === null ? (
-              <Skeleton className="mt-4 h-40 rounded-2xl" />
             ) : (
               <>
                 <h2 className="mt-4 text-2xl font-bold text-white">
-                  {briefing.data?.summary?.trim() || fallbackBriefing.summary}
+                  {displayedBriefing.summary?.trim() || fallbackBriefing.summary}
                 </h2>
                 <div className="mt-5 space-y-3">
-                  {(briefing.data?.priorities?.length ? briefing.data.priorities : fallbackBriefing.priorities).slice(0, 3).map((item) => (
+                  {(displayedBriefing.priorities?.length ? displayedBriefing.priorities : fallbackBriefing.priorities).slice(0, 3).map((item) => (
                     <div key={item} className="panel-chip w-full justify-start rounded-2xl px-4 py-3 text-sm text-[var(--app-text-soft)]">
                       {item}
                     </div>
                   ))}
                 </div>
-                {(briefing.data?.warnings?.length ?? 0) > 0 ? (
+                {(displayedBriefing.warnings?.length ?? 0) > 0 ? (
                   <div className="mt-5 rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4">
                     <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text)]">Warnings</p>
                     <div className="mt-2 space-y-2">
-                      {briefing.data?.warnings.map((item) => (
+                      {displayedBriefing.warnings.map((item) => (
                         <p key={item} className="text-sm text-[var(--app-text-soft)]">
                           {item}
                         </p>

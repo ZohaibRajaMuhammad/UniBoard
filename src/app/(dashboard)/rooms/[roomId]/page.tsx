@@ -31,6 +31,7 @@ import { RoomHeader } from "@/components/rooms/RoomHeader";
 import { ThemeToggle } from "@/components/system/ThemeToggle";
 import { TeacherPanel } from "@/components/teacher/TeacherPanel";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useClerkAuthReady } from "@/hooks/useClerkAuthReady";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { postAi } from "@/lib/ai/client";
 import type { AiEnvelope, RoomSummary } from "@/lib/ai/contracts";
@@ -61,6 +62,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   const highlightedPostId = searchParams.get("post") as Id<"posts"> | null;
   const [summary, setSummary] = useState<AiEnvelope<RoomSummary> | null>(null);
   const [summaryError, setSummaryError] = useState("");
+  const { isReady: aiReady } = useClerkAuthReady();
   const summaryRefreshKey = useMemo(
     () => (posts ?? []).slice(0, 12).map((post) => `${post._id}:${post.createdAt}:${post.commentCount ?? 0}`).join("|"),
     [posts]
@@ -88,7 +90,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   }, [highlightedPostId, posts]);
 
   useEffect(() => {
-    if (!room?.aiEnabled) {
+    if (!aiReady || !room?.aiEnabled) {
       setSummary(null);
       setSummaryError("");
       return;
@@ -129,7 +131,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
     return () => {
       cancelled = true;
     };
-  }, [notify, room?.aiEnabled, roomId, summaryRefreshKey]);
+  }, [aiReady, notify, room?.aiEnabled, roomId, summaryRefreshKey]);
 
   const roomStats = useMemo(() => {
     if (!room) {

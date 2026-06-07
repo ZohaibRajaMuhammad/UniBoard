@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { BookOpen, Compass, LibraryBig, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { useClerkAuthReady } from "@/hooks/useClerkAuthReady";
 import { postAi } from "@/lib/ai/client";
 import type { AiEnvelope, KnowledgeAnswer } from "@/lib/ai/contracts";
 import { cn } from "@/lib/utils";
@@ -20,8 +21,14 @@ export default function KnowledgeBasePage() {
   const [result, setResult] = useState<AiEnvelope<KnowledgeAnswer> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const { isReady: aiReady } = useClerkAuthReady();
 
   async function runQuestion(question: string) {
+    if (!aiReady) {
+      setError("Sign in fully before asking the knowledge base.");
+      return;
+    }
+
     setIsLoading(true);
     setError("");
     setSubmittedQuestion(question);
@@ -67,6 +74,7 @@ export default function KnowledgeBasePage() {
                     value={draftQuestion}
                     onChange={(event) => setDraftQuestion(event.target.value)}
                     placeholder="Ask about an assignment, concept, room decision, or resource..."
+                    disabled={!aiReady}
                     className="w-full bg-transparent text-sm text-white outline-none placeholder:text-[var(--app-text-muted)]"
                   />
                 </div>
@@ -76,9 +84,14 @@ export default function KnowledgeBasePage() {
                       key={prompt}
                       type="button"
                       onClick={() => {
+                        if (!aiReady) {
+                          setError("Sign in fully before asking the knowledge base.");
+                          return;
+                        }
                         setDraftQuestion(prompt);
                         void runQuestion(prompt);
                       }}
+                      disabled={!aiReady}
                       className="panel-chip rounded-2xl px-4 py-2 text-sm"
                     >
                       <Sparkles size={12} />
@@ -116,6 +129,11 @@ export default function KnowledgeBasePage() {
                   <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">Each answer should make the next action obvious: inspect, refine, or jump into the room thread.</p>
                 </div>
               </div>
+              {!aiReady ? (
+                <div className="rounded-[24px] border border-[var(--app-line)] bg-white/5 p-4 text-sm leading-7 text-[var(--app-text-soft)]">
+                  Sign in fully before using the knowledge base so the system can attach requests to your workspace identity.
+                </div>
+              ) : null}
             </div>
           </div>
         </section>
