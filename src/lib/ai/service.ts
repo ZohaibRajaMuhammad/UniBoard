@@ -858,11 +858,39 @@ export async function getKnowledgeAnswer(question: string) {
           }))
         };
       } catch {
-        const inferredAnswer = isUrgentDeadlineQuestion(question)
-          ? "I could not load the live workspace snapshot right now, but the safest next step is to open Planner and review the nearest deadline directly."
-          : "I could not load the live workspace snapshot right now, so I cannot ground this answer confidently.";
+        if (isUrgentDeadlineQuestion(question)) {
+          try {
+            const planner = await fetchQuery(api.planner.getSnapshot, {}, token ? { token } : undefined);
+            const top = planner.items[0];
+
+            if (top) {
+              return {
+                answer: `The closest upcoming deadline is ${top.title}${top.roomName ? ` in ${top.roomName}` : ""}. It is due ${new Date(top.dueDate).toLocaleString()} and is currently rated at ${top.riskScore}% risk.`,
+                confidenceBand: "medium",
+                followUp: "Open Planner if you want the full study sequence around this deadline.",
+                abstained: false,
+                sources: top.roomId
+                  ? [
+                      {
+                        postId: top.id,
+                        roomId: top.roomId,
+                        roomName: top.roomName ?? "Room",
+                        title: top.title,
+                        type: "deadline",
+                        quote: top.title
+                      }
+                    ]
+                  : []
+              };
+            }
+          } catch {
+            // fall through to the generic response below
+          }
+        }
+
         return {
-          answer: inferredAnswer,
+          answer:
+            "I could not ground this answer from the live workspace right now. Try naming a specific room, deadline, concept, or artifact.",
           confidenceBand: "low",
           followUp: buildKnowledgeFollowUp(knowledgeIntent),
           abstained: true,
