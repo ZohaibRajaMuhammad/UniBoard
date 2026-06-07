@@ -18,7 +18,7 @@ export async function POST(request: Request) {
       const detail = handled.body.error?.message ?? "AI service unavailable.";
       const fallback: AiEnvelope<AssistantReply> = {
         data: {
-          reply: `UniBoard AI could not complete this request. ${detail}`,
+          reply: detail,
           confidenceBand: "low",
           suggestions: [
             "Open Planner to check upcoming deadlines.",

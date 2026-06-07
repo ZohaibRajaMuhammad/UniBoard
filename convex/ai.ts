@@ -191,6 +191,19 @@ function isDeadlineQuestion(question: string) {
   );
 }
 
+function tokenizeQuestionTerms(question: string) {
+  return question
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .map((term) => term.trim())
+    .filter((term) => term.length > 2);
+}
+
+function roomMatchesQuestion(room: { name?: string | null; subject?: string | null }, questionTerms: string[]) {
+  const haystack = `${room.name ?? ""} ${room.subject ?? ""}`.toLowerCase();
+  return questionTerms.some((term) => haystack.includes(term));
+}
+
 function tokenizeQuestion(question: string) {
   return question
     .toLowerCase()
@@ -299,6 +312,22 @@ export const queryKnowledgeBase = query({
     }
 
     if (isDeadlineQuestion(question)) {
+      const visibleRooms = user
+        ? await Promise.all(
+            (
+              await ctx.db
+                .query("roomMembers")
+                .withIndex("by_userId", (q) => q.eq("userId", user._id))
+                .collect()
+            )
+              .filter((membership) => !membership.isBanned)
+              .map((membership) => ctx.db.get(membership.roomId))
+          )
+        : await ctx.db.query("rooms").collect();
+      const existingRooms = visibleRooms.filter((room): room is NonNullable<typeof room> => room !== null && !room.isArchived && (user ? true : room.isPublic));
+      const questionTerms = tokenizeQuestionTerms(question);
+      const scopedRooms = existingRooms.filter((room) => roomMatchesQuestion(room, questionTerms));
+      const deadlineRoomIds = new Set((scopedRooms.length > 0 ? scopedRooms : existingRooms).map((room) => room._id));
       const roomDeadlines = await ctx.db
         .query("posts")
         .withIndex("by_type", (q) => q.eq("type", "deadline"))
@@ -306,7 +335,7 @@ export const queryKnowledgeBase = query({
       const manualDeadlines = await ctx.db.query("plannerDeadlines").collect();
       const items = [
         ...roomDeadlines
-          .filter((post) => !post.isDeleted && !post.isHidden && post.deadlineDate && post.deadlineDate > Date.now())
+          .filter((post) => !post.isDeleted && !post.isHidden && post.deadlineDate && post.deadlineDate > Date.now() && deadlineRoomIds.has(post.roomId))
           .map((post) => ({
             id: post._id,
             roomId: post.roomId,
@@ -316,7 +345,7 @@ export const queryKnowledgeBase = query({
             riskScore: 60
           })),
         ...manualDeadlines
-          .filter((item) => !item.completed && item.dueDate > Date.now())
+          .filter((item) => !item.completed && item.dueDate > Date.now() && (!item.roomId || deadlineRoomIds.has(item.roomId)))
           .map((item) => ({
             id: item._id,
             roomId: item.roomId,

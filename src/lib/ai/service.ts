@@ -886,11 +886,67 @@ export async function getKnowledgeAnswer(question: string) {
           } catch {
             // fall through to the generic response below
           }
+
+          try {
+            const accessibleRooms = token
+              ? await fetchQuery(api.rooms.getMyRooms, {}, { token })
+              : await fetchQuery(api.rooms.getPublicRooms, {});
+            const questionTerms = question
+              .toLowerCase()
+              .split(/[^a-z0-9]+/)
+              .map((term) => term.trim())
+              .filter((term) => term.length > 2);
+            const matchedRooms = accessibleRooms.filter((room) =>
+              questionTerms.some((term) => `${room.name} ${room.subject}`.toLowerCase().includes(term))
+            );
+            const roomsToCheck = matchedRooms.length > 0 ? matchedRooms : accessibleRooms;
+
+            const roomDeadlineCandidates = await Promise.all(
+              roomsToCheck.slice(0, 6).map(async (room) => ({
+                room,
+                posts: await fetchQuery(api.posts.getByRoom, { roomId: room._id, limit: 60 }, token ? { token } : undefined)
+              }))
+            );
+
+            const deadlinePosts = roomDeadlineCandidates.flatMap(({ room, posts }) =>
+              posts
+                .filter((post) => post.type === "deadline" && !post.isDeleted && !post.isHidden && post.deadlineDate && post.deadlineDate > Date.now())
+                .map((post) => ({
+                  id: post._id,
+                  roomId: post.roomId,
+                  roomName: room.name,
+                  title: post.deadlineTitle || post.content.slice(0, 72),
+                  dueDate: post.deadlineDate!,
+                  riskScore: 60
+                }))
+            );
+
+            const topDeadline = deadlinePosts.sort((left, right) => left.dueDate - right.dueDate)[0];
+            if (topDeadline) {
+              return {
+                answer: `The closest upcoming deadline is ${topDeadline.title}${topDeadline.roomName ? ` in ${topDeadline.roomName}` : ""}. It is due ${new Date(topDeadline.dueDate).toLocaleString()} and is currently rated at ${topDeadline.riskScore}% risk.`,
+                confidenceBand: "medium",
+                followUp: "Open Planner if you want the full study sequence around this deadline.",
+                abstained: false,
+                sources: [
+                  {
+                    postId: topDeadline.id,
+                    roomId: topDeadline.roomId ?? "",
+                    roomName: topDeadline.roomName ?? "Room",
+                    title: topDeadline.title,
+                    type: "deadline",
+                    quote: topDeadline.title
+                  }
+                ]
+              };
+            }
+          } catch {
+            // fall through to the generic response below
+          }
         }
 
         return {
-          answer:
-            "I could not ground this answer from the live workspace right now. Try naming a specific room, deadline, concept, or artifact.",
+          answer: "I could not ground this answer from the live workspace right now.",
           confidenceBand: "low",
           followUp: buildKnowledgeFollowUp(knowledgeIntent),
           abstained: true,
