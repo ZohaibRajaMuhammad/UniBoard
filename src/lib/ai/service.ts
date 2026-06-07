@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { fetchQuery } from "convex/nextjs";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
@@ -181,7 +182,23 @@ function buildMeta(route: string, requestId: string, latencyMs: number, mode: "o
 }
 
 async function getConvexToken() {
-  return { userId: null as string | null, token: null as string | null };
+  try {
+    const authState = await auth();
+    if (!authState.userId) {
+      return { userId: null as string | null, token: null as string | null };
+    }
+
+    const token =
+      (await authState.getToken({ template: "convex" }).catch(() => null)) ??
+      (await authState.getToken().catch(() => null));
+
+    return {
+      userId: authState.userId,
+      token: token ?? null
+    };
+  } catch {
+    return { userId: null as string | null, token: null as string | null };
+  }
 }
 
 function getClient() {
