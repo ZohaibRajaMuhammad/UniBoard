@@ -11,6 +11,8 @@ This folder contains the presentation source and the two spoken scripts built fr
 ## How to use
 
 1. Read the master document first.
-2. Use script part 1 for the first half of the live demo.
-3. Use script part 2 for the rest of the system.
-4. Keep the wording grounded in the exact product behavior described here.
+2. Put the `Project Details` section on the first PPT slide.
+3. Use the `Project Summary` section for the opening slide narration.
+4. Use script part 1 for the first half of the live demo.
+5. Use script part 2 for the rest of the system.
+6. Keep the wording grounded in the exact product behavior described here.

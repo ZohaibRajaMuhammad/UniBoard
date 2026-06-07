@@ -5,6 +5,14 @@ This document is the single source of truth for the UniBoard presentation. It is
 1. As a command-line reference when you need to generate slides or speaker notes.
 2. As a notebook-friendly source for an LLM that is producing a spoken presentation script.
 
+## Project Details
+
+- Course Instructor: Miss Sumera Syed
+- Subject: AICT (Advanced Information and Communication Technology)
+- Project Title: UniBoard - AI-Powered Academic Collaboration Platform
+- Project Creators: Raja Muhammad Zohaib, Abdullah Pervaiz
+- Version: 1.0
+
 ## Project Summary
 
 UniBoard is an AI-powered academic collaboration platform for students, teachers, and super admins.
@@ -239,6 +247,9 @@ Suggested workflow:
 - read this master file
 - extract the relevant section for the required audience
 - generate a speaker script or slide outline from that section
+- copy the generated outline into PowerPoint slide titles and speaker notes
+- keep each slide aligned to one section from this document
+- use the exact project details above on the title slide or opening slide
 
 ### Notebook LLM mode
 
@@ -248,6 +259,17 @@ Suggested workflow:
 - paste one section at a time
 - ask the model to expand it into spoken lines
 - keep the output grounded in the exact features documented here
+- turn the expanded text into PPT speaker notes or a presentation script
+- keep the order of slides consistent with the sections in this file
+
+### PowerPoint usage instruction
+
+For PPT creation, use this document in the following order:
+1. Start the deck with the Project Details section.
+2. Use the Project Summary section for the opening explanation.
+3. Follow the screen sections in the same order they appear here.
+4. Use the spoken lines as speaker notes.
+5. Use the short demo notes for a cleaner live presentation.
 
 ## Closing Summary
 
