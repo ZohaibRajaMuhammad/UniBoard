@@ -21,13 +21,20 @@ export const getByRoom = query({
   },
   handler: async (ctx, args) => {
     const currentUser = await getCurrentUser(ctx);
-    if (!currentUser) {
+    const room = await ctx.db.get(args.roomId);
+    if (!room || room.isArchived) {
       return [];
     }
 
-    const membership = await getMembership(ctx, args.roomId, currentUser._id);
-    if (!membership || membership.isBanned) {
-      return [];
+    if (!currentUser) {
+      if (!room.isPublic) {
+        return [];
+      }
+    } else {
+      const membership = await getMembership(ctx, args.roomId, currentUser._id);
+      if (!membership || membership.isBanned) {
+        return [];
+      }
     }
 
     const posts = await ctx.db
@@ -58,6 +65,23 @@ export const getByRoom = query({
 export const getPinnedPosts = query({
   args: { roomId: v.id("rooms") },
   handler: async (ctx, args) => {
+    const room = await ctx.db.get(args.roomId);
+    if (!room || room.isArchived) {
+      return [];
+    }
+
+    const currentUser = await getCurrentUser(ctx);
+    if (!currentUser && !room.isPublic) {
+      return [];
+    }
+
+    if (currentUser) {
+      const membership = await getMembership(ctx, args.roomId, currentUser._id);
+      if (!membership || membership.isBanned) {
+        return [];
+      }
+    }
+
     const posts = await ctx.db
       .query("posts")
       .withIndex("by_roomId_pinned", (query) => query.eq("roomId", args.roomId).eq("isPinned", true))
@@ -71,18 +95,25 @@ export const getById = query({
   args: { postId: v.id("posts") },
   handler: async (ctx, args) => {
     const currentUser = await getCurrentUser(ctx);
-    if (!currentUser) {
-      return null;
-    }
-
     const post = await ctx.db.get(args.postId);
     if (!post || post.isDeleted || post.isHidden) {
       return null;
     }
 
-    const membership = await getMembership(ctx, post.roomId, currentUser._id);
-    if (!membership || membership.isBanned) {
+    const room = await ctx.db.get(post.roomId);
+    if (!room || room.isArchived) {
       return null;
+    }
+
+    if (!currentUser) {
+      if (!room.isPublic) {
+        return null;
+      }
+    } else {
+      const membership = await getMembership(ctx, post.roomId, currentUser._id);
+      if (!membership || membership.isBanned) {
+        return null;
+      }
     }
 
     const author = post.authorId ? await ctx.db.get(post.authorId) : null;

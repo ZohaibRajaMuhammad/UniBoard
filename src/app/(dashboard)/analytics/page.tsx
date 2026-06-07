@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { AlertTriangle, ArrowUpRight, BarChart3, Clock3, Sparkles, TrendingUp } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
-import { useClerkAuthReady } from "@/hooks/useClerkAuthReady";
 import { getAi } from "@/lib/ai/client";
 import type { AiEnvelope, DeadlineRiskItem } from "@/lib/ai/contracts";
 import { formatDeadline } from "@/lib/utils";
@@ -16,13 +15,8 @@ export default function AnalyticsPage() {
   const analytics = useQuery(api.analytics.getWorkspaceAnalytics);
   const [riskResult, setRiskResult] = useState<AiEnvelope<DeadlineRiskItem[]> | null>(null);
   const [riskError, setRiskError] = useState("");
-  const { isReady: aiReady } = useClerkAuthReady();
 
   useEffect(() => {
-    if (!aiReady) {
-      return;
-    }
-
     let cancelled = false;
 
     void getAi<DeadlineRiskItem[]>("/api/v1/ai/deadline-risk")
@@ -41,7 +35,7 @@ export default function AnalyticsPage() {
     return () => {
       cancelled = true;
     };
-  }, [aiReady]);
+  }, []);
 
   const totalTypeCount = useMemo(() => {
     if (!analytics) {

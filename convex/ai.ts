@@ -1,6 +1,6 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
-import { getCurrentUserOrThrow } from "./lib";
+import { getCurrentUser } from "./lib";
 
 type KnowledgePostMatch = {
   post: {
@@ -231,7 +231,7 @@ export const queryKnowledgeBase = query({
     question: v.string()
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUserOrThrow(ctx);
+    const user = await getCurrentUser(ctx);
     const question = args.question.trim();
     if (question.length < 3) {
       throw new Error("Ask a more specific question.");
@@ -242,11 +242,23 @@ export const queryKnowledgeBase = query({
       return direct;
     }
 
-    const memberships = await ctx.db
-      .query("roomMembers")
-      .withIndex("by_userId", (q) => q.eq("userId", user._id))
-      .collect();
-    const roomIds = new Set(memberships.filter((membership) => !membership.isBanned).map((membership) => membership.roomId));
+    const roomIds = new Set(
+      user
+        ? (
+            await ctx.db
+              .query("roomMembers")
+              .withIndex("by_userId", (q) => q.eq("userId", user._id))
+              .collect()
+          )
+            .filter((membership) => !membership.isBanned)
+            .map((membership) => membership.roomId)
+        : (await ctx.db.query("rooms").collect()).filter((room) => room.isPublic && !room.isArchived).map((room) => room._id)
+    );
+
+    if (roomIds.size === 0) {
+      return buildAnswerFromEvidence([], question);
+    }
+
     const tokens = tokenizeQuestion(question);
 
     const posts = await ctx.db.query("posts").collect();
@@ -348,12 +360,19 @@ export const queryKnowledgeBase = query({
 export const getDeadlineRisk = query({
   args: {},
   handler: async (ctx) => {
-    const user = await getCurrentUserOrThrow(ctx);
-    const memberships = await ctx.db
-      .query("roomMembers")
-      .withIndex("by_userId", (q) => q.eq("userId", user._id))
-      .collect();
-    const roomIds = new Set(memberships.filter((membership) => !membership.isBanned).map((membership) => membership.roomId));
+    const user = await getCurrentUser(ctx);
+    const roomIds = new Set(
+      user
+        ? (
+            await ctx.db
+              .query("roomMembers")
+              .withIndex("by_userId", (q) => q.eq("userId", user._id))
+              .collect()
+          )
+            .filter((membership) => !membership.isBanned)
+            .map((membership) => membership.roomId)
+        : (await ctx.db.query("rooms").collect()).filter((room) => room.isPublic && !room.isArchived).map((room) => room._id)
+    );
     const now = Date.now();
     const posts = await ctx.db.query("posts").withIndex("by_type", (q) => q.eq("type", "deadline")).collect();
 
@@ -394,11 +413,16 @@ export const getDeadlineRisk = query({
 export const getLearningProfile = query({
   args: {},
   handler: async (ctx) => {
-    const user = await getCurrentUserOrThrow(ctx);
-    const authoredPosts = await ctx.db
-      .query("posts")
-      .withIndex("by_authorId", (q) => q.eq("authorId", user._id))
-      .collect();
+    const user = await getCurrentUser(ctx);
+    const authoredPosts = user
+      ? await ctx.db
+          .query("posts")
+          .withIndex("by_authorId", (q) => q.eq("authorId", user._id))
+          .collect()
+      : await ctx.db
+          .query("posts")
+          .withIndex("by_type", (q) => q.eq("type", "note"))
+          .collect();
     const topTags = new Map<string, number>();
 
     for (const post of authoredPosts.filter((item) => !item.isDeleted)) {
@@ -412,7 +436,7 @@ export const getLearningProfile = query({
       .slice(0, 4)
       .map(([topic, count]) => ({
         topic,
-        score: clamp(40 + count * 10 + (user.upvotesReceived ?? 0), 42, 92),
+        score: clamp(40 + count * 10 + (user?.upvotesReceived ?? 0), 42, 92),
         confidence: count >= 3 ? "medium" : "low",
         evidence: `${count} tagged contribution${count === 1 ? "" : "s"} in this workspace`
       }));

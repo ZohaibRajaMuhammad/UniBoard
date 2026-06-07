@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Bot, Loader2, MoveUpRight, Send, Sparkles, X } from "lucide-react";
 import { useNotifier } from "@/components/providers/NotificationProvider";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { useClerkAuthReady } from "@/hooks/useClerkAuthReady";
 import { postAi } from "@/lib/ai/client";
 import type { AiEnvelope, AssistantReply, KnowledgeSource } from "@/lib/ai/contracts";
 import { cn } from "@/lib/utils";
@@ -29,7 +28,6 @@ const quickActions = [
 
 export function AiAssistant() {
   const currentUser = useCurrentUser();
-  const { isReady: aiReady } = useClerkAuthReady();
   const { notify, permission, requestPermission } = useNotifier();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
@@ -58,12 +56,6 @@ export function AiAssistant() {
   async function sendMessage(message: string) {
     const trimmed = message.trim();
     if (!trimmed) {
-      return;
-    }
-
-    if (!aiReady) {
-      setError("Sign in fully before using the AI assistant.");
-      setStatus("unavailable");
       return;
     }
 
@@ -314,18 +306,13 @@ export function AiAssistant() {
                   </p>
                   <button
                     type="submit"
-                    disabled={!aiReady || !draft.trim() || status === "sending" || status === "typing"}
+                    disabled={!draft.trim() || status === "sending" || status === "typing"}
                     className="app-button app-button-primary min-h-[44px] rounded-2xl px-4 py-2 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <Send size={14} />
                     Send
                   </button>
                 </div>
-                {!aiReady ? (
-                  <p className="px-2 pb-1 text-xs text-[var(--app-text-muted)]">
-                    AI features become available once the signed-in session is fully loaded.
-                  </p>
-                ) : null}
               </div>
             </form>
           </motion.section>

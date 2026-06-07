@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { fetchQuery } from "convex/nextjs";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
@@ -182,20 +181,7 @@ function buildMeta(route: string, requestId: string, latencyMs: number, mode: "o
 }
 
 async function getConvexToken() {
-  const authState = await auth();
-  if (!authState.userId) {
-    throw new AiServiceError("unauthenticated", 401, "Authentication required.");
-  }
-
-  const token =
-    (await authState.getToken({ template: "convex" }).catch(() => null)) ??
-    (await authState.getToken().catch(() => null));
-
-  if (!token) {
-    throw new AiServiceError("convex_token_unavailable", 503, "Unable to authorize Convex AI data access.");
-  }
-
-  return { userId: authState.userId, token };
+  return { userId: null as string | null, token: null as string | null };
 }
 
 function getClient() {
@@ -261,15 +247,19 @@ async function parseStructured<T>({
   return response.output_parsed;
 }
 
-async function getAiScopedRooms(token: string) {
-  const rooms = await fetchQuery(api.rooms.getMyRooms, {}, { token });
-  const aiRooms = rooms.filter((room) => room.aiEnabled);
+async function getAiScopedRooms(token: string | null) {
+  if (token) {
+    const rooms = await fetchQuery(api.rooms.getMyRooms, {}, token ? { token } : undefined);
+    const aiRooms = rooms.filter((room) => room.aiEnabled);
 
-  if (aiRooms.length === 0) {
-    throw new AiServiceError("ai_disabled", 403, "AI is disabled for your accessible rooms.");
+    if (aiRooms.length > 0) {
+      return aiRooms;
+    }
   }
 
-  return aiRooms;
+  const publicRooms = await fetchQuery(api.rooms.getPublicRooms, {});
+  const aiRooms = publicRooms.filter((room) => room.aiEnabled);
+  return aiRooms.length > 0 ? aiRooms : publicRooms;
 }
 
 function sanitizeSourceTitle(post: {
@@ -319,14 +309,14 @@ function isLowSignalSource(post: {
   return mentionCount >= 2;
 }
 
-async function getRoomPosts(token: string, room: RoomRecord): Promise<SourcePost[]> {
+async function getRoomPosts(token: string | null, room: RoomRecord): Promise<SourcePost[]> {
   const posts = await fetchQuery(
     api.posts.getByRoom,
     {
       roomId: room._id,
       limit: 60
     },
-    { token }
+    token ? { token } : undefined
   );
 
   return posts
@@ -384,7 +374,7 @@ function buildCommentSource(post: SourcePost, comment: RoomComment, parentCommen
   };
 }
 
-async function getRoomCommentSources(token: string, posts: SourcePost[]) {
+async function getRoomCommentSources(token: string | null, posts: SourcePost[]) {
   const commentEligiblePosts = posts
     .filter((post) => (post.commentCount ?? 0) > 0)
     .sort((left, right) => right.createdAt - left.createdAt)
@@ -398,7 +388,7 @@ async function getRoomCommentSources(token: string, posts: SourcePost[]) {
         {
           postId: post.postId as Id<"posts">
         },
-        { token }
+        token ? { token } : undefined
       )
     }))
   );
@@ -418,7 +408,7 @@ async function getRoomCommentSources(token: string, posts: SourcePost[]) {
   });
 }
 
-async function getScopedPosts(token: string, roomId?: string, options?: { allowEmpty?: boolean; includeComments?: boolean }) {
+async function getScopedPosts(token: string | null, roomId?: string, options?: { allowEmpty?: boolean; includeComments?: boolean }) {
   const rooms = await getAiScopedRooms(token);
   const scopedRooms = roomId ? rooms.filter((room) => room._id === roomId) : rooms;
 
@@ -612,8 +602,8 @@ function isUrgentDeadlineQuestion(value: string) {
   );
 }
 
-async function getJoinedClassesReply(token: string) {
-  const rooms = await fetchQuery(api.rooms.getMyRooms, {}, { token });
+async function getJoinedClassesReply(token: string | null) {
+  const rooms = await fetchQuery(api.rooms.getMyRooms, {}, token ? { token } : undefined);
   const count = rooms.length;
   const names = rooms.slice(0, 6).map((room) => room.name);
 
@@ -630,8 +620,8 @@ async function getJoinedClassesReply(token: string) {
   };
 }
 
-async function getRoomCountReply(token: string) {
-  const rooms = await fetchQuery(api.rooms.getMyRooms, {}, { token });
+async function getRoomCountReply(token: string | null) {
+  const rooms = await fetchQuery(api.rooms.getMyRooms, {}, token ? { token } : undefined);
   const count = rooms.length;
   return {
     reply:
@@ -646,8 +636,8 @@ async function getRoomCountReply(token: string) {
   };
 }
 
-async function getUrgentDeadlineReply(token: string) {
-  const planner = await fetchQuery(api.planner.getSnapshot, {}, { token });
+async function getUrgentDeadlineReply(token: string | null) {
+  const planner = await fetchQuery(api.planner.getSnapshot, {}, token ? { token } : undefined);
   const top = planner.items[0];
 
   if (!top) {
@@ -667,8 +657,8 @@ async function getUrgentDeadlineReply(token: string) {
   };
 }
 
-async function getStudyNextReply(token: string) {
-  const planner = await fetchQuery(api.planner.getSnapshot, {}, { token });
+async function getStudyNextReply(token: string | null) {
+  const planner = await fetchQuery(api.planner.getSnapshot, {}, token ? { token } : undefined);
   const top = planner.items[0];
   const nextSession = planner.sessions[0];
 
@@ -689,8 +679,8 @@ async function getStudyNextReply(token: string) {
   };
 }
 
-async function getWeeklyAttentionReply(token: string) {
-  const planner = await fetchQuery(api.planner.getSnapshot, {}, { token });
+async function getWeeklyAttentionReply(token: string | null) {
+  const planner = await fetchQuery(api.planner.getSnapshot, {}, token ? { token } : undefined);
   const topItems = planner.items.slice(0, 3);
 
   if (topItems.length === 0) {
@@ -710,7 +700,7 @@ async function getWeeklyAttentionReply(token: string) {
   };
 }
 
-async function resolveDirectAssistantIntent(token: string, value: string) {
+async function resolveDirectAssistantIntent(token: string | null, value: string) {
   if (isJoinedClassesQuestion(value)) {
     return getJoinedClassesReply(token);
   }
@@ -838,7 +828,7 @@ export async function getKnowledgeAnswer(question: string) {
       });
     },
     fallback: async () => {
-      const result = await fetchQuery(api.ai.queryKnowledgeBase, { question }, { token });
+      const result = await fetchQuery(api.ai.queryKnowledgeBase, { question }, token ? { token } : undefined);
       return {
         answer: result.answer,
         confidenceBand: toConfidenceBand(result.confidence),
@@ -861,8 +851,8 @@ export async function getDeadlineRisk() {
     actorId: userId,
     primary: async () => {
       const [planner, analytics] = await Promise.all([
-        fetchQuery(api.planner.getSnapshot, {}, { token }),
-        fetchQuery(api.analytics.getWorkspaceAnalytics, {}, { token })
+        fetchQuery(api.planner.getSnapshot, {}, token ? { token } : undefined),
+        fetchQuery(api.analytics.getWorkspaceAnalytics, {}, token ? { token } : undefined)
       ]);
 
       return withTimeout(async (client, signal) => {
@@ -902,7 +892,7 @@ export async function getDeadlineRisk() {
       });
     },
     fallback: async () =>
-      (await fetchQuery(api.ai.getDeadlineRisk, {}, { token })).map((item) => ({
+      (await fetchQuery(api.ai.getDeadlineRisk, {}, token ? { token } : undefined)).map((item) => ({
         postId: item.postId,
         roomId: item.roomId,
         roomName: item.roomName,
@@ -923,8 +913,8 @@ export async function getLearningProfile() {
     actorId: userId,
     primary: async () => {
       const [me, activity] = await Promise.all([
-        fetchQuery(api.reputation.getMe, {}, { token }),
-        fetchQuery(api.reputation.getActivity, {}, { token })
+        fetchQuery(api.reputation.getMe, {}, token ? { token } : undefined),
+        fetchQuery(api.reputation.getActivity, {}, token ? { token } : undefined)
       ]);
 
       return withTimeout(async (client, signal) => {
@@ -945,7 +935,7 @@ export async function getLearningProfile() {
       });
     },
     fallback: async () => {
-      const result = await fetchQuery(api.ai.getLearningProfile, {}, { token });
+      const result = await fetchQuery(api.ai.getLearningProfile, {}, token ? { token } : undefined);
       return {
         summary: result.summary,
         expertise: result.expertise.map((item) => ({
@@ -966,7 +956,7 @@ export async function getStudyPlan() {
     route: "/api/v1/ai/study-plan",
     actorId: userId,
     primary: async () => {
-      const planner = await fetchQuery(api.planner.getSnapshot, {}, { token });
+      const planner = await fetchQuery(api.planner.getSnapshot, {}, token ? { token } : undefined);
       if (planner.items.length === 0 || planner.sessions.length === 0) {
         return buildDeterministicStudyPlan(planner);
       }
@@ -989,7 +979,7 @@ export async function getStudyPlan() {
       });
     },
     fallback: async () => {
-      const planner = await fetchQuery(api.planner.getSnapshot, {}, { token });
+      const planner = await fetchQuery(api.planner.getSnapshot, {}, token ? { token } : undefined);
       return buildDeterministicStudyPlan(planner);
     }
   });
@@ -1003,8 +993,8 @@ export async function getBriefing() {
     actorId: userId,
     primary: async () => {
       const [planner, analytics] = await Promise.all([
-        fetchQuery(api.planner.getSnapshot, {}, { token }),
-        fetchQuery(api.analytics.getWorkspaceAnalytics, {}, { token })
+        fetchQuery(api.planner.getSnapshot, {}, token ? { token } : undefined),
+        fetchQuery(api.analytics.getWorkspaceAnalytics, {}, token ? { token } : undefined)
       ]);
 
       return withTimeout(async (client, signal) => {
@@ -1026,7 +1016,7 @@ export async function getBriefing() {
       });
     },
     fallback: async () => {
-      const planner = await fetchQuery(api.planner.getSnapshot, {}, { token });
+      const planner = await fetchQuery(api.planner.getSnapshot, {}, token ? { token } : undefined);
       const upcoming = planner.items.slice(0, 3);
       const highRisk = planner.items.filter((item) => item.urgency === "high").slice(0, 3);
       return {
@@ -1147,7 +1137,7 @@ export async function getAssistantReply(message: string, roomId?: string) {
         return directIntent;
       }
 
-      const result = await fetchQuery(api.ai.queryKnowledgeBase, { question: normalizedMessage }, { token });
+      const result = await fetchQuery(api.ai.queryKnowledgeBase, { question: normalizedMessage }, token ? { token } : undefined);
 
       if (result.sources.length === 0) {
         return buildAssistantAbstentionReply(assistantIntent, result.sources[0]?.roomName ?? null);

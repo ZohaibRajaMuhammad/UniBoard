@@ -11,7 +11,6 @@ import { buildAssistantPrompt, containsAiMention, formatAssistantComment } from 
 import { ROOM_MENTION_AI } from "@/lib/constants";
 import { useNotifier } from "@/components/providers/NotificationProvider";
 import { ProfileAvatar } from "@/components/ui/ProfileAvatar";
-import { useClerkAuthReady } from "@/hooks/useClerkAuthReady";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
 type Comment = {
@@ -45,7 +44,6 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  const { isReady: aiReady } = useClerkAuthReady();
 
   const topLevelComments = (comments ?? []).filter((comment) => !comment.parentCommentId);
   const repliesByParent = new Map<string, Comment[]>();
@@ -93,68 +91,54 @@ export function CommentThread({ postId, roomId }: { postId: Id<"posts">; roomId:
           "I could not answer that mention reliably right now. Try again with one direct question and a clearer room-specific concept, artifact, or deadline.",
           ["Ask with a single @UniBoardAI mention and name the exact topic you want explained."]
         );
-        if (!aiReady) {
-          await createAiReply({
-            postId,
-            parentCommentId: replyTo ?? createdCommentId,
-            content: mentionFailureComment
-          });
-          notify({
-            title: "AI mention deferred",
-            message: "Sign in fully to unlock grounded AI replies. A fallback reply was added instead.",
-            tone: "warning",
-            tag: "comment-ai-reply-deferred"
-          });
-        } else {
-          void postAi<AssistantReply>("/api/v1/ai/assistant", {
-            message: buildAssistantPrompt(content, {
-              postTitle: post?.deadlineTitle ?? post?.resourceTitle ?? null,
-              postType: post?.type ?? null,
-              postContent: post?.content ?? null,
-              parentCommentContent: parentComment?.content ?? null
-            }),
-            roomId
-          })
-            .then((payload) =>
-              createAiReply({
-                postId,
-                parentCommentId: replyTo ?? createdCommentId,
-                content: formatAssistantComment(payload.data?.reply ?? "I could not ground a reliable answer for that mention.", payload.data?.suggestions)
-              })
-            )
-            .then(() => {
-              notify({
-                title: "AI replied",
-                message: "UniBoard AI added a follow-up comment.",
-                tone: "ai",
-                tag: "comment-ai-reply"
-              });
+        void postAi<AssistantReply>("/api/v1/ai/assistant", {
+          message: buildAssistantPrompt(content, {
+            postTitle: post?.deadlineTitle ?? post?.resourceTitle ?? null,
+            postType: post?.type ?? null,
+            postContent: post?.content ?? null,
+            parentCommentContent: parentComment?.content ?? null
+          }),
+          roomId
+        })
+          .then((payload) =>
+            createAiReply({
+              postId,
+              parentCommentId: replyTo ?? createdCommentId,
+              content: formatAssistantComment(payload.data?.reply ?? "I could not ground a reliable answer for that mention.", payload.data?.suggestions)
             })
-            .catch(() =>
-              createAiReply({
-                postId,
-                parentCommentId: replyTo ?? createdCommentId,
-                content: mentionFailureComment
+          )
+          .then(() => {
+            notify({
+              title: "AI replied",
+              message: "UniBoard AI added a follow-up comment.",
+              tone: "ai",
+              tag: "comment-ai-reply"
+            });
+          })
+          .catch(() =>
+            createAiReply({
+              postId,
+              parentCommentId: replyTo ?? createdCommentId,
+              content: mentionFailureComment
+            })
+              .then(() => {
+                notify({
+                  title: "AI mention needs refinement",
+                  message: "UniBoard AI could not fully answer, so it left a fallback reply instead of failing silently.",
+                  tone: "warning",
+                  tag: "comment-ai-reply-fallback"
+                });
               })
-                .then(() => {
-                  notify({
-                    title: "AI mention needs refinement",
-                    message: "UniBoard AI could not fully answer, so it left a fallback reply instead of failing silently.",
-                    tone: "warning",
-                    tag: "comment-ai-reply-fallback"
-                  });
-                })
-                .catch(() => {
-                  notify({
-                    title: "AI mention failed",
-                    message: "UniBoard AI did not reply to that mention. Try one direct @UniBoardAI question with the exact concept or room topic.",
-                    tone: "error",
-                    priority: "high",
-                    tag: "comment-ai-reply-error"
-                  });
-                })
-            );
-        }
+              .catch(() => {
+                notify({
+                  title: "AI mention failed",
+                  message: "UniBoard AI did not reply to that mention. Try one direct @UniBoardAI question with the exact concept or room topic.",
+                  tone: "error",
+                  priority: "high",
+                  tag: "comment-ai-reply-error"
+                });
+              })
+          );
       }
 
       setContent("");

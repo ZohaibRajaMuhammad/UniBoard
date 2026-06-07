@@ -8,7 +8,6 @@ import { api } from "../../../../convex/_generated/api";
 import { DeadlineWidget } from "@/components/feed/DeadlineWidget";
 import { RoomCard } from "@/components/rooms/RoomCard";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { useClerkAuthReady } from "@/hooks/useClerkAuthReady";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useTimedLoadState } from "@/hooks/useTimedLoadState";
 import { getAi } from "@/lib/ai/client";
@@ -48,7 +47,6 @@ export default function DashboardRoutePage() {
   const deadlines = useQuery(api.posts.getUpcomingDeadlines, {});
   const roomsLoadState = useTimedLoadState(rooms);
   const deadlinesLoadState = useTimedLoadState(deadlines);
-  const { isReady: aiReady } = useClerkAuthReady();
   const roomList = (rooms as Room[] | undefined) ?? [];
   const deadlineList = (deadlines as Post[] | undefined) ?? [];
   const fallbackBriefing = buildDashboardFallbackBriefing(roomList, deadlineList);
@@ -57,10 +55,6 @@ export default function DashboardRoutePage() {
   const displayedBriefing = briefing?.data ?? fallbackBriefing;
 
   useEffect(() => {
-    if (!aiReady) {
-      return;
-    }
-
     let cancelled = false;
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 2000);
@@ -92,7 +86,7 @@ export default function DashboardRoutePage() {
       controller.abort();
       window.clearTimeout(timeout);
     };
-  }, [aiReady]);
+  }, []);
 
   return (
     <div className="app-scroll">
