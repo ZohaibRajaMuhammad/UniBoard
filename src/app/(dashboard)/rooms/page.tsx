@@ -141,6 +141,14 @@ export default function RoomsPage() {
                   {isJoiningByCode ? "Joining..." : "Join by code"}
                 </button>
               </div>
+              <div className="mt-3 rounded-2xl border border-[var(--app-line)] bg-white/5 p-3 text-xs leading-6 text-[var(--app-text-muted)]">
+                Private rooms work like this:
+                <div className="mt-2 grid gap-1">
+                  <p>1. Get the join code from the room creator or teacher.</p>
+                  <p>2. Paste the code here and submit it.</p>
+                  <p>3. The room opens once Convex confirms your membership.</p>
+                </div>
+              </div>
               {joinStatus ? <p className="mt-3 text-sm text-[var(--app-text-soft)]">{joinStatus}</p> : null}
             </div>
           </div>

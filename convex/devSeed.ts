@@ -24,7 +24,8 @@ type NotificationType =
   | "question_answered"
   | "pinned"
   | "room_invite"
-  | "announcement";
+  | "announcement"
+  | "assignment_submission";
 
 type ModerationAction =
   | "delete_post"
@@ -81,6 +82,14 @@ type PlannerDeadlineSpec = {
   completed: boolean;
 };
 
+type AssignmentSubmissionSpec = {
+  roomKey: string;
+  submittedBy: Id<"users">;
+  title: string;
+  content: string;
+  attachmentUrl?: string;
+};
+
 export const resetAndSeed = mutation({
   args: {
     key: v.string(),
@@ -94,6 +103,7 @@ export const resetAndSeed = mutation({
     const tableNames = [
       "savedPosts",
       "postShares",
+      "assignmentSubmissions",
       "moderationLogs",
       "notifications",
       "reactions",
@@ -743,6 +753,42 @@ export const resetAndSeed = mutation({
       }
     ];
 
+    const assignmentSubmissionSpecs: AssignmentSubmissionSpec[] = [
+      {
+        roomKey: "ai",
+        submittedBy: userIdsByKey.zohaib,
+        title: "Model evaluation report draft",
+        content:
+          "Attached is my draft submission covering precision, recall, F1, and the main ablation table. I also noted the error analysis section that still needs polish.",
+        attachmentUrl: "https://example.com/uniboard/demo/zohaib-model-eval.pdf"
+      },
+      {
+        roomKey: "design",
+        submittedBy: userIdsByKey.sara,
+        title: "Architecture review memo",
+        content:
+          "This memo summarizes the tradeoff between application-level retries and infrastructure-owned retries. I added a small diagram and kept the reasoning focused on delivery risk.",
+        attachmentUrl: "https://example.com/uniboard/demo/sara-architecture-memo.pdf"
+      },
+      {
+        roomKey: "fyp",
+        submittedBy: userIdsByKey.mina,
+        title: "Release readiness checklist",
+        content:
+          "The checklist includes staging verification, rollback notes, reviewer access, and the final demo path. I grouped the remaining blockers into clear action items.",
+        attachmentUrl: "https://example.com/uniboard/demo/mina-release-checklist.pdf"
+      }
+    ];
+
+    const roomNameByKey = new Map<string, string>(roomConfigs.map((roomConfig) => [roomConfig.key, roomConfig.name]));
+    const userNameById = new Map<Id<"users">, string>();
+    for (const user of args.users) {
+      const userId = insertedUsers.get(user.clerkId);
+      if (userId) {
+        userNameById.set(userId, user.name);
+      }
+    }
+
     const countByPostKey = <T extends { postKey: string }>(items: readonly T[]) => {
       const counts = new Map<string, number>();
       for (const item of items) {
@@ -936,6 +982,37 @@ export const resetAndSeed = mutation({
       });
     }
 
+    for (const [index, submission] of assignmentSubmissionSpecs.entries()) {
+      const roomId = roomIdsByKey.get(submission.roomKey);
+      if (!roomId) {
+        continue;
+      }
+
+      const reviewerUserId = teacher;
+
+      await ctx.db.insert("assignmentSubmissions", {
+        roomId,
+        submittedByUserId: submission.submittedBy,
+        reviewerUserId,
+        title: submission.title,
+        content: submission.content,
+        attachmentUrl: submission.attachmentUrl,
+        status: "submitted",
+        createdAt: now - (assignmentSubmissionSpecs.length - index) * 660_000,
+        updatedAt: now - (assignmentSubmissionSpecs.length - index) * 660_000
+      });
+
+      await ctx.db.insert("notifications", {
+        userId: reviewerUserId,
+        type: "assignment_submission",
+        roomId,
+        fromUserId: submission.submittedBy,
+        message: `${userNameById.get(submission.submittedBy) ?? "A student"} submitted an assignment in ${roomNameByKey.get(submission.roomKey) ?? "a room"}`,
+        isRead: false,
+        createdAt: now - (assignmentSubmissionSpecs.length - index) * 660_000
+      });
+    }
+
     for (const [index, moderation] of moderationSpecs.entries()) {
       const roomId = roomIdsByKey.get(moderation.roomKey);
       if (!roomId) {
@@ -972,6 +1049,7 @@ export const resetAndSeed = mutation({
       posts: postSpecs.length,
       comments: commentSpecs.length,
       plannerDeadlines: plannerDeadlineSpecs.length,
+      assignmentSubmissions: assignmentSubmissionSpecs.length,
       savedPosts: savedPostSpecs.length,
       notifications: notificationSpecs.length,
       moderationLogs: moderationSpecs.length

@@ -22,6 +22,7 @@ import { useSearchParams } from "next/navigation";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 import { PinnedPostsBanner } from "@/components/feed/PinnedPostsBanner";
+import { AssignmentSubmissionPanel } from "@/components/rooms/AssignmentSubmissionPanel";
 import { PostComposer } from "@/components/feed/PostComposer";
 import { PostFeed } from "@/components/feed/PostFeed";
 import { useNotifier } from "@/components/providers/NotificationProvider";
@@ -223,6 +224,10 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              <div className="mt-5">
+                <AssignmentSubmissionPanel roomId={roomId} roomName={room.name} canReview={canModerateRoom} />
               </div>
 
               <div className="mt-5">

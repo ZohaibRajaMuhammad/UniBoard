@@ -10,6 +10,7 @@
 
 import type * as ai from "../ai.js";
 import type * as analytics from "../analytics.js";
+import type * as assignments from "../assignments.js";
 import type * as comments from "../comments.js";
 import type * as devSeed from "../devSeed.js";
 import type * as lib from "../lib.js";
@@ -30,6 +31,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   ai: typeof ai;
   analytics: typeof analytics;
+  assignments: typeof assignments;
   comments: typeof comments;
   devSeed: typeof devSeed;
   lib: typeof lib;

@@ -29,7 +29,8 @@ const notificationTypeValidator = v.union(
   v.literal("question_answered"),
   v.literal("pinned"),
   v.literal("room_invite"),
-  v.literal("announcement")
+  v.literal("announcement"),
+  v.literal("assignment_submission")
 );
 
 const moderationActionValidator = v.union(
@@ -184,6 +185,21 @@ export default defineSchema({
     .index("by_postId", ["postId"])
     .index("by_postId_createdAt", ["postId", "createdAt"])
     .index("by_authorId", ["authorId"]),
+
+  assignmentSubmissions: defineTable({
+    roomId: v.id("rooms"),
+    submittedByUserId: v.id("users"),
+    reviewerUserId: v.id("users"),
+    title: v.string(),
+    content: v.string(),
+    attachmentUrl: v.optional(v.string()),
+    status: v.union(v.literal("submitted"), v.literal("reviewed"), v.literal("returned")),
+    createdAt: v.number(),
+    updatedAt: v.number()
+  })
+    .index("by_roomId_createdAt", ["roomId", "createdAt"])
+    .index("by_roomId_submittedByUserId", ["roomId", "submittedByUserId"])
+    .index("by_reviewerUserId_createdAt", ["reviewerUserId", "createdAt"]),
 
   votes: defineTable({
     targetId: v.optional(v.string()),

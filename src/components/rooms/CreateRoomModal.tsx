@@ -81,7 +81,7 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
     <Dialog.Root open onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="app-dialog-overlay fixed inset-0 z-50 bg-[rgba(7,17,26,0.44)] backdrop-blur-sm" />
-        <Dialog.Content className="app-dialog-content glass-panel fixed inset-x-4 top-1/2 z-50 max-h-[calc(100dvh-2rem)] w-auto overflow-hidden rounded-[1.75rem] shadow-2xl sm:left-1/2 sm:w-[min(42rem,calc(100vw-2rem))]">
+        <Dialog.Content className="app-dialog-content glass-panel fixed inset-3 z-50 flex h-[calc(100dvh-1.5rem)] w-auto flex-col overflow-hidden rounded-[1.75rem] shadow-2xl sm:inset-6 sm:left-1/2 sm:top-1/2 sm:h-auto sm:max-h-[calc(100dvh-3rem)] sm:w-[min(42rem,calc(100vw-3rem))]">
           <div className="flex items-start justify-between border-b border-[var(--app-line)] px-5 py-4 sm:px-6">
             <div className="pr-4">
               <Dialog.Title className="text-xl font-bold text-[var(--app-text)] sm:text-2xl">Create room</Dialog.Title>
@@ -94,7 +94,7 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
             </Dialog.Close>
           </div>
 
-          <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-5 py-5 sm:px-6">
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5 sm:px-6">
             <div className="page-stack">
               <div className="rounded-[1.25rem] border border-[rgba(109,140,255,0.24)] bg-[rgba(77,117,255,0.08)] p-4 text-sm leading-6 text-[var(--app-text-soft)]">
                 <div className="mb-2 flex items-center gap-2 font-semibold">
@@ -197,7 +197,7 @@ export function CreateRoomModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          <div className="flex flex-col-reverse gap-3 border-t border-[var(--app-line)] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <div className="flex shrink-0 flex-col-reverse gap-3 border-t border-[var(--app-line)] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
             <button onClick={onClose} className="app-button app-button-secondary w-full sm:w-auto">
               Cancel
             </button>
