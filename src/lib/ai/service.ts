@@ -858,9 +858,11 @@ export async function getKnowledgeAnswer(question: string) {
           }))
         };
       } catch {
+        const inferredAnswer = isUrgentDeadlineQuestion(question)
+          ? "I could not load the live workspace snapshot right now, but the safest next step is to open Planner and review the nearest deadline directly."
+          : "I could not load the live workspace snapshot right now, so I cannot ground this answer confidently.";
         return {
-          answer:
-            "I could not build a grounded answer from the live workspace right now. Try naming the exact room, deadline, concept, or artifact you want me to inspect.",
+          answer: inferredAnswer,
           confidenceBand: "low",
           followUp: buildKnowledgeFollowUp(knowledgeIntent),
           abstained: true,
