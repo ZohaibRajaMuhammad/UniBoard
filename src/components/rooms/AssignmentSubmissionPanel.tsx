@@ -51,7 +51,7 @@ const defaultFormState: SubmissionFormState = {
   attachmentSize: undefined
 };
 
-const attachmentSizeLimit = 256_000;
+const attachmentSizeLimit = 5 * 1024 * 1024;
 
 export function AssignmentSubmissionPanel({
   roomId,
@@ -193,31 +193,18 @@ export function AssignmentSubmissionPanel({
           : "Choose an assignment from this room, attach your file or note, and send it directly to the room creator."}
       </p>
 
-      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-        <div className="grid gap-2">
-          <label className="text-xs uppercase tracking-[0.18em] text-[var(--app-text-muted)]" htmlFor={`assignment-select-${roomId}`}>
-            Assignment name
-          </label>
-          <select
-            id={`assignment-select-${roomId}`}
-            value={form.assignmentPostId}
-            onChange={(event) => setForm((current) => ({ ...current, assignmentPostId: event.target.value }))}
-            className="app-input"
-            disabled={assignmentOptions.length === 0}
-          >
-            {assignmentOptions.length === 0 ? <option value="">No assignments available</option> : null}
-            {assignmentOptions.map((assignment) => (
-              <option key={assignment.postId} value={assignment.postId}>
-                {assignment.title}
-                {assignment.dueDate ? ` - ${new Date(assignment.dueDate).toLocaleDateString()}` : ""}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
         <button type="button" onClick={openDialog} className="app-button app-button-primary min-h-[44px] whitespace-nowrap">
           <Send size={14} />
-          Submit assignment
+          Open submission form
         </button>
+        {assignmentOptions.length > 0 ? (
+          <p className="text-xs text-[var(--app-text-muted)]">
+            {assignmentOptions.length} assignment{assignmentOptions.length === 1 ? "" : "s"} available in this room.
+          </p>
+        ) : (
+          <p className="text-xs text-[var(--app-text-muted)]">Add a deadline-style post in this room to unlock assignment submissions.</p>
+        )}
       </div>
 
       {selectedAssignment ? (
@@ -317,7 +304,9 @@ export function AssignmentSubmissionPanel({
                     value={form.assignmentPostId}
                     onChange={(event) => setForm((current) => ({ ...current, assignmentPostId: event.target.value }))}
                     className="app-input"
+                    disabled={assignmentOptions.length === 0}
                   >
+                    {assignmentOptions.length === 0 ? <option value="">No assignments available</option> : null}
                     {assignmentOptions.map((assignment) => (
                       <option key={assignment.postId} value={assignment.postId}>
                         {assignment.title}
@@ -334,11 +323,12 @@ export function AssignmentSubmissionPanel({
                   <div className="rounded-[24px] border border-[var(--app-line)] bg-white/[0.04] p-4">
                     <div className="flex items-center gap-3 text-sm text-[var(--app-text-soft)]">
                       <FileUp size={16} className="text-[var(--app-primary-strong)]" />
-                      <p>Attach a file up to 256 KB. The file is stored with the submission for review.</p>
+                      <p>Attach any file type up to 5 MB. The file is stored with the submission for review.</p>
                     </div>
                     <input
                       id={`assignment-file-${roomId}`}
                       type="file"
+                      accept="*/*"
                       onChange={handleFileChange}
                       className="mt-3 w-full text-sm text-[var(--app-text-muted)] file:mr-4 file:rounded-full file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-white/15"
                     />

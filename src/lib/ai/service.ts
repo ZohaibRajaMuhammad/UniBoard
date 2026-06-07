@@ -448,6 +448,172 @@ async function getScopedPosts(token: string | null, roomId?: string, options?: {
   };
 }
 
+function normalizeKnowledgeTerm(token: string) {
+  const aliases: Record<string, string> = {
+    database: "db",
+    databases: "db",
+    design: "architecture",
+    changed: "change",
+    changes: "change",
+    updated: "update",
+    update: "update",
+    schema: "schema",
+    normalization: "normalization",
+    normalisation: "normalization",
+    query: "query",
+    queries: "query",
+    room: "room",
+    rooms: "room",
+    class: "room",
+    classes: "room",
+    assignment: "assignment",
+    assignments: "assignment",
+    deadline: "deadline",
+    deadlines: "deadline",
+    due: "deadline",
+    urgent: "deadline",
+    api: "api",
+    auth: "auth",
+    authentication: "auth",
+    login: "auth",
+    logon: "auth"
+  };
+
+  return aliases[token] ?? token;
+}
+
+function tokenizeKnowledgeQuestion(question: string) {
+  return question
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .map((term) => term.trim())
+    .map(normalizeKnowledgeTerm)
+    .filter((term, index, array) => term.length > 1 && array.indexOf(term) === index);
+}
+
+function buildLocalKnowledgeAnswer(
+  question: string,
+  rooms: RoomRecord[],
+  posts: SourcePost[]
+): KnowledgeAnswer | null {
+  if (rooms.length === 0 || posts.length === 0) {
+    return null;
+  }
+
+  const tokens = tokenizeKnowledgeQuestion(question);
+  const normalizedQuestion = question.toLowerCase();
+  const isDeadlineQuery =
+    normalizedQuestion.includes("deadline") ||
+    normalizedQuestion.includes("due") ||
+    normalizedQuestion.includes("urgent") ||
+    normalizedQuestion.includes("closest") ||
+    normalizedQuestion.includes("next") ||
+    normalizedQuestion.includes("most");
+
+  const scored = posts
+    .map((post) => {
+      const haystack = `${post.roomName ?? ""} ${post.title} ${post.content} ${(post.tags ?? []).join(" ")}`.toLowerCase();
+      let score = 0;
+      let matchedTokens = 0;
+
+      for (const token of tokens) {
+        if (haystack.includes(token)) {
+          score += 2;
+          matchedTokens += 1;
+          continue;
+        }
+
+        if (token === "db" && /(db|database|schema|index|query|table|normalization|normalisation)/.test(haystack)) {
+          score += 2;
+          matchedTokens += 1;
+          continue;
+        }
+
+        if (token === "architecture" && /(architecture|design|system|diagram|ownership|boundary)/.test(haystack)) {
+          score += 2;
+          matchedTokens += 1;
+          continue;
+        }
+
+        if (token === "change" && /(change|changed|updated|revision|refactor|replace|added|removed|moved)/.test(haystack)) {
+          score += 2;
+          matchedTokens += 1;
+          continue;
+        }
+
+        if (token === "auth" && /(auth|login|sign[-\s]?in|access|credential|token)/.test(haystack)) {
+          score += 2;
+          matchedTokens += 1;
+          continue;
+        }
+
+        if (token === "deadline" && /(deadline|due|submission|submit|due soon)/.test(haystack)) {
+          score += 2;
+          matchedTokens += 1;
+        }
+      }
+
+      if (post.roomName && tokens.some((token) => post.roomName!.toLowerCase().includes(token))) {
+        score += 1;
+      }
+
+      if (post.type === "deadline" && isDeadlineQuery) {
+        score += 2;
+      }
+
+      if (post.type === "announcement") {
+        score += 1;
+      }
+
+      if (post.type === "note" && /(normalization|schema|architecture|design|query|plan)/.test(haystack)) {
+        score += 1;
+      }
+
+      const coverage = tokens.length === 0 ? 0 : matchedTokens / tokens.length;
+      return {
+        post,
+        score,
+        coverage
+      };
+    })
+    .sort((left, right) => right.score - left.score || right.coverage - left.coverage || right.post.createdAt - left.post.createdAt);
+
+  const best = scored[0];
+  if (!best) {
+    return null;
+  }
+
+  const source = best.post;
+  const roomName = source.roomName ?? "Room";
+  const excerpt = source.content.split("\n").map((line) => line.trim()).find(Boolean) ?? source.content.slice(0, 280);
+  const lead = isDeadlineQuery
+    ? `The strongest deadline signal is in ${roomName}: ${source.title}.`
+    : /auth|login|sign/.test(normalizedQuestion)
+      ? `The strongest access-control signal is in ${roomName}: ${source.title}.`
+      : /database|schema|design|changed|change|query/.test(normalizedQuestion)
+        ? `The strongest database/design signal is in ${roomName}: ${source.title}.`
+        : `The strongest grounded context is in ${roomName}: ${source.title}.`;
+
+  return {
+    answer: `${lead} ${excerpt}${excerpt.endsWith(".") ? "" : "."}`,
+    confidenceBand: best.score >= 4 ? "medium" : "low",
+    followUp: isDeadlineQuery
+      ? "Open Planner if you want the full study sequence around this deadline."
+      : `Open ${roomName} to inspect the source thread directly.`,
+    abstained: false,
+    sources: [
+      {
+        postId: source.postId,
+        roomId: source.roomId,
+        roomName,
+        title: source.title,
+        type: source.type,
+        quote: source.title
+      }
+    ]
+  };
+}
+
 function buildAssistantAbstentionReply(
   assistantIntent: ReturnType<typeof classifyAssistantIntent>,
   roomName: string | null
@@ -849,15 +1015,54 @@ export async function getKnowledgeAnswer(question: string) {
     fallback: async () => {
       try {
         const result = await fetchQuery(api.ai.queryKnowledgeBase, { question }, token ? { token } : undefined);
-        return {
-          answer: result.answer,
-          confidenceBand: toConfidenceBand(result.confidence),
-          followUp: buildKnowledgeFollowUp(knowledgeIntent),
-          abstained: result.mode === "fallback",
-          sources: result.sources.map((source) => ({
-            ...source,
-            quote: source.title
+        if (result.sources.length > 0) {
+          return {
+            answer: result.answer,
+            confidenceBand: toConfidenceBand(result.confidence),
+            followUp: buildKnowledgeFollowUp(knowledgeIntent),
+            abstained: result.mode === "fallback",
+            sources: result.sources.map((source) => ({
+              ...source,
+              quote: source.title
+            }))
+          };
+        }
+
+        const accessibleRooms = token
+          ? await fetchQuery(api.rooms.getMyRooms, {}, { token })
+          : await fetchQuery(api.rooms.getPublicRooms, {});
+        const roomPosts = (
+          await Promise.all(
+            accessibleRooms.slice(0, 6).map(async (room) => ({
+              room,
+              posts: await fetchQuery(api.posts.getByRoom, { roomId: room._id, limit: 60 }, token ? { token } : undefined)
+            }))
+          )
+        ).flatMap(({ room, posts }) =>
+          posts.map((post) => ({
+            postId: post._id,
+            roomId: post.roomId,
+            roomName: room.name,
+            title: post.deadlineTitle || post.resourceTitle || post.content.slice(0, 72),
+            type: post.type,
+            content: post.content,
+            tags: post.tags ?? [],
+            createdAt: post.createdAt
           }))
+        );
+        const localAnswer = buildLocalKnowledgeAnswer(question, accessibleRooms as RoomRecord[], roomPosts);
+        if (localAnswer) {
+          return localAnswer;
+        }
+
+        return {
+          answer: isUrgentDeadlineQuestion(question)
+            ? "No tracked deadlines are visible yet. Open Planner or the relevant room to surface the current deadline list."
+            : "No grounded room evidence is visible yet. Open Rooms or Planner to inspect the current workspace data.",
+          confidenceBand: "low",
+          followUp: buildKnowledgeFollowUp(knowledgeIntent),
+          abstained: true,
+          sources: []
         };
       } catch {
         if (isUrgentDeadlineQuestion(question)) {
@@ -954,9 +1159,7 @@ export async function getKnowledgeAnswer(question: string) {
         }
 
         return {
-          answer: isUrgentDeadlineQuestion(question)
-            ? "No tracked deadlines are visible yet. Open Planner or the relevant room to surface the current deadline list."
-            : "No grounded room evidence is visible yet. Open Rooms or Planner to inspect the current workspace data.",
+          answer: "I could not ground this answer from the live workspace right now.",
           confidenceBand: "low",
           followUp: buildKnowledgeFollowUp(knowledgeIntent),
           abstained: true,
@@ -1307,16 +1510,51 @@ export async function getAssistantReply(message: string, roomId?: string) {
 
       try {
         const result = await fetchQuery(api.ai.queryKnowledgeBase, { question: normalizedMessage }, token ? { token } : undefined);
+        if (result.sources.length > 0) {
+          return {
+            reply: result.answer,
+            confidenceBand: toConfidenceBand(result.confidence),
+            suggestions: buildAssistantSuggestions(assistantIntent, result.sources[0]?.roomName ?? null),
+            sources: result.sources.map((source) => ({
+              ...source,
+              quote: source.title
+            }))
+          };
+        }
 
-        return {
-          reply: result.answer,
-          confidenceBand: toConfidenceBand(result.confidence),
-          suggestions: buildAssistantSuggestions(assistantIntent, result.sources[0]?.roomName ?? null),
-          sources: result.sources.map((source) => ({
-            ...source,
-            quote: source.title
+        const accessibleRooms = token
+          ? await fetchQuery(api.rooms.getMyRooms, {}, { token })
+          : await fetchQuery(api.rooms.getPublicRooms, {});
+        const roomPosts = (
+          await Promise.all(
+            accessibleRooms.slice(0, 6).map(async (room) => ({
+              room,
+              posts: await fetchQuery(api.posts.getByRoom, { roomId: room._id, limit: 60 }, token ? { token } : undefined)
+            }))
+          )
+        ).flatMap(({ room, posts }) =>
+          posts.map((post) => ({
+            postId: post._id,
+            roomId: post.roomId,
+            roomName: room.name,
+            title: post.deadlineTitle || post.resourceTitle || post.content.slice(0, 72),
+            type: post.type,
+            content: post.content,
+            tags: post.tags ?? [],
+            createdAt: post.createdAt
           }))
-        };
+        );
+        const localAnswer = buildLocalKnowledgeAnswer(normalizedMessage, accessibleRooms as RoomRecord[], roomPosts);
+        if (localAnswer) {
+          return {
+            reply: localAnswer.answer,
+            confidenceBand: localAnswer.confidenceBand,
+            suggestions: buildAssistantSuggestions(assistantIntent, localAnswer.sources[0]?.roomName ?? null),
+            sources: localAnswer.sources
+          };
+        }
+
+        return buildAssistantAbstentionReply(assistantIntent, null);
       } catch {
         return buildAssistantAbstentionReply(assistantIntent, null);
       }
