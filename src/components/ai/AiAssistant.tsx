@@ -70,9 +70,12 @@ export function AiAssistant() {
     setStatus("sending");
     setError("");
 
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 12000);
+
     try {
       setStatus("typing");
-      const payload = await postAi<AssistantReply>("/api/v1/ai/assistant", { message: trimmed });
+      const payload = await postAi<AssistantReply>("/api/v1/ai/assistant", { message: trimmed }, { signal: controller.signal });
       const reply = payload.data?.reply ?? "I could not produce a reliable answer from the current workspace signal.";
       setMessages((current) => [
         ...current,
@@ -93,12 +96,29 @@ export function AiAssistant() {
         priority: "normal",
         tag: "assistant-reply"
       });
-      setStatus("idle");
     } catch (requestError) {
       const messageText =
-        requestError instanceof Error ? requestError.message : "The AI assistant is temporarily unavailable.";
+        requestError instanceof DOMException && requestError.name === "AbortError"
+          ? "The assistant took too long to answer. Try a narrower room, deadline, or concept."
+          : requestError instanceof Error
+            ? requestError.message
+            : "The AI assistant is temporarily unavailable.";
       setError(messageText);
-      setStatus(messageText.toLowerCase().includes("timeout") ? "timeout" : "unavailable");
+      setMessages((current) => [
+        ...current,
+        {
+          id: `assistant-fallback-${Date.now()}`,
+          role: "assistant",
+          text:
+            requestError instanceof DOMException && requestError.name === "AbortError"
+              ? "I could not finish the request in time. Try naming one room, one deadline, or one artifact."
+              : "I could not reach the AI service just now. Try again with one precise room, deadline, or concept.",
+          confidenceBand: "low",
+          degraded: true,
+          suggestions: quickActions.slice(0, 2)
+        }
+      ]);
+      setStatus(messageText.toLowerCase().includes("time") ? "timeout" : "unavailable");
       notify({
         title: "AI assistant unavailable",
         message: messageText,
@@ -106,6 +126,10 @@ export function AiAssistant() {
         priority: "high",
         tag: "assistant-error"
       });
+    } finally {
+      window.clearTimeout(timeout);
+      controller.abort();
+      setStatus("idle");
     }
   }
 

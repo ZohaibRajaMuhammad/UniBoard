@@ -19,7 +19,11 @@ export async function getAi<T>(path: string, init?: Pick<RequestInit, "signal">)
   return payload;
 }
 
-export async function postAi<T>(path: string, body: Record<string, unknown>) {
+export async function postAi<T>(
+  path: string,
+  body: Record<string, unknown>,
+  init?: Pick<RequestInit, "signal">
+) {
   const response = await fetch(path, {
     method: "POST",
     credentials: "include",
@@ -28,7 +32,8 @@ export async function postAi<T>(path: string, body: Record<string, unknown>) {
       Accept: "application/json"
     },
     body: JSON.stringify(body),
-    cache: "no-store"
+    cache: "no-store",
+    signal: init?.signal
   });
 
   const payload = (await response.json()) as AiEnvelope<T>;
