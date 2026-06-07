@@ -1,14 +1,12 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { CheckSquare2, FileUp, Inbox, Link2, Send, X } from "lucide-react";
+import { FileUp, Inbox, Send, X } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { useNotifier } from "@/components/providers/NotificationProvider";
-import { Skeleton } from "@/components/ui/Skeleton";
-import { cn, formatRelativeTime } from "@/lib/utils";
 
 type AssignmentOption = {
   postId: string;
@@ -16,21 +14,6 @@ type AssignmentOption = {
   dueDate: number | null;
   contentPreview: string;
   roomId: string;
-};
-
-type AssignmentSubmission = {
-  _id: string;
-  assignmentPostId?: string;
-  title: string;
-  content: string;
-  attachmentUrl?: string;
-  attachmentName?: string;
-  attachmentType?: string;
-  attachmentSize?: number;
-  status: "submitted" | "reviewed" | "returned";
-  createdAt: number;
-  submittedBy: { userId: string; name: string; role: string } | null;
-  reviewer: { userId: string; name: string; role: string } | null;
 };
 
 type SubmissionFormState = {
@@ -64,19 +47,13 @@ export function AssignmentSubmissionPanel({
 }) {
   const { notify } = useNotifier();
   const assignments = useQuery(api.assignments.getRoomAssignments, { roomId }) as AssignmentOption[] | undefined;
-  const submissions = useQuery(api.assignments.getForRoom, { roomId }) as AssignmentSubmission[] | undefined;
   const submitAssignment = useMutation(api.assignments.submit);
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState<SubmissionFormState>(defaultFormState);
 
-  const visibleSubmissions = useMemo(() => submissions ?? [], [submissions]);
-  const assignmentOptions = useMemo(() => assignments ?? [], [assignments]);
-  const selectedAssignment = useMemo(
-    () => assignmentOptions.find((assignment) => assignment.postId === form.assignmentPostId) ?? assignmentOptions[0] ?? null,
-    [assignmentOptions, form.assignmentPostId]
-  );
+  const assignmentOptions = assignments ?? [];
 
   useEffect(() => {
     if (form.assignmentPostId || assignmentOptions.length === 0) {
@@ -95,11 +72,6 @@ export function AssignmentSubmissionPanel({
   }
 
   function openDialog() {
-    if (assignmentOptions.length === 0) {
-      setStatus("No deadline-style assignments are available in this room yet.");
-      return;
-    }
-
     setOpen(true);
   }
 
@@ -118,7 +90,7 @@ export function AssignmentSubmissionPanel({
 
     if (file.size > attachmentSizeLimit) {
       event.target.value = "";
-      setStatus("Attachment must be 256 KB or smaller in this demo submission flow.");
+      setStatus("Attachment must be 5 MB or smaller in this demo submission flow.");
       return;
     }
 
@@ -179,102 +151,16 @@ export function AssignmentSubmissionPanel({
 
   return (
     <section className="glass-panel rounded-[28px] p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Assignments</p>
-          <h3 className="mt-2 text-lg font-semibold text-white">{canReview ? "Creator inbox" : "Submit assignment"}</h3>
-        </div>
-        <Inbox size={16} className="mt-1 text-[var(--app-primary-strong)]" />
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--app-text-muted)]">Assignments</p>
+        <Inbox size={16} className="text-[var(--app-primary-strong)]" />
       </div>
 
-      <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">
-        {canReview
-          ? "Room creators and moderators can review submissions tied to a specific deadline-style assignment."
-          : "Choose an assignment from this room, attach your file or note, and send it directly to the room creator."}
-      </p>
-
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button type="button" onClick={openDialog} className="app-button app-button-primary min-h-[44px] whitespace-nowrap">
+      <div className="mt-4 grid gap-2">
+        <button type="button" onClick={openDialog} className="app-button app-button-primary min-h-[44px] w-full justify-center">
           <Send size={14} />
-          Open submission form
+          {canReview ? "Open assignment inbox" : "Open assignment form"}
         </button>
-        {assignmentOptions.length > 0 ? (
-          <p className="text-xs text-[var(--app-text-muted)]">
-            {assignmentOptions.length} assignment{assignmentOptions.length === 1 ? "" : "s"} available in this room.
-          </p>
-        ) : (
-          <p className="text-xs text-[var(--app-text-muted)]">Add a deadline-style post in this room to unlock assignment submissions.</p>
-        )}
-      </div>
-
-      {selectedAssignment ? (
-        <div className="mt-3 rounded-[22px] border border-[var(--app-line)] bg-white/5 p-4 text-sm leading-7 text-[var(--app-text-soft)]">
-          <p className="font-medium text-white">{selectedAssignment.title}</p>
-          {selectedAssignment.dueDate ? <p className="mt-1 text-xs text-[var(--app-text-muted)]">Due {new Date(selectedAssignment.dueDate).toLocaleString()}</p> : null}
-          <p className="mt-2 line-clamp-2">{selectedAssignment.contentPreview}</p>
-        </div>
-      ) : (
-        <div className="mt-3 rounded-[22px] border border-dashed border-[var(--app-line)] bg-white/5 p-4 text-sm text-[var(--app-text-muted)]">
-          Add a deadline-style post in this room to unlock assignment submissions.
-        </div>
-      )}
-
-      {status ? <div className="mt-4 rounded-[20px] border border-[var(--app-line)] bg-white/5 px-4 py-3 text-sm text-[var(--app-text-soft)]">{status}</div> : null}
-
-      <div className="mt-5">
-        <div className="flex items-center gap-2">
-          <CheckSquare2 size={15} className="text-[var(--app-primary-strong)]" />
-          <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">{canReview ? "Recent submissions" : "Your submissions"}</p>
-        </div>
-
-        <div className="mt-3 space-y-3">
-          {submissions === undefined ? (
-            Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} className="h-24 rounded-[22px]" />)
-          ) : visibleSubmissions.length === 0 ? (
-            <div className="rounded-[22px] border border-dashed border-[var(--app-line)] bg-white/5 p-4 text-sm text-[var(--app-text-muted)]">
-              {canReview ? "No assignment submissions have arrived yet." : "You have not submitted an assignment in this room yet."}
-            </div>
-          ) : (
-            visibleSubmissions.slice(0, 5).map((submission) => (
-              <article key={submission._id} className="rounded-[22px] border border-[var(--app-line)] bg-white/[0.03] p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="font-semibold text-white">{submission.title}</p>
-                    <p className="mt-1 text-xs text-[var(--app-text-muted)]">
-                      {submission.submittedBy?.name ?? "Unknown"} - {formatRelativeTime(submission.createdAt)}
-                    </p>
-                  </div>
-                  <span
-                    className={cn(
-                      "rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]",
-                      submission.status === "submitted"
-                        ? "bg-emerald-500/15 text-emerald-200"
-                        : submission.status === "reviewed"
-                          ? "bg-brand-500/15 text-[var(--app-primary-strong)]"
-                          : "bg-amber-500/15 text-amber-200"
-                    )}
-                  >
-                    {submission.status}
-                  </span>
-                </div>
-
-                <p className="mt-3 text-sm leading-7 text-[var(--app-text-soft)]">{submission.content}</p>
-                {submission.attachmentUrl ? (
-                  <a
-                    href={submission.attachmentUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    download={submission.attachmentName}
-                    className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-[var(--app-primary-strong)] transition hover:text-white"
-                  >
-                    <Link2 size={13} />
-                    {submission.attachmentName ? `Open ${submission.attachmentName}` : "Open attachment"}
-                  </a>
-                ) : null}
-              </article>
-            ))
-          )}
-        </div>
       </div>
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -316,6 +202,12 @@ export function AssignmentSubmissionPanel({
                   </select>
                 </div>
 
+                <div className="rounded-[20px] border border-[var(--app-line)] bg-white/5 px-4 py-3 text-sm text-[var(--app-text-soft)]">
+                  {assignmentOptions.length > 0
+                    ? `${assignmentOptions.length} assignment${assignmentOptions.length === 1 ? "" : "s"} available in this room.`
+                    : "Add a deadline-style post in this room to unlock assignment submissions."}
+                </div>
+
                 <div className="grid gap-2">
                   <label className="text-xs uppercase tracking-[0.18em] text-[var(--app-text-muted)]" htmlFor={`assignment-file-${roomId}`}>
                     Upload file
@@ -353,6 +245,8 @@ export function AssignmentSubmissionPanel({
                     className="app-textarea min-h-[11rem]"
                   />
                 </div>
+
+                {status ? <div className="rounded-[20px] border border-[var(--app-line)] bg-white/5 px-4 py-3 text-sm text-[var(--app-text-soft)]">{status}</div> : null}
 
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="text-xs text-[var(--app-text-muted)]">The selected assignment is sent to the room creator for review.</p>

@@ -8,6 +8,7 @@ type KnowledgePostMatch = {
     roomId: string;
     content: string;
     type: string;
+    createdAt: number;
     deadlineTitle?: string | null;
     resourceTitle?: string | null;
     tags?: string[] | null;
@@ -202,6 +203,11 @@ function tokenizeQuestionTerms(question: string) {
 function roomMatchesQuestion(room: { name?: string | null; subject?: string | null }, questionTerms: string[]) {
   const haystack = `${room.name ?? ""} ${room.subject ?? ""}`.toLowerCase();
   return questionTerms.some((term) => haystack.includes(term));
+}
+
+function scoreRoomRelevance(room: { name?: string | null; subject?: string | null } | null | undefined, questionTerms: string[]) {
+  const haystack = `${room?.name ?? ""} ${room?.subject ?? ""}`.toLowerCase();
+  return questionTerms.reduce((score, term) => (haystack.includes(term) ? score + 1 : score), 0);
 }
 
 function tokenizeQuestion(question: string) {
@@ -400,6 +406,7 @@ export const queryKnowledgeBase = query({
     }
 
     const tokens = tokenizeQuestion(question);
+    const questionTerms = tokenizeQuestionTerms(question);
 
     const posts = await ctx.db.query("posts").collect();
 
@@ -448,9 +455,9 @@ export const queryKnowledgeBase = query({
           const hasStrongFieldMatch =
             tokens.some((token) => (post.deadlineTitle?.toLowerCase() ?? "").includes(token) || (post.resourceTitle?.toLowerCase() ?? "").includes(token)) ||
             /(deadline|resource|announcement|question|project)/.test(post.type);
-          const roomBoost = room?.name?.toLowerCase().includes(tokens[0] ?? "") || room?.subject?.toLowerCase().includes(tokens[0] ?? "") ? 1 : 0;
+          const roomBoost = scoreRoomRelevance(room ?? undefined, questionTerms);
           const totalScore = score + roomBoost;
-          return (totalScore >= 2 && coverage >= 0.3) || (totalScore >= 1 && coverage >= 0.15 && hasStrongFieldMatch)
+          return (totalScore >= 1 && coverage >= 0.2) || (totalScore >= 1 && coverage >= 0.12 && hasStrongFieldMatch)
             ? {
                 score: totalScore,
                 coverage,
@@ -467,17 +474,33 @@ export const queryKnowledgeBase = query({
       .slice(0, 3);
 
     if (matches.length === 0) {
-      const fallbackMatches: KnowledgePostMatch[] = await Promise.all(
+      type RankedKnowledgePostMatch = KnowledgePostMatch & { score: number };
+
+      const fallbackMatches: RankedKnowledgePostMatch[] = await Promise.all(
         posts
           .filter((post) => !post.isDeleted && !post.isHidden && roomIds.has(post.roomId) && !isLowSignalPost(post))
-          .slice(0, 3)
-          .map(async (post) => ({
-            post,
-            room: await ctx.db.get(post.roomId)
-          }))
+          .map(async (post) => {
+            const room = await ctx.db.get(post.roomId);
+            const haystack = [room?.name, room?.subject, post.content, post.deadlineTitle, post.resourceTitle, ...(post.tags ?? [])]
+              .filter(Boolean)
+              .join(" ")
+              .toLowerCase();
+            const tokenHits = tokens.filter((token) => haystack.includes(token) || (token === "db" && /(db|database|schema|query|index|normalization|normalisation)/.test(haystack)));
+            return {
+              post,
+              room,
+              score: tokenHits.length + scoreRoomRelevance(room ?? undefined, questionTerms)
+            };
+          })
       );
 
-      return buildAnswerFromEvidence(fallbackMatches, question);
+      return buildAnswerFromEvidence(
+        fallbackMatches
+          .sort((left, right) => right.score - left.score || right.post.createdAt - left.post.createdAt)
+          .slice(0, 3)
+          .map(({ post, room }) => ({ post, room })),
+        question
+      );
     }
 
     const confidenceScore = clamp(

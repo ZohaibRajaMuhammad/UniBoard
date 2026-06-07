@@ -189,7 +189,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                 <ThemeToggle className="min-h-[2.35rem] shrink-0 rounded-full px-2 py-1.5" />
               </div>
 
-              <div className="mt-4 max-w-3xl">
+              <div className="mt-4 max-w-4xl">
                 <p className="text-sm leading-6 text-[var(--app-text-soft)]">
                   The feed remains the primary collaboration surface. Room context and member activity remain visible in real time.
                 </p>
@@ -232,13 +232,16 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
               <div className="mt-5">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Feed navigation</p>
-                <div className="smooth-x-scroll mt-2 flex gap-2 pb-0.5">
+                <div className="mt-2 grid gap-2">
                   {ROOM_VIEWS.map((view) => (
                     <button
                       key={view}
                       type="button"
                       onClick={() => (view === "overview" ? setActiveView(view) : openFeed(view))}
-                      className={cn("app-segmented-button shrink-0", activeView === view ? "app-segmented-button-active" : "")}
+                      className={cn(
+                        "app-segmented-button w-full justify-start",
+                        activeView === view ? "app-segmented-button-active" : ""
+                      )}
                       aria-pressed={activeView === view}
                     >
                       <LayoutPanelTop size={14} />
@@ -261,15 +264,15 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                 </div>
               </div>
 
-              <div className="mt-5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Primary actions</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <button type="button" onClick={() => setComposerOpen(true)} className="app-button app-button-primary min-h-[2.75rem] rounded-2xl px-4 py-2 text-sm">
+                <div className="mt-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Primary actions</p>
+                <div className="mt-2 grid gap-2">
+                  <button type="button" onClick={() => setComposerOpen(true)} className="app-button app-button-primary min-h-[2.75rem] w-full justify-start rounded-2xl px-4 py-2 text-sm">
                     <PlusSquare size={14} />
                     New post
                   </button>
                   {showFeed ? (
-                    <Link href="#room-post-list" className="app-button app-button-secondary min-h-[2.75rem] rounded-2xl px-4 py-2 text-sm">
+                    <Link href="#room-post-list" className="app-button app-button-secondary min-h-[2.75rem] w-full justify-between rounded-2xl px-4 py-2 text-sm">
                       Jump into posts
                       <ArrowDown size={14} />
                     </Link>
@@ -302,7 +305,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
         {showFeed ? (
           <div className="flex flex-col">
-            <div className={cn("grid flex-1", activeView === "split" ? "xl:grid-cols-[minmax(0,1.55fr)_23rem]" : "")}>
+            <div className={cn("grid flex-1", activeView === "split" ? "xl:grid-cols-[minmax(0,1.38fr)_26rem]" : "")}>
               <div ref={feedSectionRef} className="min-w-0">
                 <div className="px-1 pb-8">
                   <section id="room-post-list" className="mx-auto w-full max-w-[66rem] scroll-mt-4 px-4 pt-3 sm:px-6">
@@ -435,7 +438,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         ) : (
           <div className="app-scroll">
             <div className="page-wrap py-5">
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_22rem]">
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1.28fr)_24rem]">
                 <section className="glass-panel rounded-[30px] p-5">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>

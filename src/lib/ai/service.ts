@@ -614,12 +614,85 @@ function buildLocalKnowledgeAnswer(
   };
 }
 
+function buildBestEffortKnowledgeAnswer(
+  question: string,
+  rooms: RoomRecord[],
+  posts: SourcePost[]
+): KnowledgeAnswer | null {
+  const grounded = buildLocalKnowledgeAnswer(question, rooms, posts);
+  if (grounded) {
+    return grounded;
+  }
+
+  if (rooms.length === 0 || posts.length === 0) {
+    return null;
+  }
+
+  const normalizedQuestion = question.toLowerCase();
+  const isDeadlineQuery =
+    normalizedQuestion.includes("deadline") ||
+    normalizedQuestion.includes("due") ||
+    normalizedQuestion.includes("urgent") ||
+    normalizedQuestion.includes("closest") ||
+    normalizedQuestion.includes("next") ||
+    normalizedQuestion.includes("most");
+
+  const tokens = tokenizeKnowledgeQuestion(question);
+  const ranked = [...posts]
+    .map((post) => {
+      const haystack = `${post.roomName ?? ""} ${post.title} ${post.content} ${(post.tags ?? []).join(" ")}`.toLowerCase();
+      const tokenHits = tokens.filter((token) => haystack.includes(token) || (token === "db" && /(db|database|schema|index|query|normalization|normalisation)/.test(haystack)));
+      const roomHit = rooms.some((room) => `${room.name ?? ""} ${room.subject ?? ""}`.toLowerCase().includes((post.roomName ?? "").toLowerCase()));
+      return {
+        post,
+        score: tokenHits.length + (roomHit ? 1 : 0)
+      };
+    })
+    .sort((left, right) => right.score - left.score || right.post.createdAt - left.post.createdAt);
+
+  const [best] = ranked;
+  if (!best) {
+    return null;
+  }
+
+  const roomName = best.post.roomName ?? "Room";
+  const excerpt = best.post.content.split("\n").map((line) => line.trim()).find(Boolean) ?? best.post.content.slice(0, 280);
+  const lead = isDeadlineQuery
+    ? `The strongest deadline context I can see is in ${roomName}: ${best.post.title}.`
+    : /auth|login|sign/.test(normalizedQuestion)
+      ? `The strongest access-control context I can see is in ${roomName}: ${best.post.title}.`
+      : /database|schema|design|changed|change|query/.test(normalizedQuestion)
+        ? `The strongest database/design context I can see is in ${roomName}: ${best.post.title}.`
+        : `The strongest grounded context I can see is in ${roomName}: ${best.post.title}.`;
+
+  return {
+    answer: `${lead} ${excerpt}${excerpt.endsWith(".") ? "" : "."}`,
+    confidenceBand: "low",
+    followUp: isDeadlineQuery
+      ? "Open Planner if you want the nearest tracked deadline in full."
+      : `Open ${roomName} to inspect the source thread directly.`,
+    abstained: false,
+    sources: [
+      {
+        postId: best.post.postId,
+        roomId: best.post.roomId,
+        roomName,
+        title: best.post.title,
+        type: best.post.type,
+        quote: best.post.title
+      }
+    ]
+  };
+}
+
 function buildAssistantAbstentionReply(
   assistantIntent: ReturnType<typeof classifyAssistantIntent>,
   roomName: string | null
 ): AssistantReply {
   return {
-    reply: "I need one concrete room, deadline, artifact, or thread to answer this precisely.",
+    reply: roomName
+      ? `I couldn't find a strong grounded match in ${roomName}. Name the exact room thread, deadline, artifact, or concept you want inspected.`
+      : "I couldn't find a strong grounded match in your visible rooms. Name the exact room thread, deadline, artifact, or concept you want inspected.",
     confidenceBand: "low",
     suggestions: buildAssistantSuggestions(assistantIntent, roomName),
     sources: []
@@ -1050,7 +1123,7 @@ export async function getKnowledgeAnswer(question: string) {
             createdAt: post.createdAt
           }))
         );
-        const localAnswer = buildLocalKnowledgeAnswer(question, accessibleRooms as RoomRecord[], roomPosts);
+        const localAnswer = buildBestEffortKnowledgeAnswer(question, accessibleRooms as RoomRecord[], roomPosts);
         if (localAnswer) {
           return localAnswer;
         }
@@ -1544,7 +1617,7 @@ export async function getAssistantReply(message: string, roomId?: string) {
             createdAt: post.createdAt
           }))
         );
-        const localAnswer = buildLocalKnowledgeAnswer(normalizedMessage, accessibleRooms as RoomRecord[], roomPosts);
+        const localAnswer = buildBestEffortKnowledgeAnswer(normalizedMessage, accessibleRooms as RoomRecord[], roomPosts);
         if (localAnswer) {
           return {
             reply: localAnswer.answer,
@@ -1554,7 +1627,7 @@ export async function getAssistantReply(message: string, roomId?: string) {
           };
         }
 
-        return buildAssistantAbstentionReply(assistantIntent, null);
+        return buildAssistantAbstentionReply(assistantIntent, accessibleRooms[0]?.name ?? null);
       } catch {
         return buildAssistantAbstentionReply(assistantIntent, null);
       }
