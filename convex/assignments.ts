@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { assertPortalAccess, canModerateRoom, createNotification, getCurrentUserOrThrow, getMembership } from "./lib";
+import { assertPortalAccess, canModerateRoom, createNotification, getCurrentUser, getCurrentUserOrThrow, getMembership } from "./lib";
 
 const attachmentSizeLimit = 256_000;
 
@@ -31,7 +31,11 @@ export const getRoomAssignments = query({
     roomId: v.id("rooms")
   },
   handler: async (ctx, args): Promise<AssignmentOption[]> => {
-    const user = await getCurrentUserOrThrow(ctx);
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      return [];
+    }
+
     const membership = await getMembership(ctx, args.roomId, user._id);
     if (!membership || membership.isBanned) {
       return [];
@@ -66,7 +70,11 @@ export const getForRoom = query({
     roomId: v.id("rooms")
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUserOrThrow(ctx);
+    const user = await getCurrentUser(ctx);
+    if (!user) {
+      return [];
+    }
+
     const membership = await getMembership(ctx, args.roomId, user._id);
     if (!membership || membership.isBanned) {
       return [];
