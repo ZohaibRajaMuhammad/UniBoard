@@ -406,7 +406,19 @@ Beginner note: most visual consistency comes from reusing these classes instead 
 
 ---
 
-## 11. Loading and Transition System
+## 11a. Presentation Docs
+
+If you need to present UniBoard, use the docs in `docs/`:
+
+- [Master presentation doc](docs/uniboard-presentation-master.md)
+- [Presentation script part 1](docs/presentation-script-part-1.md)
+- [Presentation script part 2](docs/presentation-script-part-2.md)
+
+These files split the demo into a clean first-half and second-half script and keep the master content in one place.
+
+---
+
+## 12. Loading and Transition System
 
 Shared skeleton component:
 
@@ -448,7 +460,7 @@ Radix dialogs use CSS animation classes because Radix already handles focus, por
 
 ---
 
-## 12. Main Feature Flows
+## 13. Main Feature Flows
 
 ### Dashboard
 
@@ -661,7 +673,7 @@ The AI system is designed to degrade gracefully. If OpenAI is unavailable, many 
 
 ---
 
-## 13. Environment Variables
+## 14. Environment Variables
 
 Local env files:
 
@@ -697,7 +709,7 @@ Do not commit real secrets to GitHub.
 
 ---
 
-## 14. Common Commands
+## 15. Common Commands
 
 Install dependencies:
 
@@ -761,7 +773,7 @@ npm run seed:demo
 
 ---
 
-## 15. How to Add a New Page
+## 16. How to Add a New Page
 
 Example: add a `/courses` page.
 
@@ -802,7 +814,7 @@ src/components/layout/MobileNav.tsx
 
 ---
 
-## 16. How to Add a New Convex Query
+## 17. How to Add a New Convex Query
 
 Example: list public rooms by subject.
 
@@ -840,7 +852,7 @@ npx convex dev --once
 
 ---
 
-## 17. How to Add a New Mutation
+## 18. How to Add a New Mutation
 
 Example: mark a room as favorite.
 
@@ -868,7 +880,7 @@ export const updateSomething = mutation({
 
 ---
 
-## 18. How to Debug Data Loading
+## 19. How to Debug Data Loading
 
 If a page shows no data:
 
@@ -901,7 +913,7 @@ npx convex run analytics:getPublicSnapshot
 
 ---
 
-## 19. Testing Strategy
+## 20. Testing Strategy
 
 Unit tests live near source files:
 
@@ -932,7 +944,7 @@ Run the authenticated suite for each seeded account by changing those env vars.
 
 ---
 
-## 20. Deployment Notes
+## 21. Deployment Notes
 
 Vercel needs these environment variables:
 
@@ -959,7 +971,7 @@ npx convex dev --once
 
 ---
 
-## 21. Beginner Mental Model
+## 22. Beginner Mental Model
 
 When you open a page:
 
@@ -977,7 +989,7 @@ If you understand that flow, the whole project becomes easier to follow.
 
 ---
 
-## 22. Safe Editing Rules for This Codebase
+## 23. Safe Editing Rules for This Codebase
 
 When changing code:
 
@@ -1006,7 +1018,7 @@ npm run test:e2e
 
 ---
 
-## 23. Where to Start Learning
+## 24. Where to Start Learning
 
 Read these files in this order:
 
@@ -1024,4 +1036,3 @@ Read these files in this order:
 12. `convex/devSeed.ts`
 
 That path teaches you the app shell, navigation, main UI screens, database shape, permissions, and demo data.
-
