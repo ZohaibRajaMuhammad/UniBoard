@@ -162,9 +162,15 @@ export default function KnowledgeBasePage() {
                   <div className="h-32 animate-pulse rounded-[20px] bg-white/5" />
                 ) : (
                   <div className="space-y-4">
-                    {(result?.data?.sources.length ?? 0) === 0 ? (
+                    {result?.data && (result.data.sources.length ?? 0) > 0 ? (
+                      <div className="rounded-[20px] border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-[var(--app-text-soft)]">
+                        <p className="text-xs uppercase tracking-[0.2em] text-emerald-200">Correct option</p>
+                        <p className="mt-2 leading-7 text-white">{result.data.answer}</p>
+                      </div>
+                    ) : result?.data?.answer ? (
                       <div className="rounded-[20px] border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-[var(--app-text-soft)]">
-                        No strong grounded room evidence was found for this question. Refine the room name, concept, deadline, or artifact before trusting an answer.
+                        <p className="text-xs uppercase tracking-[0.2em] text-amber-200">Best grounded option</p>
+                        <p className="mt-2 leading-7 text-white">{result.data.answer}</p>
                       </div>
                     ) : result?.data?.abstained ? (
                       <div className="rounded-[20px] border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-[var(--app-text-soft)]">
@@ -225,15 +231,21 @@ export default function KnowledgeBasePage() {
               <div className="mt-5">
                 <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Sources</p>
                 <div className="mt-3 grid gap-3 md:grid-cols-2">
-                  {result.data.sources.map((source) => (
+                  {result.data.sources.map((source, index) => (
                     <Link
                       key={source.postId}
                       href={`/rooms/${source.roomId}?post=${source.postId}`}
-                      className="rounded-[24px] border border-[var(--app-line)] bg-white/5 px-4 py-4 text-sm text-[var(--app-text-soft)] transition hover:bg-white/10"
+                      className={cn(
+                        "rounded-[24px] border px-4 py-4 text-sm transition hover:bg-white/10",
+                        index === 0
+                          ? "border-emerald-400/20 bg-emerald-500/10 text-[var(--app-text-soft)]"
+                          : "border-[var(--app-line)] bg-white/5 text-[var(--app-text-soft)]"
+                      )}
                     >
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium text-white">{source.roomName}</span>
                         <span className="app-chip">{source.type}</span>
+                        {index === 0 ? <span className="app-chip bg-emerald-500/15 text-emerald-100">Correct option</span> : null}
                       </div>
                       <span className="mt-3 block font-medium text-white">{source.title}</span>
                       <span className="mt-2 block text-xs leading-6 text-[var(--app-text-muted)]">{source.quote}</span>

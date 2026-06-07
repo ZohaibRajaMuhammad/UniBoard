@@ -15,10 +15,10 @@ export async function POST(request: Request) {
     const handled = toErrorEnvelope(error, route);
 
     if (handled.status >= 500) {
+      const detail = handled.body.error?.message ?? "AI service unavailable.";
       const fallback: AiEnvelope<AssistantReply> = {
         data: {
-          reply:
-            "UniBoard AI is temporarily running without full workspace access. I cannot answer from your live class data right now, but your rooms, planner, posts, and notifications are still available in the main screens.",
+          reply: `UniBoard AI could not complete this request. ${detail}`,
           confidenceBand: "low",
           suggestions: [
             "Open Planner to check upcoming deadlines.",
