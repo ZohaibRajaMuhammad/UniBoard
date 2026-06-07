@@ -2,16 +2,22 @@
 
 import { useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
+import { useConvexAuth } from "convex/react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
 export function useCurrentUser() {
-  const { user: clerkUser } = useUser();
+  const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
+  const { isLoading: convexAuthLoading, isAuthenticated: convexAuthenticated } = useConvexAuth();
   const convexUser = useQuery(api.users.getCurrentUser);
   const syncCurrentUser = useMutation(api.users.syncCurrentUser);
 
   useEffect(() => {
-    if (!clerkUser || convexUser !== null) {
+    if (!clerkLoaded || convexAuthLoading) {
+      return;
+    }
+
+    if (!clerkUser || !convexAuthenticated || convexUser !== null) {
       return;
     }
 
@@ -29,7 +35,7 @@ export function useCurrentUser() {
       name: clerkUser.fullName ?? clerkUser.username ?? "User",
       imageUrl: clerkUser.imageUrl
     });
-  }, [clerkUser, convexUser, syncCurrentUser]);
+  }, [clerkLoaded, clerkUser, convexAuthenticated, convexAuthLoading, convexUser, syncCurrentUser]);
 
   return convexUser;
 }
