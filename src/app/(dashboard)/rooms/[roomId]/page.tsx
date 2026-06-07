@@ -177,60 +177,54 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
         <div className="border-b border-[var(--app-line)] bg-[var(--app-panel)] backdrop-blur-xl">
           <div className="page-wrap py-3">
-            <div className="glass-panel rounded-[24px] p-4 sm:p-5">
+            <div className="glass-panel rounded-[20px] p-3 sm:p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <Sparkles size={14} className="text-[var(--app-violet)]" />
                     <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Room intelligence</p>
                   </div>
-                  <h2 className="mt-2 text-base font-semibold text-white sm:text-lg">Workspace collaboration overview</h2>
+                  <h2 className="mt-1 text-sm font-semibold text-white sm:text-base">Workspace overview</h2>
                 </div>
                 <ThemeToggle className="min-h-[2.35rem] shrink-0 rounded-full px-2 py-1.5" />
               </div>
 
-              <div className="mt-4 max-w-4xl">
-                <p className="text-sm leading-6 text-[var(--app-text-soft)]">
-                  The feed remains the primary collaboration surface. Room context and member activity remain visible in real time.
-                </p>
-              </div>
-
-              <div className="mt-4 rounded-[18px] border border-[var(--app-line)] bg-white/[0.04] px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">
+              <div className="mt-3 rounded-[16px] border border-[var(--app-line)] bg-white/[0.04] px-3 py-2.5">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">
                   {room.aiEnabled ? (summaryError ? "AI status" : "AI enabled") : "AI disabled"}
                 </p>
-                <p className="mt-1 text-sm leading-6 text-[var(--app-text-soft)]">
+                <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--app-text-soft)]">
                   {room.aiEnabled
                     ? summaryError
                       ? summaryError
                       : summary?.data?.summary ?? "Automated room assistance is currently active."
                     : "Manual room moderation is active."}
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className={summary?.meta.mode === "fallback" ? "app-chip border-amber-400/20 bg-amber-500/10 text-[var(--app-text)]" : "app-chip"}>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className={summary?.meta.mode === "fallback" ? "app-chip py-1 text-[10px] border-amber-400/20 bg-amber-500/10 text-[var(--app-text)]" : "app-chip py-1 text-[10px]"}>
                     {room.aiEnabled ? (summary?.meta.mode === "fallback" ? "Deterministic mode" : "AI grounded") : "AI disabled"}
                   </span>
-                  {hasPinnedPosts ? <span className="app-chip">{pinnedPosts?.length} pinned</span> : null}
+                  {hasPinnedPosts ? <span className="app-chip py-1 text-[10px]">{pinnedPosts?.length} pinned</span> : null}
                 </div>
               </div>
 
-              <div className="mt-5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Metrics overview</p>
+              <div className="mt-3">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Metrics</p>
                 <div className="mt-2 grid gap-2 sm:grid-cols-3">
                   {roomStats.map((item) => (
-                    <div key={item.label} className="stat-card px-4 py-3">
-                      <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--app-text-muted)]">{item.label}</p>
-                      <p className="mt-1.5 text-sm font-semibold text-[var(--app-text)]">{item.value}</p>
+                    <div key={item.label} className="stat-card px-3 py-2.5">
+                      <p className="text-[9px] uppercase tracking-[0.22em] text-[var(--app-text-muted)]">{item.label}</p>
+                      <p className="mt-1 text-xs font-semibold text-[var(--app-text)]">{item.value}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-5">
+              <div className="mt-4">
                 <AssignmentSubmissionPanel roomId={roomId} roomName={room.name} canReview={canModerateRoom} />
               </div>
 
-              <div className="mt-5">
+              <div className="mt-4">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Feed navigation</p>
                 <div className="mt-2 grid gap-2">
                   {ROOM_VIEWS.map((view) => (
@@ -264,7 +258,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                 </div>
               </div>
 
-                <div className="mt-5">
+                <div className="mt-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Primary actions</p>
                 <div className="mt-2 grid gap-2">
                   <button type="button" onClick={() => setComposerOpen(true)} className="app-button app-button-primary min-h-[2.75rem] w-full justify-start rounded-2xl px-4 py-2 text-sm">
@@ -280,7 +274,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                 </div>
               </div>
 
-              <div className="mt-5">
+              <div className="mt-4">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--app-text-muted)]">Feed filters</p>
                 <div className="smooth-x-scroll mt-2 flex gap-2 pb-0.5">
                   {FEED_FILTERS.map((filter) => {
