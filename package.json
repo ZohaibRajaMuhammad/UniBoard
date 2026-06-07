@@ -7,13 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest run",
-    "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed",
     "typecheck": "tsc --noEmit",
     "convex:dev": "convex dev",
-    "convex:codegen": "convex codegen",
-    "seed:demo": "node scripts/seed-demo-users.mjs"
+    "convex:codegen": "convex codegen"
   },
   "dependencies": {
     "@clerk/backend": "^1.24.0",
@@ -30,7 +26,6 @@
     "lucide-react": "^0.511.0",
     "next": "14.2.33",
     "openai": "^6.37.0",
-    "pptxgenjs": "^4.0.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "svix": "^1.66.0",
@@ -39,7 +34,6 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.60.0",
     "@types/node": "^22.14.1",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
@@ -48,7 +42,6 @@
     "eslint-config-next": "14.2.33",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.8.3",
-    "vitest": "^3.2.4"
+    "typescript": "^5.8.3"
   }
 }

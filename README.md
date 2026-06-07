@@ -8,7 +8,7 @@ This README is written as a beginner-friendly map of the codebase. If you are ne
 
 ## 1. Demo Accounts
 
-The demo seed recreates these Clerk users and fills Convex with matching data.
+These are the demo accounts used in the current deployment.
 
 | Role | Email | Password | What to test |
 | --- | --- | --- | --- |
@@ -26,7 +26,7 @@ Supporting seeded accounts:
 | Student | `student.aleena.uniboard@example.com` | `StudentAleena123!` |
 | System account | `uniboard.ai@example.com` | `UniBoardAI123!` |
 
-Latest seed contents:
+Current demo data includes:
 
 - `8` users
 - `4` rooms
@@ -38,13 +38,7 @@ Latest seed contents:
 - `6` moderation logs
 - votes, reactions, shares, room memberships, public/private rooms, deadlines, and role-specific data
 
-Run the seed:
-
-```bash
-npm run seed:demo
-```
-
-Important: the seed deletes and recreates demo data in the configured Convex deployment. It also recreates the Clerk demo users. After running it, log out and log back in.
+Demo data is already present in the configured deployment. If the dashboard looks empty after sign-in, log out and log back in so the latest session state attaches cleanly.
 
 ---
 
@@ -765,12 +759,6 @@ Push Convex functions to dev deployment once:
 npx convex dev --once
 ```
 
-Seed demo data:
-
-```bash
-npm run seed:demo
-```
-
 ---
 
 ## 16. How to Add a New Page
@@ -897,19 +885,13 @@ NEXT_PUBLIC_CONVEX_URL=https://acoustic-chickadee-547.convex.cloud
 npx convex dev --once
 ```
 
-4. Rerun seed:
-
-```bash
-npm run seed:demo
-```
-
-5. Check public snapshot:
+4. Check public snapshot:
 
 ```bash
 npx convex run analytics:getPublicSnapshot
 ```
 
-6. Log out and log back in, because the seed recreates Clerk users.
+5. Log out and log back in if the dashboard still shows stale session data.
 
 ---
 
