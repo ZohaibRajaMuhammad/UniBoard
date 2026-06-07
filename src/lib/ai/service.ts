@@ -446,7 +446,7 @@ function buildAssistantAbstentionReply(
   roomName: string | null
 ): AssistantReply {
   return {
-    reply: "I do not have enough grounded room evidence to answer that reliably yet. Name the room, concept, deadline, artifact, or thread more explicitly.",
+    reply: "I do not have enough grounded room evidence to answer that reliably yet. Narrow it to one room, one deadline, one artifact, or one thread so I can return a precise answer.",
     confidenceBand: "low",
     suggestions: buildAssistantSuggestions(assistantIntent, roomName),
     sources: []
@@ -538,6 +538,26 @@ function mapKnowledgeSources(postIds: string[], chunks: Awaited<ReturnType<typeo
   }
 
   return [...unique.values()].map((chunk) => ({
+    postId: chunk.postId,
+    roomId: chunk.roomId,
+    roomName: chunk.roomName,
+    title: chunk.title,
+    type: chunk.type,
+    quote: chunk.quote,
+    score: chunk.score,
+    authorityBand: chunk.authorityBand,
+    freshnessBand: chunk.freshnessBand,
+    sourceTier: chunk.sourceTier
+    }));
+}
+
+function buildAssistantSources(parsedSourceIds: string[], chunks: Awaited<ReturnType<typeof retrieveChunks>>) {
+  const mapped = mapKnowledgeSources(parsedSourceIds, chunks);
+  if (mapped.length > 0) {
+    return mapped;
+  }
+
+  return chunks.slice(0, 2).map((chunk) => ({
     postId: chunk.postId,
     roomId: chunk.roomId,
     roomName: chunk.roomName,
@@ -1007,10 +1027,17 @@ export async function getBriefing() {
     },
     fallback: async () => {
       const planner = await fetchQuery(api.planner.getSnapshot, {}, { token });
+      const upcoming = planner.items.slice(0, 3);
+      const highRisk = planner.items.filter((item) => item.urgency === "high").slice(0, 3);
       return {
-        summary: "Your workspace briefing is running in fallback mode. Use the planner and analytics screens directly for the latest grounded detail.",
-        priorities: planner.items.slice(0, 3).map((item) => item.title),
-        warnings: planner.items.filter((item) => item.urgency === "high").slice(0, 3).map((item) => item.explanation)
+        summary:
+          upcoming.length === 0
+            ? "No active deadline pressure is visible yet. Add deadlines or join more active rooms and the briefing will start reflecting live academic work."
+            : `Your current briefing is centered on ${upcoming.map((item) => item.title).join(", ")}. ${planner.metrics.dueSoonCount} deadline${
+                planner.metrics.dueSoonCount === 1 ? "" : "s"
+              } are due soon and ${planner.metrics.highRiskCount} item${planner.metrics.highRiskCount === 1 ? "" : "s"} are marked high risk.`,
+        priorities: upcoming.map((item) => `${item.title}${item.roomName ? ` in ${item.roomName}` : ""}`),
+        warnings: highRisk.map((item) => item.explanation)
       };
     }
   });
@@ -1110,7 +1137,7 @@ export async function getAssistantReply(message: string, roomId?: string) {
           reply: parsed.reply,
           confidenceBand: parsed.confidenceBand,
           suggestions: parsed.suggestions.length > 0 ? parsed.suggestions : buildAssistantSuggestions(assistantIntent, chunks[0]?.roomName ?? null),
-          sources: mapKnowledgeSources(parsed.sourcePostIds, chunks)
+          sources: buildAssistantSources(parsed.sourcePostIds, chunks)
         };
       });
     },
@@ -1122,7 +1149,7 @@ export async function getAssistantReply(message: string, roomId?: string) {
 
       const result = await fetchQuery(api.ai.queryKnowledgeBase, { question: normalizedMessage }, { token });
 
-      if (result.sources.length === 0 || result.mode === "fallback" || result.confidence === "low") {
+      if (result.sources.length === 0) {
         return buildAssistantAbstentionReply(assistantIntent, result.sources[0]?.roomName ?? null);
       }
       return {

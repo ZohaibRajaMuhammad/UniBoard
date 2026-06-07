@@ -6,6 +6,56 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+function normalizeToken(token: string) {
+  const trimmed = token.toLowerCase().trim();
+  const aliases: Record<string, string> = {
+    authentication: "auth",
+    authenticate: "auth",
+    authenticated: "auth",
+    authorization: "auth",
+    authorized: "auth",
+    authorisation: "auth",
+    api: "api",
+    apis: "api",
+    deadline: "deadline",
+    deadlines: "deadline",
+    due: "deadline",
+    urgent: "urgent",
+    auth: "auth",
+    syllabus: "syllabus",
+    lecture: "lecture",
+    lectures: "lecture",
+    assignment: "assignment",
+    assignments: "assignment",
+    project: "project",
+    projects: "project",
+    resource: "resource",
+    resources: "resource",
+    planner: "planner",
+    risk: "risk",
+    tradeoff: "tradeoff",
+    tradeoffs: "tradeoff"
+  };
+
+  if (aliases[trimmed]) {
+    return aliases[trimmed];
+  }
+
+  if (trimmed.endsWith("ies") && trimmed.length > 4) {
+    return `${trimmed.slice(0, -3)}y`;
+  }
+
+  if (trimmed.endsWith("es") && trimmed.length > 4) {
+    return trimmed.slice(0, -2);
+  }
+
+  if (trimmed.endsWith("s") && trimmed.length > 3) {
+    return trimmed.slice(0, -1);
+  }
+
+  return trimmed;
+}
+
 const AI_STOPWORDS = new Set([
   "about",
   "after",
@@ -117,10 +167,11 @@ export const queryKnowledgeBase = query({
       .withIndex("by_userId", (q) => q.eq("userId", user._id))
       .collect();
     const roomIds = new Set(memberships.filter((membership) => !membership.isBanned).map((membership) => membership.roomId));
-    const tokens = question
-      .toLowerCase()
-      .split(/[^a-z0-9]+/)
-      .filter((token) => token.length > 2 && !AI_STOPWORDS.has(token));
+  const tokens = question
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .map(normalizeToken)
+    .filter((token, index, array) => token.length > 1 && !AI_STOPWORDS.has(token) && array.indexOf(token) === index);
 
     if (tokens.length === 0) {
       return {
@@ -138,14 +189,40 @@ export const queryKnowledgeBase = query({
         .filter((post) => !post.isDeleted && !post.isHidden && roomIds.has(post.roomId) && !isLowSignalPost(post))
         .map(async (post) => {
           const room = await ctx.db.get(post.roomId);
-          const haystack = [post.content, post.deadlineTitle, post.resourceTitle, ...(post.tags ?? [])]
+          const haystack = [room?.name, room?.subject, post.content, post.deadlineTitle, post.resourceTitle, ...(post.tags ?? [])]
             .filter(Boolean)
             .join(" ")
             .toLowerCase();
-          const matchedTokens = tokens.filter((token) => haystack.includes(token));
+          const matchedTokens = tokens.filter((token) => {
+            if (haystack.includes(token)) {
+              return true;
+            }
+
+            if (token === "auth") {
+              return /(auth|login|sign[-\s]?in|access|credential|token)/.test(haystack);
+            }
+
+            if (token === "tradeoff") {
+              return /(tradeoff|trade-offs?|pros and cons|compare|comparison)/.test(haystack);
+            }
+
+            if (token === "deadline") {
+              return /(deadline|due|due date|submission|submit|due soon)/.test(haystack);
+            }
+
+            if (token === "risk") {
+              return /(risk|urgent|priority|critical|at risk|overdue)/.test(haystack);
+            }
+
+            return false;
+          });
           const score = matchedTokens.length;
           const coverage = tokens.length === 0 ? 0 : matchedTokens.length / tokens.length;
-          return score >= 2 && coverage >= 0.45
+          const hasStrongFieldMatch =
+            (post.deadlineTitle?.toLowerCase() ?? "").includes(tokens[0] ?? "") ||
+            (post.resourceTitle?.toLowerCase() ?? "").includes(tokens[0] ?? "") ||
+            /(deadline|resource|announcement|question|project)/.test(post.type);
+          return (score >= 2 && coverage >= 0.35) || (score >= 1 && coverage >= 0.2 && hasStrongFieldMatch)
             ? {
                 score,
                 coverage,
@@ -184,7 +261,7 @@ export const queryKnowledgeBase = query({
 
     return {
       answer,
-      confidence: confidenceScore >= 65 ? "medium" : "low",
+      confidence: confidenceScore >= 65 ? "medium" : confidenceScore >= 40 ? "low" : "low",
       sources: matches.map((match) => ({
         postId: match.post._id,
         roomId: match.post.roomId,
