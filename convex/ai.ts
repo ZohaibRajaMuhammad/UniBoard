@@ -179,6 +179,18 @@ function directConceptAnswer(question: string) {
   return null;
 }
 
+function isDeadlineQuestion(question: string) {
+  const normalized = question.toLowerCase();
+  return (
+    normalized.includes("deadline") ||
+    normalized.includes("due") ||
+    normalized.includes("urgent") ||
+    normalized.includes("closest") ||
+    normalized.includes("next") ||
+    normalized.includes("most")
+  );
+}
+
 function tokenizeQuestion(question: string) {
   return question
     .toLowerCase()
@@ -226,6 +238,50 @@ function buildAnswerFromEvidence(matches: KnowledgePostMatch[], question: string
   };
 }
 
+function buildDeadlineAnswerFromItems(
+  items: Array<{
+    id: string;
+    roomId?: string;
+    roomName?: string;
+    title: string;
+    dueDate: number;
+    riskScore?: number;
+  }>,
+  question: string
+) {
+  const [top] = [...items].sort((left, right) => left.dueDate - right.dueDate);
+  if (!top) {
+    return {
+      answer:
+        "There are no tracked deadlines yet. Add a deadline in Planner or join a room with deadline posts so I can answer this precisely.",
+      confidence: "low" as const,
+      sources: [],
+      mode: "fallback" as const
+    };
+  }
+
+  const label = /urgent|closest|most|next|first/i.test(question)
+    ? "The most urgent upcoming deadline is"
+    : "The closest upcoming deadline is";
+
+  return {
+    answer: `${label} ${top.title}${top.roomName ? ` in ${top.roomName}` : ""}. It is due ${new Date(top.dueDate).toLocaleString()}${typeof top.riskScore === "number" ? ` and is currently rated at ${top.riskScore}% risk` : ""}.`,
+    confidence: "medium" as const,
+    sources: top.roomId
+      ? [
+          {
+            postId: top.id,
+            roomId: top.roomId,
+            roomName: top.roomName ?? "Room",
+            title: top.title,
+            type: "deadline"
+          }
+        ]
+      : [],
+    mode: "grounded" as const
+  };
+}
+
 export const queryKnowledgeBase = query({
   args: {
     question: v.string()
@@ -240,6 +296,45 @@ export const queryKnowledgeBase = query({
     const direct = directConceptAnswer(question);
     if (direct) {
       return direct;
+    }
+
+    if (isDeadlineQuestion(question)) {
+      const roomDeadlines = await ctx.db
+        .query("posts")
+        .withIndex("by_type", (q) => q.eq("type", "deadline"))
+        .collect();
+      const manualDeadlines = await ctx.db.query("plannerDeadlines").collect();
+      const items = [
+        ...roomDeadlines
+          .filter((post) => !post.isDeleted && !post.isHidden && post.deadlineDate && post.deadlineDate > Date.now())
+          .map((post) => ({
+            id: post._id,
+            roomId: post.roomId,
+            roomName: undefined as string | undefined,
+            title: post.deadlineTitle || post.content.slice(0, 72),
+            dueDate: post.deadlineDate!,
+            riskScore: 60
+          })),
+        ...manualDeadlines
+          .filter((item) => !item.completed && item.dueDate > Date.now())
+          .map((item) => ({
+            id: item._id,
+            roomId: item.roomId,
+            roomName: undefined as string | undefined,
+            title: item.title,
+            dueDate: item.dueDate,
+            riskScore: 60
+          }))
+      ];
+
+      for (const item of items) {
+        if (item.roomId && !item.roomName) {
+          const room = await ctx.db.get(item.roomId);
+          item.roomName = room?.name ?? "Room";
+        }
+      }
+
+      return buildDeadlineAnswerFromItems(items, question);
     }
 
     const roomIds = new Set(

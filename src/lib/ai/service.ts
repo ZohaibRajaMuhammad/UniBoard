@@ -845,17 +845,28 @@ export async function getKnowledgeAnswer(question: string) {
       });
     },
     fallback: async () => {
-      const result = await fetchQuery(api.ai.queryKnowledgeBase, { question }, token ? { token } : undefined);
-      return {
-        answer: result.answer,
-        confidenceBand: toConfidenceBand(result.confidence),
-        followUp: buildKnowledgeFollowUp(knowledgeIntent),
-        abstained: result.mode === "fallback",
-        sources: result.sources.map((source) => ({
-          ...source,
-          quote: source.title
-        }))
-      };
+      try {
+        const result = await fetchQuery(api.ai.queryKnowledgeBase, { question }, token ? { token } : undefined);
+        return {
+          answer: result.answer,
+          confidenceBand: toConfidenceBand(result.confidence),
+          followUp: buildKnowledgeFollowUp(knowledgeIntent),
+          abstained: result.mode === "fallback",
+          sources: result.sources.map((source) => ({
+            ...source,
+            quote: source.title
+          }))
+        };
+      } catch {
+        return {
+          answer:
+            "I could not build a grounded answer from the live workspace right now. Try naming the exact room, deadline, concept, or artifact you want me to inspect.",
+          confidenceBand: "low",
+          followUp: buildKnowledgeFollowUp(knowledgeIntent),
+          abstained: true,
+          sources: []
+        };
+      }
     }
   });
 }
@@ -908,17 +919,22 @@ export async function getDeadlineRisk() {
           .filter((item): item is DeadlineRiskItem => item !== null);
       });
     },
-    fallback: async () =>
-      (await fetchQuery(api.ai.getDeadlineRisk, {}, token ? { token } : undefined)).map((item) => ({
-        postId: item.postId,
-        roomId: item.roomId,
-        roomName: item.roomName,
-        title: item.title,
-        dueDate: item.dueDate,
-        score: item.score,
-        band: toConfidenceBand(item.band),
-        explanation: item.explanation
-      }))
+    fallback: async () => {
+      try {
+        return (await fetchQuery(api.ai.getDeadlineRisk, {}, token ? { token } : undefined)).map((item) => ({
+          postId: item.postId,
+          roomId: item.roomId,
+          roomName: item.roomName,
+          title: item.title,
+          dueDate: item.dueDate,
+          score: item.score,
+          band: toConfidenceBand(item.band),
+          explanation: item.explanation
+        }));
+      } catch {
+        return [];
+      }
+    }
   });
 }
 
@@ -952,16 +968,23 @@ export async function getLearningProfile() {
       });
     },
     fallback: async () => {
-      const result = await fetchQuery(api.ai.getLearningProfile, {}, token ? { token } : undefined);
-      return {
-        summary: result.summary,
-        expertise: result.expertise.map((item) => ({
-          topic: item.topic,
-          score: item.score,
-          confidence: toConfidenceBand(item.confidence),
-          evidence: item.evidence
-        }))
-      };
+      try {
+        const result = await fetchQuery(api.ai.getLearningProfile, {}, token ? { token } : undefined);
+        return {
+          summary: result.summary,
+          expertise: result.expertise.map((item) => ({
+            topic: item.topic,
+            score: item.score,
+            confidence: toConfidenceBand(item.confidence),
+            evidence: item.evidence
+          }))
+        };
+      } catch {
+        return {
+          summary: "There is not enough stable contribution data available yet to infer a learning profile.",
+          expertise: []
+        };
+      }
     }
   });
 }
@@ -996,8 +1019,22 @@ export async function getStudyPlan() {
       });
     },
     fallback: async () => {
-      const planner = await fetchQuery(api.planner.getSnapshot, {}, token ? { token } : undefined);
-      return buildDeterministicStudyPlan(planner);
+      try {
+        const planner = await fetchQuery(api.planner.getSnapshot, {}, token ? { token } : undefined);
+        return buildDeterministicStudyPlan(planner);
+      } catch {
+        return buildDeterministicStudyPlan({
+          generatedAt: Date.now(),
+          metrics: {
+            totalDeadlines: 0,
+            dueSoonCount: 0,
+            highRiskCount: 0,
+            plannedHours: 0
+          },
+          items: [],
+          sessions: []
+        } as Awaited<ReturnType<typeof fetchQuery<typeof api.planner.getSnapshot>>>);
+      }
     }
   });
 }
@@ -1033,19 +1070,27 @@ export async function getBriefing() {
       });
     },
     fallback: async () => {
-      const planner = await fetchQuery(api.planner.getSnapshot, {}, token ? { token } : undefined);
-      const upcoming = planner.items.slice(0, 3);
-      const highRisk = planner.items.filter((item) => item.urgency === "high").slice(0, 3);
-      return {
-        summary:
-          upcoming.length === 0
-            ? "No active deadline pressure is visible yet. Add deadlines or join more active rooms and the briefing will start reflecting live academic work."
-            : `Your current briefing is centered on ${upcoming.map((item) => item.title).join(", ")}. ${planner.metrics.dueSoonCount} deadline${
-                planner.metrics.dueSoonCount === 1 ? "" : "s"
-              } are due soon and ${planner.metrics.highRiskCount} item${planner.metrics.highRiskCount === 1 ? "" : "s"} are marked high risk.`,
-        priorities: upcoming.map((item) => `${item.title}${item.roomName ? ` in ${item.roomName}` : ""}`),
-        warnings: highRisk.map((item) => item.explanation)
-      };
+      try {
+        const planner = await fetchQuery(api.planner.getSnapshot, {}, token ? { token } : undefined);
+        const upcoming = planner.items.slice(0, 3);
+        const highRisk = planner.items.filter((item) => item.urgency === "high").slice(0, 3);
+        return {
+          summary:
+            upcoming.length === 0
+              ? "No active deadline pressure is visible yet. Add deadlines or join more active rooms and the briefing will start reflecting live academic work."
+              : `Your current briefing is centered on ${upcoming.map((item) => item.title).join(", ")}. ${planner.metrics.dueSoonCount} deadline${
+                  planner.metrics.dueSoonCount === 1 ? "" : "s"
+                } are due soon and ${planner.metrics.highRiskCount} item${planner.metrics.highRiskCount === 1 ? "" : "s"} are marked high risk.`,
+          priorities: upcoming.map((item) => `${item.title}${item.roomName ? ` in ${item.roomName}` : ""}`),
+          warnings: highRisk.map((item) => item.explanation)
+        };
+      } catch {
+        return {
+          summary: "No active deadline pressure is visible yet.",
+          priorities: [],
+          warnings: []
+        };
+      }
     }
   });
 }
@@ -1090,14 +1135,24 @@ export async function getRoomSummary(roomId: string) {
       });
     },
     fallback: async () => {
-      const { rooms, posts } = await getScopedPosts(token, roomId, { allowEmpty: true });
-      const room = rooms[0];
-      const deterministic = summarizeDeterministically(posts, room?.name ?? "Room");
-      return {
-        ...deterministic,
-        roomId,
-        roomName: room?.name ?? deterministic.roomName
-      };
+      try {
+        const { rooms, posts } = await getScopedPosts(token, roomId, { allowEmpty: true });
+        const room = rooms[0];
+        const deterministic = summarizeDeterministically(posts, room?.name ?? "Room");
+        return {
+          ...deterministic,
+          roomId,
+          roomName: room?.name ?? deterministic.roomName
+        };
+      } catch {
+        return {
+          roomId,
+          roomName: "Room",
+          summary: "This room does not have enough visible discussion yet to generate a meaningful summary.",
+          keyPoints: [],
+          openQuestions: []
+        };
+      }
     }
   });
 }
@@ -1154,20 +1209,24 @@ export async function getAssistantReply(message: string, roomId?: string) {
         return directIntent;
       }
 
-      const result = await fetchQuery(api.ai.queryKnowledgeBase, { question: normalizedMessage }, token ? { token } : undefined);
+      try {
+        const result = await fetchQuery(api.ai.queryKnowledgeBase, { question: normalizedMessage }, token ? { token } : undefined);
 
-      if (result.sources.length === 0) {
-        return buildAssistantAbstentionReply(assistantIntent, result.sources[0]?.roomName ?? null);
+        if (result.sources.length === 0) {
+          return buildAssistantAbstentionReply(assistantIntent, result.sources[0]?.roomName ?? null);
+        }
+        return {
+          reply: result.answer,
+          confidenceBand: toConfidenceBand(result.confidence),
+          suggestions: buildAssistantSuggestions(assistantIntent, result.sources[0]?.roomName ?? null),
+          sources: result.sources.map((source) => ({
+            ...source,
+            quote: source.title
+          }))
+        };
+      } catch {
+        return buildAssistantAbstentionReply(assistantIntent, null);
       }
-      return {
-        reply: result.answer,
-        confidenceBand: toConfidenceBand(result.confidence),
-        suggestions: buildAssistantSuggestions(assistantIntent, result.sources[0]?.roomName ?? null),
-        sources: result.sources.map((source) => ({
-          ...source,
-          quote: source.title
-        }))
-      };
     }
   });
 }
