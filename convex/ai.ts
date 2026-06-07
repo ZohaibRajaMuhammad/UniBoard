@@ -262,7 +262,16 @@ function buildDeadlineAnswerFromItems(
   }>,
   question: string
 ) {
-  const [top] = [...items].sort((left, right) => left.dueDate - right.dueDate);
+  const now = Date.now();
+  const futureItems = items.filter((item) => item.dueDate >= now);
+  const candidateItems = futureItems.length > 0 ? futureItems : items;
+  const [top] = [...candidateItems].sort((left, right) => {
+    if (futureItems.length > 0) {
+      return left.dueDate - right.dueDate;
+    }
+
+    return right.dueDate - left.dueDate;
+  });
   if (!top) {
     return {
       answer:
@@ -273,12 +282,19 @@ function buildDeadlineAnswerFromItems(
     };
   }
 
+  const isOverdue = top.dueDate < now;
   const label = /urgent|closest|most|next|first/i.test(question)
-    ? "The most urgent upcoming deadline is"
-    : "The closest upcoming deadline is";
+    ? isOverdue
+      ? "The most urgent unresolved deadline is"
+      : "The most urgent upcoming deadline is"
+    : isOverdue
+      ? "The closest unresolved deadline is"
+      : "The closest upcoming deadline is";
+  const dueText = isOverdue ? `It was due ${new Date(top.dueDate).toLocaleString()}` : `It is due ${new Date(top.dueDate).toLocaleString()}`;
+  const riskText = typeof top.riskScore === "number" ? ` and is currently rated at ${top.riskScore}% risk` : "";
 
   return {
-    answer: `${label} ${top.title}${top.roomName ? ` in ${top.roomName}` : ""}. It is due ${new Date(top.dueDate).toLocaleString()}${typeof top.riskScore === "number" ? ` and is currently rated at ${top.riskScore}% risk` : ""}.`,
+    answer: `${label} ${top.title}${top.roomName ? ` in ${top.roomName}` : ""}. ${dueText}${riskText}.`,
     confidence: "medium" as const,
     sources: top.roomId
       ? [
@@ -335,7 +351,7 @@ export const queryKnowledgeBase = query({
       const manualDeadlines = await ctx.db.query("plannerDeadlines").collect();
       const items = [
         ...roomDeadlines
-          .filter((post) => !post.isDeleted && !post.isHidden && post.deadlineDate && post.deadlineDate > Date.now() && deadlineRoomIds.has(post.roomId))
+          .filter((post) => !post.isDeleted && !post.isHidden && post.deadlineDate && deadlineRoomIds.has(post.roomId))
           .map((post) => ({
             id: post._id,
             roomId: post.roomId,

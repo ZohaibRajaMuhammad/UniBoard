@@ -453,7 +453,7 @@ function buildAssistantAbstentionReply(
   roomName: string | null
 ): AssistantReply {
   return {
-    reply: "I do not have enough grounded room evidence to answer that reliably yet. Narrow it to one room, one deadline, one artifact, or one thread so I can return a precise answer.",
+    reply: "I need one concrete room, deadline, artifact, or thread to answer this precisely.",
     confidenceBand: "low",
     suggestions: buildAssistantSuggestions(assistantIntent, roomName),
     sources: []
@@ -666,8 +666,10 @@ async function getUrgentDeadlineReply(token: string | null) {
     };
   }
 
+  const isOverdue = top.dueDate < Date.now();
+
   return {
-    reply: `The most urgent upcoming deadline is ${top.title}${top.roomName ? ` in ${top.roomName}` : ""}. It is due ${new Date(top.dueDate).toLocaleString()} and is currently rated at ${top.riskScore}% risk.`,
+    reply: `${isOverdue ? "The most urgent unresolved deadline is" : "The most urgent upcoming deadline is"} ${top.title}${top.roomName ? ` in ${top.roomName}` : ""}. ${isOverdue ? "It was due" : "It is due"} ${new Date(top.dueDate).toLocaleString()} and is currently rated at ${top.riskScore}% risk.`,
     confidenceBand: "high" as const,
     suggestions: ["Open the Planner screen to schedule or review the next study block."],
     sources: []
@@ -864,8 +866,9 @@ export async function getKnowledgeAnswer(question: string) {
             const top = planner.items[0];
 
             if (top) {
+              const isOverdue = top.dueDate < Date.now();
               return {
-                answer: `The closest upcoming deadline is ${top.title}${top.roomName ? ` in ${top.roomName}` : ""}. It is due ${new Date(top.dueDate).toLocaleString()} and is currently rated at ${top.riskScore}% risk.`,
+                answer: `${isOverdue ? "The closest unresolved deadline is" : "The closest upcoming deadline is"} ${top.title}${top.roomName ? ` in ${top.roomName}` : ""}. ${isOverdue ? "It was due" : "It is due"} ${new Date(top.dueDate).toLocaleString()} and is currently rated at ${top.riskScore}% risk.`,
                 confidenceBand: "medium",
                 followUp: "Open Planner if you want the full study sequence around this deadline.",
                 abstained: false,
@@ -910,7 +913,7 @@ export async function getKnowledgeAnswer(question: string) {
 
             const deadlinePosts = roomDeadlineCandidates.flatMap(({ room, posts }) =>
               posts
-                .filter((post) => post.type === "deadline" && !post.isDeleted && !post.isHidden && post.deadlineDate && post.deadlineDate > Date.now())
+                .filter((post) => post.type === "deadline" && !post.isDeleted && !post.isHidden && post.deadlineDate)
                 .map((post) => ({
                   id: post._id,
                   roomId: post.roomId,
@@ -921,10 +924,15 @@ export async function getKnowledgeAnswer(question: string) {
                 }))
             );
 
-            const topDeadline = deadlinePosts.sort((left, right) => left.dueDate - right.dueDate)[0];
+            const futureDeadlines = deadlinePosts.filter((item) => item.dueDate >= Date.now());
+            const sortedDeadlines = (futureDeadlines.length > 0 ? futureDeadlines : deadlinePosts).sort((left, right) =>
+              futureDeadlines.length > 0 ? left.dueDate - right.dueDate : right.dueDate - left.dueDate
+            );
+            const topDeadline = sortedDeadlines[0];
             if (topDeadline) {
+              const isOverdue = topDeadline.dueDate < Date.now();
               return {
-                answer: `The closest upcoming deadline is ${topDeadline.title}${topDeadline.roomName ? ` in ${topDeadline.roomName}` : ""}. It is due ${new Date(topDeadline.dueDate).toLocaleString()} and is currently rated at ${topDeadline.riskScore}% risk.`,
+                answer: `${isOverdue ? "The closest unresolved deadline is" : "The closest upcoming deadline is"} ${topDeadline.title}${topDeadline.roomName ? ` in ${topDeadline.roomName}` : ""}. ${isOverdue ? "It was due" : "It is due"} ${new Date(topDeadline.dueDate).toLocaleString()} and is currently rated at ${topDeadline.riskScore}% risk.`,
                 confidenceBand: "medium",
                 followUp: "Open Planner if you want the full study sequence around this deadline.",
                 abstained: false,
@@ -946,7 +954,9 @@ export async function getKnowledgeAnswer(question: string) {
         }
 
         return {
-          answer: "I could not ground this answer from the live workspace right now.",
+          answer: isUrgentDeadlineQuestion(question)
+            ? "No tracked deadlines are visible yet. Open Planner or the relevant room to surface the current deadline list."
+            : "No grounded room evidence is visible yet. Open Rooms or Planner to inspect the current workspace data.",
           confidenceBand: "low",
           followUp: buildKnowledgeFollowUp(knowledgeIntent),
           abstained: true,
@@ -1298,9 +1308,6 @@ export async function getAssistantReply(message: string, roomId?: string) {
       try {
         const result = await fetchQuery(api.ai.queryKnowledgeBase, { question: normalizedMessage }, token ? { token } : undefined);
 
-        if (result.sources.length === 0) {
-          return buildAssistantAbstentionReply(assistantIntent, result.sources[0]?.roomName ?? null);
-        }
         return {
           reply: result.answer,
           confidenceBand: toConfidenceBand(result.confidence),

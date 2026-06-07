@@ -145,11 +145,11 @@ export default function KnowledgeBasePage() {
                         : "rounded-full bg-red-500/15 px-3 py-1 text-xs font-medium text-[var(--app-text)]"
                   }
                 >
-                  {result.meta.mode === "openai"
-                    ? result.data?.confidenceBand === "high"
-                      ? "Grounded answer"
-                      : "Grounded with caution"
-                    : "Fallback mode"}
+                  {result.data?.confidenceBand === "high"
+                    ? "Grounded answer"
+                    : result.data?.confidenceBand === "medium"
+                      ? "Grounded with caution"
+                      : "Low-confidence answer"}
                 </span>
               ) : (
                 <span className="rounded-full bg-white/5 px-3 py-1 text-xs text-[var(--app-text-muted)]">Answering...</span>
