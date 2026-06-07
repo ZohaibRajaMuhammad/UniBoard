@@ -1,0 +1,223 @@
+AICT Project Documentation
+
+Course Instructor: Miss Sumera Syed
+Subject: AICT (Advanced Information and Communication Technology)
+Project Title: UniBoard - AI-Powered Academic Collaboration Platform
+Creators: Raja Muhammad Zohaib, Abdullah Pervaiz
+Version: 1.0
+
+Table of Contents
+1. Project Overview
+2. System Architecture
+3. Deliverables Overview
+4. Screen 1: User Authentication (Login & Signup)
+5. Screen 2: Dashboard
+6. Screen 3: Saved Posts
+7. Screen 4: Notifications
+8. Screen 5: Search Page
+9. Remaining Screens & Features
+
+1. Project Overview
+UniBoard is a workspace for students, teachers, and super admins.
+It brings room-based collaboration, notifications, saved posts, deadlines,
+search, analytics, AI assistance, and moderation into one system.
+The goal is to keep academic activity organized, visible, and easy to act on.
+
+The platform is designed to feel professional and practical.
+Students can join rooms, read posts, save important items, track deadlines,
+and ask the AI assistant grounded questions.
+Teachers can manage rooms, moderate content, publish announcements, and review submissions.
+Super admins can oversee the whole workspace and validate governance.
+
+2. System Architecture
+Frontend:
+- Next.js App Router
+- React components
+- Tailwind CSS for layout and styling
+- Framer Motion and Radix UI for interaction polish
+
+Backend:
+- Convex database and live queries
+- Convex mutations for writes and moderation
+- Clerk authentication and user sync
+- OpenAI-backed AI routes with deterministic fallbacks
+
+Main folders:
+- src/app: routes and pages
+- src/components: reusable UI and feature panels
+- src/lib: utilities, AI helpers, contracts, and shared logic
+- convex: schema, queries, mutations, seed data, and backend rules
+
+3. Deliverables Overview
+The system includes:
+- User sign in and sign up
+- Student, teacher, and super admin role separation
+- Dashboard with live room and deadline overview
+- Rooms page with public discovery and private join code flow
+- Individual room pages with feed, comments, AI summary, and teacher tools
+- Saved posts page
+- Notifications page
+- Search page
+- Planner page
+- Analytics page
+- Knowledge base page
+- AI assistant panel
+- Assignment submission flow
+
+4. Screen 1: User Authentication (Login & Signup)
+Purpose:
+This is the entry point for the application. Users sign in with Clerk and then the app syncs the user into Convex.
+
+What happens:
+- The user opens sign in or sign up.
+- Clerk validates the account.
+- The app syncs the Clerk user to Convex.
+- The current role, batch, and profile data are loaded.
+
+What to say in a presentation:
+"This is the login layer. Once the user signs in, the app connects that identity to the live workspace data in Convex so the dashboard, rooms, posts, and notifications all load under the correct account."
+
+Demo accounts:
+- Super Admin: davidshead0@gmail.com / DavidAdmin123!
+- Teacher: robinseo82@gmail.com / RobinTeacher123!
+- Student: zohaib99080@gmail.com / ZohaibStudent123!
+
+5. Screen 2: Dashboard
+Purpose:
+The dashboard is the home screen. It shows the most important live information first.
+
+What it shows:
+- Number of joined rooms
+- Upcoming deadlines
+- Workspace momentum
+- AI briefing card
+- Room previews
+
+How it works:
+- It reads live room data from Convex.
+- It reads deadline data from the planner snapshot.
+- It shows a short AI briefing using grounded workspace data.
+
+What to say:
+"The dashboard is the control center. It gives the user a quick summary of their rooms, deadlines, and current workspace activity before they open any detailed screen."
+
+6. Screen 3: Saved Posts
+Purpose:
+Saved Posts is the user’s personal reference area.
+
+What it does:
+- Stores posts the user wants to revisit
+- Keeps important resources and deadlines easy to find
+- Helps students return to useful class material quickly
+
+What to say:
+"Saved Posts works like a personal academic bookmark list. A user can save important posts and come back to them without searching through the full room feed again."
+
+7. Screen 4: Notifications
+Purpose:
+Notifications tell the user what needs attention.
+
+What triggers notifications:
+- New posts
+- New comments
+- Replies
+- Pinned posts
+- Resolved questions
+- Assignment submissions
+- Room invitations
+- Upvotes
+
+What it does:
+- Shows unread and total counts
+- Lets the user mark items read
+- Opens the relevant room or post when clicked
+
+What to say:
+"Notifications are live records, not just badges. The system writes them when room activity happens, so the user can quickly move from the alert to the exact source context."
+
+8. Screen 5: Search Page
+Purpose:
+Search helps users find room content quickly across authorized data.
+
+What it searches:
+- Posts
+- Deadlines
+- Resources
+- Questions
+- Tags
+
+What to say:
+"Search is the fastest way to locate room knowledge. The results stay limited to what the user is allowed to see, so the workspace stays secure and grounded."
+
+9. Remaining Screens & Features
+
+Rooms page
+- Public room discovery
+- Private room join by code
+- Create room flow
+- Search rooms by title, subject, batch, or description
+
+What to say:
+"This page is where users discover or enter classes. Public rooms are visible to the batch, and private rooms require a join code from the room owner or teacher."
+
+Room page
+- Post feed
+- Comments and replies
+- Pinned post context
+- AI room summary
+- Teacher tools
+- Feed view modes
+- New assignment submission panel
+
+What to say:
+"The room page is the collaboration hub. It combines discussion, AI summaries, teacher controls, and assignment submissions in one place."
+
+Assignment submission
+- Students submit to the room creator
+- The room creator acts as the reviewer/admin
+- Review access is limited to the room creator and moderators
+
+What to say:
+"Assignment submissions are intentionally scoped to the room admin. That keeps student work private and aligns review with the person who created and owns the room."
+
+Planner
+- Converts deadlines into a study schedule
+- Shows upcoming work
+- Supports manual deadlines
+- Exports calendar and document formats
+
+Analytics
+- Shows deadline risk
+- Shows activity trends
+- Shows content distribution
+- Shows AI risk radar
+
+Knowledge base
+- Answers grounded workspace questions
+- Refines answers using authorized room data
+- Abstains when evidence is weak instead of inventing details
+
+AI assistant
+- Live chat helper for grounded questions
+- Room-aware replies
+- Uses deterministic fallbacks when the model is unavailable
+
+Admin tools
+- Room moderation
+- Governance review
+- Role oversight
+- Seeded demo validation
+
+Private room flow
+1. The room owner or teacher creates a room.
+2. If the room is private, the system generates a join code.
+3. The owner shares the code with the intended user.
+4. The user opens Rooms and joins using the code.
+5. Convex records the membership and the room becomes visible in the user’s joined rooms.
+
+Presentation note:
+If asked why a room is private, explain that private rooms are for controlled class or project spaces. The join code is the access gate.
+
+Closing summary
+UniBoard is a professional academic collaboration platform built to keep class activity organized, searchable, and grounded in live data.
+The combination of rooms, notifications, saved posts, planner, analytics, and AI makes the system useful for both day-to-day use and demo presentation.
