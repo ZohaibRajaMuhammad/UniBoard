@@ -32,6 +32,22 @@ export default function PlannerPage() {
   const [studyPlanError, setStudyPlanError] = useState("");
   const [draft, setDraft] = useState({ title: "", dueDate: "", estimatedMinutes: "120", roomId: "", notes: "" });
 
+  if (planner === undefined || rooms === undefined) {
+    return (
+      <div className="app-scroll">
+        <div className="page-wrap page-stack shell-content-column">
+          <Skeleton className="h-[18rem] rounded-[var(--radius-panel)]" />
+          <Skeleton className="h-[12rem] rounded-[var(--radius-panel)]" />
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Skeleton key={index} className="h-40 rounded-3xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const calendarCells = useMemo(() => {
     const baseDate = new Date();
     const current = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);

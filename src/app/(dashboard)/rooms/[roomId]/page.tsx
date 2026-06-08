@@ -67,8 +67,12 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   );
 
   useEffect(() => {
+    if (currentUser === undefined) {
+      return;
+    }
+
     void markSeen({ roomId });
-  }, [markSeen, roomId]);
+  }, [currentUser, markSeen, roomId]);
 
   useEffect(() => {
     if (!highlightedPostId || posts === undefined) {

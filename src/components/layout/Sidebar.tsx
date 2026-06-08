@@ -77,6 +77,26 @@ export function Sidebar() {
   const roomList = (rooms as Room[] | undefined) ?? [];
   const [showCreateRoom, setShowCreateRoom] = useState(false);
 
+  if (currentUser === undefined || rooms === undefined || unreadNotifications === undefined || totalUnread === undefined) {
+    return (
+      <div className="sidebar-theme-surface flex h-full w-full flex-col border-r border-[var(--app-line)] backdrop-blur">
+        <div className="flex min-h-[5.5rem] items-center gap-3 border-b border-[var(--app-line)] px-5">
+          <Skeleton className="h-10 w-full rounded-2xl" />
+        </div>
+        <div className="border-b border-[var(--app-line)] px-5 py-4">
+          <Skeleton className="h-12 rounded-2xl" />
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 py-3">
+          <div className="space-y-4">
+            <Skeleton className="h-32 rounded-3xl" />
+            <Skeleton className="h-28 rounded-3xl" />
+            <Skeleton className="h-24 rounded-3xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const dynamicNavGroups = useMemo(() => {
     if (currentUser?.role !== "super_admin") {
       return navGroups;

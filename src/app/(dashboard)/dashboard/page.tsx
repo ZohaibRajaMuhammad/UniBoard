@@ -54,6 +54,25 @@ export default function DashboardRoutePage() {
   const [briefingError, setBriefingError] = useState("");
   const displayedBriefing = briefing?.data ?? fallbackBriefing;
 
+  if (user === undefined || rooms === undefined || deadlines === undefined) {
+    return (
+      <div className="app-scroll">
+        <div className="page-wrap page-stack shell-content-column">
+          <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
+            <Skeleton className="h-[28rem] rounded-[var(--radius-panel)]" />
+            <Skeleton className="h-[28rem] rounded-[var(--radius-panel)]" />
+          </div>
+          <Skeleton className="h-32 rounded-[var(--radius-panel)]" />
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Skeleton key={index} className="h-40 rounded-3xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
