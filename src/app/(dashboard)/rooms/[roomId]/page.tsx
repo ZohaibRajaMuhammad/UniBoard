@@ -181,7 +181,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
         <div className="border-b border-[var(--app-line)] bg-[var(--app-panel)] backdrop-blur-xl">
           <div className="page-wrap py-3">
-            <div className="glass-panel rounded-[18px] p-3 sm:p-3.5 max-w-[54rem]">
+            <div className="mx-auto flex w-full max-w-[90rem] flex-col gap-3">
+            <div className="glass-panel w-full rounded-[18px] p-3 sm:p-3.5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -298,15 +299,21 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                 </div>
               </div>
             </div>
+            </div>
           </div>
         </div>
 
         {showFeed ? (
           <div className="flex flex-col">
-            <div className={cn("grid flex-1", activeView === "split" ? "xl:grid-cols-[minmax(0,1.46fr)_24rem]" : "")}>
+            <div
+              className={cn(
+                "mx-auto grid w-full flex-1 max-w-[90rem] gap-5 px-0",
+                activeView === "split" ? "xl:grid-cols-[minmax(0,1fr)_18.5rem]" : ""
+              )}
+            >
               <div ref={feedSectionRef} className="min-w-0">
                 <div className="px-1 pb-8">
-                  <section id="room-post-list" className="mx-auto w-full max-w-[62rem] scroll-mt-4 px-4 pt-3 sm:px-6">
+                  <section id="room-post-list" className="mx-auto w-full max-w-none scroll-mt-4 px-4 pt-3 sm:px-6">
                     <div className="sticky top-0 z-10 -mx-1 px-1 pb-3">
                       <div className="glass-panel rounded-[26px] border border-[var(--app-line)] bg-[var(--app-panel-strong)]/88 p-3 shadow-[0_18px_40px_rgba(8,16,30,0.18)] backdrop-blur-xl sm:p-4">
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -356,9 +363,9 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
               </div>
 
               {activeView === "split" ? (
-                <aside className="hidden border-l border-[var(--app-line)] bg-[var(--app-bg-strong)]/55 xl:block xl:-ml-2">
-                  <div className="px-4 py-5">
-                    <div className="sticky top-5 grid gap-4">
+                <aside className="hidden border-l border-[var(--app-line)] bg-[var(--app-bg-strong)]/55 xl:block xl:-ml-3">
+                  <div className="px-3 py-5">
+                    <div className="sticky top-4 grid gap-4">
                         <section className="glass-panel rounded-[28px] p-5">
                           <div className="flex items-start justify-between gap-3">
                             <div>
@@ -436,7 +443,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         ) : (
           <div className="app-scroll">
             <div className="page-wrap py-5">
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1.28fr)_24rem]">
+            <div className="mx-auto grid w-full max-w-[90rem] gap-4 xl:grid-cols-[minmax(0,1.28fr)_22rem]">
                 <section className="glass-panel rounded-[30px] p-5">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
