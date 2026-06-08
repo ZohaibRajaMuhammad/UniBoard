@@ -181,7 +181,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
         <div className="border-b border-[var(--app-line)] bg-[var(--app-panel)] backdrop-blur-xl">
           <div className="page-wrap py-3">
-            <div className="mx-auto flex w-full max-w-[90rem] flex-col gap-3">
+            <div className="mx-auto flex w-full max-w-[80rem] flex-col gap-3">
             <div className="glass-panel w-full rounded-[18px] p-3 sm:p-3.5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
@@ -307,8 +307,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
           <div className="flex flex-col">
             <div
               className={cn(
-                "mx-auto grid w-full flex-1 max-w-[90rem] gap-5 px-0",
-                activeView === "split" ? "xl:grid-cols-[minmax(0,1fr)_18.5rem]" : ""
+                "mx-auto grid w-full flex-1 max-w-[80rem] gap-4 px-0",
+                activeView === "split" ? "xl:grid-cols-[minmax(0,1fr)_16.5rem]" : ""
               )}
             >
               <div ref={feedSectionRef} className="min-w-0">
@@ -363,7 +363,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
               </div>
 
               {activeView === "split" ? (
-                <aside className="hidden border-l border-[var(--app-line)] bg-[var(--app-bg-strong)]/55 xl:block xl:-ml-3">
+                <aside className="hidden border-l border-[var(--app-line)] bg-[var(--app-bg-strong)]/55 xl:block xl:-ml-2">
                   <div className="px-3 py-5">
                     <div className="sticky top-4 grid gap-4">
                         <section className="glass-panel rounded-[28px] p-5">
@@ -443,7 +443,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         ) : (
           <div className="app-scroll">
             <div className="page-wrap py-5">
-            <div className="mx-auto grid w-full max-w-[90rem] gap-4 xl:grid-cols-[minmax(0,1.28fr)_22rem]">
+            <div className="mx-auto grid w-full max-w-[80rem] gap-4 xl:grid-cols-[minmax(0,1.28fr)_20rem]">
                 <section className="glass-panel rounded-[30px] p-5">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>

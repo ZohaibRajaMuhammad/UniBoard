@@ -8,7 +8,7 @@ export function RoomHeader({ room }: { room: Doc<"rooms"> }) {
   return (
     <header className="border-b border-[var(--app-line)] bg-[color:var(--app-panel-strong)] backdrop-blur">
       <div className="page-wrap shell-content-column py-5">
-        <div className="flex flex-col gap-4 pl-14 sm:pl-16 lg:pl-0 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-start gap-4">
             <div className="app-surface-muted flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] text-[var(--app-primary-strong)] shadow-[0_18px_36px_rgba(3,8,20,0.16)]">
               <RoomIcon size={28} />
